@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>線上時鐘 - Life Tools<script src="/scripts/init.html"></script></title>
+    <!-- 引入 Google Fonts 與 Font Awesome 圖標庫 -->
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* 全域基本樣式 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+
+        :root {
+            --primary-color: #FF8C00;
+            --primary-hover: #E07B00;
+            --primary-light: #FFF5EC;
+            --text-dark: #2C3E50;
+            --text-muted: #7F8C8D;
+            --bg-light: #FDFBF7;
+            --bg-card-section: #F5EFEB;
+            --white: #FFFFFF;
+            --transition-speed: 0.3s;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 頂部導覽列 */
+        .navbar {
+            background-color: var(--white);
+            border-bottom: 2px solid var(--primary-light);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .nav-logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform var(--transition-speed) ease;
+        }
+
+        .nav-logo:hover {
+            transform: scale(1.03);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            color: var(--text-dark);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 16px;
+            transition: color var(--transition-speed) ease;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color);
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background-color: var(--primary-light);
+            border: 1.5px solid transparent;
+            border-radius: 30px;
+            padding: 4px 6px 4px 16px;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--primary-color);
+            background-color: var(--white);
+            box-shadow: 0 0 8px rgba(255, 140, 0, 0.15);
+        }
+
+        .search-input {
+            border: none;
+            background: transparent;
+            outline: none;
+            color: var(--text-dark);
+            font-size: 14px;
+            width: 160px;
+            transition: width var(--transition-speed) ease;
+        }
+
+        .search-input:focus {
+            width: 200px;
+        }
+
+        .search-btn {
+            background-color: var(--primary-color);
+            border: none;
+            color: var(--white);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color var(--transition-speed) ease, transform var(--transition-speed) ease;
+        }
+
+        .search-btn:hover {
+            background-color: var(--primary-hover);
+            transform: scale(1.05);
+        }
+
+        /* 網頁主要內容 */
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            background-color: var(--bg-card-section);
+        }
+
+        /* 時鐘容器外觀 */
+        .clock-container {
+            background-color: var(--white);
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            max-width: 650px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            border: 1px solid rgba(255, 140, 0, 0.1);
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        /* 時區切換器 */
+        .timezone-switch-wrapper {
+            display: inline-flex;
+            background-color: var(--primary-light);
+            padding: 6px;
+            border-radius: 30px;
+            margin-bottom: 30px;
+        }
+
+        .timezone-btn {
+            background: none;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 20px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: all var(--transition-speed) ease;
+        }
+
+        .timezone-btn.active {
+            background-color: var(--primary-color);
+            color: var(--white);
+            box-shadow: 0 4px 10px rgba(255, 140, 0, 0.25);
+        }
+
+        /* 日期顯示 */
+        .date-display {
+            font-size: 20px;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        /* 數位時間主顯示 */
+        .time-display {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 80px;
+            font-weight: 700;
+            color: var(--text-dark);
+            letter-spacing: -2px;
+            line-height: 1;
+            margin-bottom: 15px;
+            user-select: none;
+            display: inline-block;
+        }
+
+        .time-sec {
+            color: var(--primary-color);
+            font-size: 60px;
+            margin-left: 5px;
+        }
+
+        /* 時區細節資訊 */
+        .timezone-info {
+            font-size: 15px;
+            color: var(--text-muted);
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .timezone-badge {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        /* 外圈點綴動畫線條 */
+        .pulse-light {
+            width: 10px;
+            height: 10px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 10px var(--primary-color);
+            animation: pulseBeat 1.5s infinite;
+        }
+
+        /* 頁尾 */
+        .footer {
+            background-color: var(--white);
+            padding: 30px 20px;
+            text-align: center;
+            border-top: 1px solid var(--primary-light);
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* 動畫定義 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulseBeat {
+            0% {
+                transform: scale(0.9);
+                opacity: 0.6;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 1;
+                box-shadow: 0 0 15px var(--primary-color);
+            }
+            100% {
+                transform: scale(0.9);
+                opacity: 0.6;
+            }
+        }
+
+        /* 響應式配置 */
+        @media (max-width: 600px) {
+            .navbar-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .nav-right {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+            .search-box {
+                width: 100%;
+            }
+            .search-input {
+                width: 100%;
+            }
+            .search-input:focus {
+                width: 100%;
+            }
+            .clock-container {
+                padding: 30px 15px;
+            }
+            .time-display {
+                font-size: 48px;
+            }
+            .time-sec {
+                font-size: 36px;
+            }
+            .date-display {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 頂部導覽列 -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="nav-logo">
+                <i class="fa-solid fa-toolbox"></i> Life Tools
+            </a>
+            <div class="nav-right">
+                <a href="/pages/about.html" class="nav-link">關於我們</a>
+                <div class="search-box">
+                    <input type="text" id="navSearchInput" class="search-input" placeholder="搜尋工具...">
+                    <button id="navSearchBtn" class="search-btn">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 網頁主要內容 -->
+    <main class="main-content">
+        <div class="clock-container">
+            
+            <!-- 切換時區選單 -->
+            <div class="timezone-switch-wrapper">
+                <button id="btnTaiwan" class="timezone-btn active" onclick="changeTimezone('Asia/Taipei', 'taiwan')">台灣時間 (GMT+8)</button>
+                <button id="btnUtc" class="timezone-btn" onclick="changeTimezone('UTC', 'utc')">國際標準時間 (UTC)</button>
+            </div>
+
+            <!-- 日期顯示 -->
+            <div class="date-display" id="dateDisplay">
+                <i class="fa-regular fa-calendar-days"></i> 載入中...
+            </div>
+
+            <!-- 數位時間主顯示區 -->
+            <div>
+                <span class="time-display" id="timeDisplay">00:00<span class="time-sec" id="timeSecDisplay">.00</span></span>
+            </div>
+
+            <!-- 精確時區徽章與連線心跳燈 -->
+            <div class="timezone-info">
+                <div class="pulse-light"></div>
+                <span id="timezoneLabel">台北標準時間</span>
+                <span class="timezone-badge" id="timezoneBadge">GMT+8</span>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- 頁尾 -->
+    <footer class="footer">
+        &copy; Royal Devotee (NeuralNexusLab X 0xseanlee), all rights reserved.
+    </footer>
+
+    <script>
+        // 設定全域變數，紀錄目前選定的時區、系統標識語系
+        let targetTimezone = 'Asia/Taipei';
+        let currentLabel = '台北標準時間';
+        let currentBadgeText = 'GMT+8';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始化導覽列搜尋事件
+            initNavbarSearch();
+            // 立即執行第一次時間更新
+            updateClock();
+            // 設定每一秒鐘（或每毫秒，此處用 200 毫秒確保秒數更新不延遲）定時重新刷新
+            setInterval(updateClock, 200);
+        });
+
+        // 導覽列搜尋框邏輯
+        function initNavbarSearch() {
+            const navInput = document.getElementById('navSearchInput');
+            const navBtn = document.getElementById('navSearchBtn');
+
+            // 搜尋跳轉函數
+            const runSearch = () => {
+                const query = navInput.value.trim();
+                if (query) {
+                    window.location.href = `/pages/search.html?q=${encodeURIComponent(query)}`;
+                }
+            };
+
+            // 按下按鈕時搜尋
+            navBtn.addEventListener('click', runSearch);
+
+            // 按下 Enter 時搜尋
+            navInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    runSearch();
+                }
+            });
+        }
+
+        // 修改與切換時區
+        function changeTimezone(timezone, type) {
+            targetTimezone = timezone;
+            
+            const btnTaiwan = document.getElementById('btnTaiwan');
+            const btnUtc = document.getElementById('btnUtc');
+            const labelEl = document.getElementById('timezoneLabel');
+            const badgeEl = document.getElementById('timezoneBadge');
+
+            // 更新按鈕聚焦狀態與對應文字
+            if (type === 'taiwan') {
+                btnTaiwan.classList.add('active');
+                btnUtc.classList.remove('active');
+                currentLabel = '台北標準時間';
+                currentBadgeText = 'GMT+8';
+            } else {
+                btnTaiwan.classList.remove('active');
+                btnUtc.classList.add('active');
+                currentLabel = '世界標準協調時間';
+                currentBadgeText = 'GMT+0';
+            }
+
+            labelEl.textContent = currentLabel;
+            badgeEl.textContent = currentBadgeText;
+
+            // 切換時區時立即重繪一次
+            updateClock();
+        }
+
+        // 計算並格式化時間資料
+        function updateClock() {
+            const now = new Date();
+
+            // 格式化日期資訊 (週幾與年月日)
+            const dateOptions = {
+                timeZone: targetTimezone,
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                weekday: 'long'
+            };
+            const formattedDate = new Intl.DateTimeFormat('zh-TW', dateOptions).format(now);
+            document.getElementById('dateDisplay').innerHTML = `<i class="fa-regular fa-calendar-days"></i> ${formattedDate}`;
+
+            // 格式化時、分、秒
+            const timeOptions = {
+                timeZone: targetTimezone,
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            };
+            const formattedTimeParts = new Intl.DateTimeFormat('zh-TW', timeOptions).formatToParts(now);
+
+            let hour = '00';
+            let minute = '00';
+            let second = '00';
+
+            // 拆解格式化產生的時間元件
+            formattedTimeParts.forEach(part => {
+                if (part.type === 'hour') hour = part.value;
+                if (part.type === 'minute') minute = part.value;
+                if (part.type === 'second') second = part.value;
+            });
+
+            // 渲染至畫面上，秒數採用亮橘色做出微對比
+            document.getElementById('timeDisplay').innerHTML = `${hour}:${minute}<span class="time-sec" id="timeSecDisplay">:${second}</span>`;
+        }
+    </script>
+</body>
+</html>
