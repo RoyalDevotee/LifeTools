@@ -64,21 +64,42 @@
   } else {
     startHtmlMonitoring();
   }
-  // 6. 覆寫全域 fetch API，確保後續讀取 json 或其他資源時不使用快取
+
+  // 6. 覆寫全域 fetch，針對本站設定檔進行防快取（Cache-Busting）處理
   const originalFetch = window.fetch;
   window.fetch = function (input, init) {
-    const fetchInit = init || {};
-    
-    // 設定不使用快取，強制向伺服器獲取最新資料
-    fetchInit.cache = "no-store";
-    
-    // 若請求為字串網址，自動加上時間戳記以避開瀏覽器快取
+    let requestUrl = "";
+
+    // 判斷請求輸入類型，並提取出網址字串
     if (typeof input === "string") {
-      const separator = input.includes("?") ? "&" : "?";
-      const cacheBustUrl = `${input}${separator}_t=${Date.now()}`;
-      return originalFetch(cacheBustUrl, fetchInit);
+      requestUrl = input;
+    } else if (input instanceof Request) {
+      requestUrl = input.url;
     }
+
+    // 僅針對本站內部的 .json 檔案或 /config/ 目錄下的請求進行防快取攔截
+    const isLocalJson = requestUrl && (requestUrl.endsWith(".json") || requestUrl.includes("/config/"));
     
-    return originalFetch(input, fetchInit);
+    if (isLocalJson) {
+      // 串接時間戳記作為隨機參數，確保網址不重複
+      const separator = requestUrl.includes("?") ? "&" : "?";
+      const cacheBusterUrl = `${requestUrl}${separator}_t=${Date.now()}`;
+      
+      const newInit = init || {};
+      newInit.cache = "no-store"; // 設定快取模式為不儲存
+
+      // 根據原始傳入類型重組 Request 物件或網址字串
+      if (input instanceof Request) {
+        input = new Request(cacheBusterUrl, input);
+      } else {
+        input = cacheBusterUrl;
+      }
+      
+      return originalFetch(input, newInit);
+    }
+
+    // 非設定檔之一般請求則維持原樣執行
+    return originalFetch(input, init);
   };
+
 })();
