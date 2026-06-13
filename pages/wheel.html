@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>隨機抽籤輪盤 - Life Tools</title>
+    <!-- 載入規定的初始化腳本 -->
+    <script src="/scripts/init.html"></script>
+    <!-- 引入 Google Fonts 與 Font Awesome 圖標庫 -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* 全域基本樣式 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+
+        :root {
+            --primary-color: #FF8C00;
+            --primary-hover: #E07B00;
+            --primary-light: #FFF5EC;
+            --text-dark: #2C3E50;
+            --text-muted: #7F8C8D;
+            --bg-light: #FDFBF7;
+            --bg-card-section: #F5EFEB;
+            --white: #FFFFFF;
+            --transition-speed: 0.3s;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 頂部導覽列 */
+        .navbar {
+            background-color: var(--white);
+            border-bottom: 2px solid var(--primary-light);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .nav-logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform var(--transition-speed) ease;
+        }
+
+        .nav-logo:hover {
+            transform: scale(1.03);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            color: var(--text-dark);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 16px;
+            transition: color var(--transition-speed) ease;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color);
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background-color: var(--primary-light);
+            border: 1.5px solid transparent;
+            border-radius: 30px;
+            padding: 4px 6px 4px 16px;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--primary-color);
+            background-color: var(--white);
+            box-shadow: 0 0 8px rgba(255, 140, 0, 0.15);
+        }
+
+        .search-input {
+            border: none;
+            background: transparent;
+            outline: none;
+            color: var(--text-dark);
+            font-size: 14px;
+            width: 160px;
+            transition: width var(--transition-speed) ease;
+        }
+
+        .search-input:focus {
+            width: 200px;
+        }
+
+        .search-btn {
+            background-color: var(--primary-color);
+            border: none;
+            color: var(--white);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color var(--transition-speed) ease, transform var(--transition-speed) ease;
+        }
+
+        .search-btn:hover {
+            background-color: var(--primary-hover);
+            transform: scale(1.05);
+        }
+
+        /* 工具主內容區 */
+        .main-content {
+            flex-grow: 1;
+            padding: 40px 20px;
+            background-color: var(--bg-card-section);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tool-container {
+            background-color: var(--white);
+            border-radius: 24px;
+            padding: 35px;
+            width: 100%;
+            max-width: 1100px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 140, 0, 0.1);
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .tool-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tool-title i {
+            color: var(--primary-color);
+        }
+
+        /* 雙欄排版 */
+        .wheel-workspace {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 40px;
+            align-items: center;
+        }
+
+        /* 左側輪盤區 */
+        .wheel-panel {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .wheel-outer {
+            position: relative;
+            width: 440px;
+            height: 440px;
+            max-width: 100%;
+            border-radius: 50%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+            background-color: var(--white);
+            padding: 8px;
+        }
+
+        /* 上方定位箭頭 */
+        .wheel-pointer {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 35px solid #FF3B30;
+            z-index: 10;
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.15));
+        }
+
+        #wheelCanvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* 右側編輯控制區 */
+        .control-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            height: 100%;
+            justify-content: center;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-label {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-dark);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .input-count {
+            font-size: 13px;
+            color: var(--text-muted);
+            background-color: var(--primary-light);
+            padding: 2px 10px;
+            border-radius: 12px;
+            color: var(--primary-color);
+        }
+
+        .options-textarea {
+            width: 100%;
+            height: 240px;
+            border: 2px solid var(--primary-light);
+            border-radius: 16px;
+            padding: 16px;
+            font-size: 16px;
+            resize: none;
+            outline: none;
+            transition: all var(--transition-speed) ease;
+            line-height: 1.6;
+        }
+
+        .options-textarea:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 10px rgba(255, 140, 0, 0.1);
+        }
+
+        /* 旋轉大按鈕 */
+        .spin-btn {
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            border-radius: 50px;
+            padding: 16px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(255, 140, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .spin-btn:hover:not(:disabled) {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 140, 0, 0.4);
+        }
+
+        .spin-btn:active:not(:disabled) {
+            transform: translateY(1px);
+        }
+
+        .spin-btn:disabled {
+            background-color: var(--text-muted);
+            box-shadow: none;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        /* 抽中結果對話框彈窗 */
+        .result-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity var(--transition-speed) ease;
+        }
+
+        .result-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .result-dialog {
+            background-color: var(--white);
+            border-radius: 24px;
+            padding: 40px;
+            width: 90%;
+            max-width: 450px;
+            text-align: center;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            transform: scale(0.8);
+            transition: transform var(--transition-speed) cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid var(--primary-light);
+        }
+
+        .result-overlay.show .result-dialog {
+            transform: scale(1);
+        }
+
+        .result-icon {
+            font-size: 50px;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            animation: bounce 1s infinite;
+        }
+
+        .result-title {
+            font-size: 20px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        .result-name {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 25px;
+            word-break: break-all;
+        }
+
+        .close-dialog-btn {
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: 700;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: background-color var(--transition-speed) ease;
+        }
+
+        .close-dialog-btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        /* 頁尾 */
+        .footer {
+            background-color: var(--white);
+            padding: 30px 20px;
+            text-align: center;
+            border-top: 1px solid var(--primary-light);
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* 動畫效果 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* RWD 響應式配置 */
+        @media (max-width: 900px) {
+            .wheel-workspace {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            .wheel-outer {
+                width: 320px;
+                height: 320px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .navbar-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .nav-right {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+            .search-box {
+                width: 100%;
+            }
+            .search-input {
+                width: 100%;
+            }
+            .search-input:focus {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 頂部導覽列 -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="nav-logo">
+                <i class="fa-solid fa-toolbox"></i> Life Tools
+            </a>
+            <div class="nav-right">
+                <a href="/pages/about.html" class="nav-link">關於我們</a>
+                <div class="search-box">
+                    <input type="text" id="navSearchInput" class="search-input" placeholder="搜尋工具...">
+                    <button id="navSearchBtn" class="search-btn">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 網頁主要內容 -->
+    <main class="main-content">
+        <div class="tool-container">
+            <h1 class="tool-title"><i class="fa-solid fa-circle-dot animate-spin"></i> 隨機抽籤輪盤</h1>
+            
+            <div class="wheel-workspace">
+                
+                <!-- 左欄：大輪盤繪製區與指標 -->
+                <div class="wheel-panel">
+                    <div class="wheel-pointer"></div>
+                    <div class="wheel-outer">
+                        <canvas id="wheelCanvas" width="800" height="800"></canvas>
+                    </div>
+                </div>
+
+                <!-- 右欄：設定選單 -->
+                <div class="control-panel">
+                    <div class="input-group">
+                        <label class="input-label" for="optionsTextarea">
+                            <span>輸入抽籤名單 (每行一項)</span>
+                            <span class="input-count" id="optionsCount">4 項項目</span>
+                        </label>
+                        <textarea id="optionsTextarea" class="options-textarea" placeholder="請輸入項目，每行一個...">1&#10;2&#10;3&#10;4</textarea>
+                    </div>
+                    
+                    <button id="spinBtn" class="spin-btn">
+                        <i class="fa-solid fa-play"></i> 開始旋轉
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- 彈窗：中獎結果 -->
+    <div class="result-overlay" id="resultOverlay">
+        <div class="result-dialog">
+            <div class="result-icon">
+                <i class="fa-solid fa-trophy"></i>
+            </div>
+            <div class="result-title">抽籤結果出來囉！</div>
+            <div class="result-name" id="resultName">...</div>
+            <button class="close-dialog-btn" id="closeDialogBtn">確定</button>
+        </div>
+    </div>
+
+    <!-- 頁尾 -->
+    <footer class="footer">
+        &copy; Royal Devotee (NeuralNexusLab X 0xseanlee), all rights reserved.
+    </footer>
+
+    <script>
+        // 定義轉盤顏色庫 (鮮豔配色組)
+        const segmentColors = [
+            "#FF6B6B", "#4D96FF", "#6BCB77", "#FFD93D", 
+            "#9B59B6", "#E67E22", "#16A085", "#E74C3C", 
+            "#3498DB", "#2ECC71", "#F1C40F", "#8E44AD"
+        ];
+
+        let optionsList = ["1", "2", "3", "4"];
+        let isSpinning = false;
+        let startAngle = 0; // 當前旋轉角度
+        let currentRotationSpeed = 0; // 當前轉速
+        
+        let canvas, ctx;
+        let audioContext = null;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            canvas = document.getElementById("wheelCanvas");
+            ctx = canvas.getContext("2d");
+
+            // 初始化導覽列搜尋功能
+            initNavbarSearch();
+
+            // 初始化轉盤輸入監聽
+            initWheelControls();
+
+            // 繪製初始靜態輪盤
+            drawWheel();
+        });
+
+        // 導覽列搜尋跳轉機制
+        function initNavbarSearch() {
+            const navInput = document.getElementById('navSearchInput');
+            const navBtn = document.getElementById('navSearchBtn');
+
+            const triggerSearch = () => {
+                const query = navInput.value.trim();
+                if (query) {
+                    window.location.href = `/pages/search.html?q=${encodeURIComponent(query)}`;
+                }
+            };
+
+            navBtn.addEventListener('click', triggerSearch);
+            navInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') triggerSearch();
+            });
+        }
+
+        // Web Audio API 合成擬真「咖咖聲」
+        function playClickSound() {
+            try {
+                // 惰性初始化音訊上下文以符合瀏覽器安全性限制
+                if (!audioContext) {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+
+                // 產生高頻率爆破音做為齒輪卡接聲
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+
+                osc.frequency.setValueAtTime(1000, audioContext.currentTime); // 高頻短音
+                gain.gain.setValueAtTime(0.08, audioContext.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.04); // 40毫秒內衰減完成
+
+                osc.start();
+                osc.stop(audioContext.currentTime + 0.04);
+            } catch (err) {
+                // 忽視在部分瀏覽器或安全環境不允許音訊播放時的錯誤
+            }
+        }
+
+        // 繪製幸運轉盤
+        function drawWheel() {
+            const len = optionsList.length;
+            const center = canvas.width / 2;
+            const radius = center - 20;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (len === 0) {
+                // 若無項目，繪製預設圓形提示
+                ctx.beginPath();
+                ctx.arc(center, center, radius, 0, 2 * Math.PI);
+                ctx.fillStyle = "#E0E0E0";
+                ctx.fill();
+                ctx.fillStyle = "#7F8C8D";
+                ctx.font = "bold 32px Noto Sans TC";
+                ctx.textAlign = "center";
+                ctx.fillText("請在右側輸入抽籤項目", center, center);
+                return;
+            }
+
+            const arcSize = (2 * Math.PI) / len;
+
+            for (let i = 0; i < len; i++) {
+                const angle = startAngle + i * arcSize;
+                
+                // 1. 繪製扇形
+                ctx.beginPath();
+                ctx.arc(center, center, radius, angle, angle + arcSize);
+                ctx.lineTo(center, center);
+                ctx.fillStyle = segmentColors[i % segmentColors.length];
+                ctx.fill();
+                ctx.strokeStyle = "#FFFFFF";
+                ctx.lineWidth = 4;
+                ctx.stroke();
+
+                // 2. 寫入文字
+                ctx.save();
+                ctx.translate(center, center);
+                ctx.rotate(angle + arcSize / 2);
+                
+                ctx.fillStyle = "#FFFFFF";
+                ctx.font = "bold 28px Noto Sans TC";
+                ctx.textAlign = "right";
+                
+                // 截斷過長字詞避免超出輪盤
+                let label = optionsList[i];
+                if (label.length > 8) {
+                    label = label.substring(0, 7) + "...";
+                }
+                
+                ctx.fillText(label, radius - 40, 10);
+                ctx.restore();
+            }
+
+            // 3. 繪製內圈圓心點綴
+            ctx.beginPath();
+            ctx.arc(center, center, 45, 0, 2 * Math.PI);
+            ctx.fillStyle = "#FFFFFF";
+            ctx.fill();
+            ctx.lineWidth = 6;
+            ctx.strokeStyle = varColor("--primary-color");
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(center, center, 20, 0, 2 * Math.PI);
+            ctx.fillStyle = varColor("--primary-color");
+            ctx.fill();
+        }
+
+        // 輔助函式：取得 CSS 自訂屬性值
+        function varColor(variableName) {
+            return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+        }
+
+        // 初始化轉盤輸入與按鈕綁定
+        function initWheelControls() {
+            const textarea = document.getElementById("optionsTextarea");
+            const countLabel = document.getElementById("optionsCount");
+            const spinBtn = document.getElementById("spinBtn");
+            const closeBtn = document.getElementById("closeDialogBtn");
+            const overlay = document.getElementById("resultOverlay");
+
+            // 監聽輸入框內容異動
+            textarea.addEventListener("input", () => {
+                const rawText = textarea.value;
+                optionsList = rawText.split("\n").map(opt => opt.trim()).filter(opt => opt !== "");
+                countLabel.textContent = `${optionsList.length} 項項目`;
+                
+                // 若正在旋轉中，禁止重繪
+                if (!isSpinning) {
+                    drawWheel();
+                }
+            });
+
+            // 點擊開始旋轉按鈕
+            spinBtn.addEventListener("click", () => {
+                if (optionsList.length > 0 && !isSpinning) {
+                    startSpinAnimation();
+                }
+            });
+
+            // 關閉抽中提示視窗
+            closeBtn.addEventListener("click", () => {
+                overlay.classList.remove("show");
+            });
+        }
+
+        // 輪盤旋轉動畫主程式
+        function startSpinAnimation() {
+            isSpinning = true;
+            document.getElementById("spinBtn").disabled = true;
+
+            const duration = 4500; // 旋轉總時間：4.5秒
+            const startTime = performance.now();
+            
+            // 決定旋轉力道：隨機基礎圈數 (10~15圈) + 隨機角度
+            const totalSpinAngle = (10 + Math.random() * 5) * 2 * Math.PI; 
+            const baseStartAngle = startAngle;
+
+            // 追蹤「咖咖聲」進度
+            const segmentAngle = (2 * Math.PI) / optionsList.length;
+            let lastTickSegmentIndex = Math.floor((baseStartAngle + Math.PI / 2) / segmentAngle);
+
+            // 4/5次方緩動曲線：慢 => 快 => 慢
+            function easeInOutQuart(t) {
+                return t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2;
+            }
+
+            function animate(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // 藉由曲線運算取得當前旋轉進度角
+                const currentProgressAngle = totalSpinAngle * easeInOutQuart(progress);
+                startAngle = baseStartAngle + currentProgressAngle;
+
+                // 檢查是否跨越了扇形邊界，觸發咖咖聲音效
+                // 指標朝下指向輪盤正頂端 (-Math.PI/2 弧度)
+                const relativeAngle = startAngle + Math.PI / 2;
+                const currentSegmentIndex = Math.floor(relativeAngle / segmentAngle);
+                
+                if (currentSegmentIndex !== lastTickSegmentIndex) {
+                    playClickSound();
+                    lastTickSegmentIndex = currentSegmentIndex;
+                }
+
+                // 重繪輪盤畫面
+                drawWheel();
+
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    // 動畫完結，計算落在紅色箭頭 (12點鐘方向，角度為 -Math.PI/2) 的勝出項目
+                    finalizeSpin();
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        // 計算並呈現結果
+        function finalizeSpin() {
+            isSpinning = false;
+            document.getElementById("spinBtn").disabled = false;
+
+            const len = optionsList.length;
+            const segmentSize = (2 * Math.PI) / len;
+
+            // 箭頭位於 -Math.PI / 2（等同 270 度或 3/2 PI）
+            // 取得歸一化後的最終停止角
+            const normalizedAngle = (startAngle + Math.PI / 2) % (2 * Math.PI);
+            
+            // 計算選定索引：由於轉盤角度是順時鐘增加，索引要用倒扣運算
+            let winningIndex = Math.floor((2 * Math.PI - normalizedAngle) / segmentSize) % len;
+            if (winningIndex < 0) winningIndex += len;
+
+            const winnerText = optionsList[winningIndex];
+
+            // 彈出中獎對話視窗
+            document.getElementById("resultName").textContent = winnerText;
+            document.getElementById("resultOverlay").classList.add("show");
+        }
+    </script>
+</body>
+</html>
