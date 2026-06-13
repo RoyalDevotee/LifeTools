@@ -22,4 +22,46 @@
     // 捕捉因跨網域（Cross-Origin）限制所導致的存取錯誤，並採取備用重導向機制
     window.parent.location.href = "/pages/embed.html";
   }
+
+  // 4. 監測網頁核心 HTML 結構，防範使用者手動篡改
+  function startHtmlMonitoring() {
+    const targetNode = document.documentElement;
+    
+    // 設定觀察選項，監控子節點變化、屬性變化及所有子樹節點
+    const observerConfig = {
+      childList: true,
+      attributes: true,
+      subtree: true
+    };
+
+    // 變更事件觸發時的監聽函式
+    const callback = function (mutationsList) {
+      for (const mutation of mutationsList) {
+        const mutatedElement = mutation.target;
+
+        // 定義不可被變更的靜態核心結構條件
+        //（包含：<head> 標籤、其中的腳本、以及底部的版權宣告區）
+        const isHeadChanged = mutatedElement.tagName === "HEAD" || mutatedElement.closest("head") !== null;
+        const isScriptChanged = mutatedElement.tagName === "SCRIPT" || mutation.addedNodes[0]?.tagName === "SCRIPT" || mutation.removedNodes[0]?.tagName === "SCRIPT";
+        const isFooterChanged = mutatedElement.closest("footer") !== null || (mutatedElement.classList && mutatedElement.classList.contains("footer"));
+
+        if (isHeadChanged || isScriptChanged || isFooterChanged) {
+          // 偵測到使用者手動刪除/修改靜態核心元件，立即重新載入網頁以還原預設狀態
+          window.location.reload();
+          break;
+        }
+      }
+    };
+
+    // 宣告並啟動 DOM 監聽器
+    const mutationObserver = new MutationObserver(callback);
+    mutationObserver.observe(targetNode, observerConfig);
+  }
+
+  // 5. 確保 DOM 載入完成後再啟動監聽器，避免與瀏覽器初始解析衝突
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", startHtmlMonitoring);
+  } else {
+    startHtmlMonitoring();
+  }
 })();
