@@ -64,4 +64,21 @@
   } else {
     startHtmlMonitoring();
   }
+  // 6. 覆寫全域 fetch API，確保後續讀取 json 或其他資源時不使用快取
+  const originalFetch = window.fetch;
+  window.fetch = function (input, init) {
+    const fetchInit = init || {};
+    
+    // 設定不使用快取，強制向伺服器獲取最新資料
+    fetchInit.cache = "no-store";
+    
+    // 若請求為字串網址，自動加上時間戳記以避開瀏覽器快取
+    if (typeof input === "string") {
+      const separator = input.includes("?") ? "&" : "?";
+      const cacheBustUrl = `${input}${separator}_t=${Date.now()}`;
+      return originalFetch(cacheBustUrl, fetchInit);
+    }
+    
+    return originalFetch(input, fetchInit);
+  };
 })();
