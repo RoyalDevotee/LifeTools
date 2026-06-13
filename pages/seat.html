@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>隨機座位抽籤 - Life Tools</title>
+    <!-- 載入規定的初始化腳本 -->
+    <script src="/scripts/init.js"></script>
+    <!-- 引入 Google Fonts 與 Font Awesome 圖標庫 -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* 全域基本樣式 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+
+        :root {
+            --primary-color: #FF8C00;
+            --primary-hover: #E07B00;
+            --primary-light: #FFF5EC;
+            --text-dark: #2C3E50;
+            --text-muted: #7F8C8D;
+            --bg-light: #FDFBF7;
+            --bg-card-section: #F5EFEB;
+            --white: #FFFFFF;
+            --transition-speed: 0.3s;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 頂部導覽列 */
+        .navbar {
+            background-color: var(--white);
+            border-bottom: 2px solid var(--primary-light);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .nav-logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform var(--transition-speed) ease;
+        }
+
+        .nav-logo:hover {
+            transform: scale(1.03);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            color: var(--text-dark);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 16px;
+            transition: color var(--transition-speed) ease;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color);
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background-color: var(--primary-light);
+            border: 1.5px solid transparent;
+            border-radius: 30px;
+            padding: 4px 6px 4px 16px;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--primary-color);
+            background-color: var(--white);
+            box-shadow: 0 0 8px rgba(255, 140, 0, 0.15);
+        }
+
+        .search-input {
+            border: none;
+            background: transparent;
+            outline: none;
+            color: var(--text-dark);
+            font-size: 14px;
+            width: 160px;
+            transition: width var(--transition-speed) ease;
+        }
+
+        .search-input:focus {
+            width: 200px;
+        }
+
+        .search-btn {
+            background-color: var(--primary-color);
+            border: none;
+            color: var(--white);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color var(--transition-speed) ease, transform var(--transition-speed) ease;
+        }
+
+        .search-btn:hover {
+            background-color: var(--primary-hover);
+            transform: scale(1.05);
+        }
+
+        /* 工具主內容區 */
+        .main-content {
+            flex-grow: 1;
+            padding: 40px 20px;
+            background-color: var(--bg-card-section);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tool-container {
+            background-color: var(--white);
+            border-radius: 24px;
+            padding: 35px;
+            width: 100%;
+            max-width: 1100px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 140, 0, 0.1);
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .tool-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tool-title i {
+            color: var(--primary-color);
+        }
+
+        /* 工作區雙欄排版 */
+        .workspace {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 40px;
+            align-items: start;
+        }
+
+        /* 左側設定區 */
+        .settings-panel {
+            background-color: var(--bg-light);
+            padding: 25px;
+            border-radius: 20px;
+            border: 1.5px solid var(--primary-light);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .setting-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .setting-label {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .setting-select {
+            width: 100%;
+            padding: 10px 15px;
+            border-radius: 12px;
+            border: 1.5px solid var(--primary-light);
+            outline: none;
+            font-size: 15px;
+            background-color: var(--white);
+            cursor: pointer;
+            transition: border-color var(--transition-speed) ease;
+        }
+
+        .setting-select:focus {
+            border-color: var(--primary-color);
+        }
+
+        .seat-stats {
+            background-color: var(--white);
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 14px;
+            border: 1px solid rgba(255, 140, 0, 0.1);
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .stat-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .action-btn {
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            border-radius: 30px;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 140, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .action-btn:hover:not(:disabled) {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 140, 0, 0.3);
+        }
+
+        .action-btn:disabled {
+            background-color: var(--text-muted);
+            box-shadow: none;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--text-dark);
+            border: 1.5px solid var(--primary-light);
+            box-shadow: none;
+            margin-top: -10px;
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+        }
+
+        /* 右側教室格局區 */
+        .classroom-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: start;
+            width: 100%;
+        }
+
+        /* 講台樣式 */
+        .stage {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #FFB366 100%);
+            color: var(--white);
+            font-size: 18px;
+            font-weight: 700;
+            padding: 12px 80px;
+            border-radius: 8px 8px 30px 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 8px 20px rgba(255, 140, 0, 0.15);
+            letter-spacing: 4px;
+            text-align: center;
+            min-width: 250px;
+        }
+
+        /* 水平捲動外層防擠壓 */
+        .grid-scroll-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            padding: 10px 5px;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* 座位網格 */
+        .seats-grid {
+            display: grid;
+            gap: 15px;
+            min-width: max-content; /* 確保縮小寬度時仍可滑動而不擠壓 */
+            padding: 10px;
+        }
+
+        /* 座位元件 */
+        .seat {
+            width: 65px;
+            height: 65px;
+            background-color: var(--primary-light);
+            border: 2px solid rgba(255, 140, 0, 0.15);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary-color);
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.2);
+        }
+
+        .seat:hover:not(.drawing) {
+            transform: scale(1.08);
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 10px rgba(255, 140, 0, 0.12);
+        }
+
+        /* 停用座位樣式 */
+        .seat.disabled {
+            background-color: #E2E8F0;
+            border-color: #CBD5E1;
+            color: #94A3B8;
+            cursor: pointer;
+        }
+
+        .seat.disabled::after {
+            content: '';
+            position: absolute;
+            width: 70%;
+            height: 2px;
+            background-color: #94A3B8;
+            transform: rotate(-45deg);
+        }
+
+        /* 抽籤中隨機跳號樣式 */
+        .seat.shuffling {
+            animation: pulseShuffle 0.15s infinite alternate;
+            background-color: var(--white);
+            border-color: var(--primary-color);
+        }
+
+        /* 定格完成樣式 */
+        .seat.assigned {
+            background-color: var(--primary-color);
+            border-color: var(--primary-hover);
+            color: var(--white);
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.25);
+            box-shadow: 0 4px 12px rgba(255, 140, 0, 0.25);
+        }
+
+        /* 頁尾 */
+        .footer {
+            background-color: var(--white);
+            padding: 30px 20px;
+            text-align: center;
+            border-top: 1px solid var(--primary-light);
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* 動畫效果 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulseShuffle {
+            0% { transform: scale(0.96); background-color: var(--white); }
+            100% { transform: scale(1.04); background-color: var(--primary-light); }
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.6); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* 響應式佈局 */
+        @media (max-width: 800px) {
+            .workspace {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            .grid-scroll-wrapper {
+                justify-content: start; /* 行動端向左對齊以利滑動 */
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 頂部導覽列 -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="nav-logo">
+                <i class="fa-solid fa-toolbox"></i> Life Tools
+            </a>
+            <div class="nav-right">
+                <a href="/pages/about.html" class="nav-link">關於我們</a>
+                <div class="search-box">
+                    <input type="text" id="navSearchInput" class="search-input" placeholder="搜尋工具...">
+                    <button id="navSearchBtn" class="search-btn">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 網頁主要內容 -->
+    <main class="main-content">
+        <div class="tool-container">
+            <h1 class="tool-title"><i class="fa-solid fa-chair"></i> 隨機座位抽籤</h1>
+            
+            <div class="workspace">
+                
+                <!-- 左側設定控制面板 -->
+                <aside class="settings-panel">
+                    <div class="setting-group">
+                        <label class="setting-label" for="colsSelect">教室寬度 (直行)</label>
+                        <select id="colsSelect" class="setting-select" onchange="generateGrid()">
+                            <option value="4">4 行</option>
+                            <option value="5">5 行</option>
+                            <option value="6" selected>6 行</option>
+                            <option value="7">7 行</option>
+                            <option value="8">8 行</option>
+                            <option value="9">9 行</option>
+                            <option value="10">10 行</option>
+                        </select>
+                    </div>
+
+                    <div class="setting-group">
+                        <label class="setting-label" for="rowsSelect">教室深度 (橫列)</label>
+                        <select id="rowsSelect" class="setting-select" onchange="generateGrid()">
+                            <option value="3">3 列</option>
+                            <option value="4">4 列</option>
+                            <option value="5" selected>5 列</option>
+                            <option value="6">6 列</option>
+                            <option value="7">7 列</option>
+                            <option value="8">8 列</option>
+                            <option value="9">9 列</option>
+                            <option value="10">10 列</option>
+                        </select>
+                    </div>
+
+                    <!-- 即時統計狀態 -->
+                    <div class="seat-stats">
+                        <div class="stat-item">
+                            <span>總座位數：</span>
+                            <strong id="totalSeats">30</strong>
+                        </div>
+                        <div class="stat-item">
+                            <span>可用抽籤位：</span>
+                            <strong id="activeSeats" style="color: var(--primary-color);">30</strong>
+                        </div>
+                    </div>
+
+                    <!-- 操作按鈕群 -->
+                    <button id="drawBtn" class="action-btn" onclick="startRandomDraw()">
+                        <i class="fa-solid fa-shuffle"></i> 開始隨機抽籤
+                    </button>
+
+                    <button id="resetBtn" class="action-btn btn-secondary" onclick="resetSeats()">
+                        <i class="fa-solid fa-arrow-rotate-left"></i> 重設座位
+                    </button>
+                </aside>
+
+                <!-- 右側教室平面繪製區 -->
+                <section class="classroom-panel">
+                    <!-- 講台 -->
+                    <div class="stage">講台</div>
+                    
+                    <!-- 座位展示格（外層防溢出捲動） -->
+                    <div class="grid-scroll-wrapper">
+                        <div class="seats-grid" id="seatsGrid">
+                            <!-- 由 JS 動態產生座位 -->
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- 頁尾 -->
+    <footer class="footer">
+        &copy; Royal Devotee (NeuralNexusLab X 0xseanlee), all rights reserved.
+    </footer>
+
+    <script>
+        let isDrawing = false; // 紀錄目前是否正在執行隨機抽取動畫
+
+        document.addEventListener("DOMContentLoaded", () => {
+            // 初始化導覽列搜尋事件
+            initNavbarSearch();
+            // 初始化產生預設 6x5 網格
+            generateGrid();
+        });
+
+        // 導覽列搜尋跳轉邏輯
+        function initNavbarSearch() {
+            const navInput = document.getElementById('navSearchInput');
+            const navBtn = document.getElementById('navSearchBtn');
+
+            const triggerSearch = () => {
+                const query = navInput.value.trim();
+                if (query) {
+                    window.location.href = `/pages/search.html?q=${encodeURIComponent(query)}`;
+                }
+            };
+
+            navBtn.addEventListener('click', triggerSearch);
+            navInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') triggerSearch();
+            });
+        }
+
+        // 動態產生座位網格
+        function generateGrid() {
+            if (isDrawing) return;
+
+            const cols = parseInt(document.getElementById("colsSelect").value);
+            const rows = parseInt(document.getElementById("rowsSelect").value);
+            const gridContainer = document.getElementById("seatsGrid");
+
+            // 1. 動態配置 CSS Grid 列與行
+            gridContainer.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+            gridContainer.innerHTML = "";
+
+            // 2. 迴圈建構每個座位節點
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const seat = document.createElement("div");
+                    seat.className = "seat";
+                    seat.textContent = "0"; // 預設顯示 0
+                    
+                    // 點擊事件：切換啟用/停用狀態
+                    seat.addEventListener("click", () => {
+                        toggleSeatState(seat);
+                    });
+
+                    gridContainer.appendChild(seat);
+                }
+            }
+
+            // 3. 更新統計數據
+            updateStats();
+        }
+
+        // 切換座位狀態（停用/啟用）
+        function toggleSeatState(seatElement) {
+            if (isDrawing) return;
+
+            seatElement.classList.toggle("disabled");
+            
+            // 若座位被停用，清空其中的號碼，反之則還原為 0
+            if (seatElement.classList.contains("disabled")) {
+                seatElement.textContent = "";
+            } else {
+                seatElement.textContent = "0";
+            }
+
+            updateStats();
+        }
+
+        // 更新左側統計資訊
+        function updateStats() {
+            const allSeats = document.querySelectorAll(".seat");
+            const activeSeats = document.querySelectorAll(".seat:not(.disabled)");
+            
+            document.getElementById("totalSeats").textContent = allSeats.length;
+            document.getElementById("activeSeats").textContent = activeSeats.length;
+        }
+
+        // 重置所有座位的號碼與狀態
+        function resetSeats() {
+            if (isDrawing) return;
+
+            const allSeats = document.querySelectorAll(".seat");
+            allSeats.forEach(seat => {
+                seat.className = "seat";
+                seat.textContent = "0";
+            });
+
+            updateStats();
+        }
+
+        // 執行 3 秒的座位隨機分配抽籤
+        function startRandomDraw() {
+            if (isDrawing) return;
+
+            const activeSeats = Array.from(document.querySelectorAll(".seat:not(.disabled)"));
+            const totalActive = activeSeats.length;
+
+            if (totalActive === 0) {
+                alert("請至少保留一個可用座位進行抽籤！");
+                return;
+            }
+
+            isDrawing = true;
+            toggleControls(true);
+
+            // 產生 1 到 N 的分配號碼陣列
+            const numbers = Array.from({ length: totalActive }, (_, index) => index + 1);
+
+            const duration = 3000; // 動畫總時長：3秒
+            const intervalTime = 80; // 隨機跳號間隔：80毫秒
+            const startTime = Date.now();
+
+            // 套用 Shuffle 樣式類別
+            activeSeats.forEach(seat => {
+                seat.classList.add("shuffling");
+                seat.classList.remove("assigned");
+            });
+
+            // 設定定時器執行跳號過程
+            const shuffleInterval = setInterval(() => {
+                // 每次跳號隨機打亂陣列
+                const tempNumbers = shuffleArray([...numbers]);
+                activeSeats.forEach((seat, index) => {
+                    seat.textContent = tempNumbers[index];
+                });
+            }, intervalTime);
+
+            // 3 秒後結束動畫，固定最後結果並加上定格樣式
+            setTimeout(() => {
+                clearInterval(shuffleInterval);
+
+                // 進行最終結果洗牌，確保亂數真實性
+                const finalNumbers = shuffleArray([...numbers]);
+                activeSeats.forEach((seat, index) => {
+                    seat.classList.remove("shuffling");
+                    seat.classList.add("assigned");
+                    seat.textContent = finalNumbers[index];
+                });
+
+                isDrawing = false;
+                toggleControls(false);
+            }, duration);
+        }
+
+        // 隨機洗牌演算法 (Fisher-Yates Shuffle)
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // 開關控制面板控制（抽籤過程中禁止使用者點擊與修改控制項）
+        function toggleControls(disable) {
+            document.getElementById("colsSelect").disabled = disable;
+            document.getElementById("rowsSelect").disabled = disable;
+            document.getElementById("drawBtn").disabled = disable;
+            document.getElementById("resetBtn").disabled = disable;
+
+            const allSeats = document.querySelectorAll(".seat");
+            allSeats.forEach(seat => {
+                if (disable) {
+                    seat.classList.add("drawing");
+                } else {
+                    seat.classList.remove("drawing");
+                }
+            });
+        }
+    </script>
+</body>
+</html>
