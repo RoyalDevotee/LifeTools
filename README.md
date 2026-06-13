@@ -31,7 +31,7 @@
 
 ### 1. 基礎規範與程式風格
 1. **初始化腳本**：必須在 `<head>` 標籤內加入以下標籤：
-   `<script src="/scripts/init.html"></script>`
+   `<script src="/scripts/init.js"></script>`
 2. **命名規範**：JavaScript 變數與函式必須使用「駝峰式命名法」（例如：`getUserData`, `calculateResult`）。
 3. **程式註解**：每個函式或主要動作步驟，都必須撰寫單行註解（`//`）。
 4. **架構限制**：這是一個單一的 HTML 檔案，所有的 CSS 必須寫在 `<style>` 標籤中，JavaScript 必須寫在 `<script>` 標籤中，不引用外部自訂的 CSS/JS 檔案（除了必要的圖標庫如 Font Awesome 或 Google Fonts）。
