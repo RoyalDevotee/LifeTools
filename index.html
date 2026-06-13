@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life Tools 生活萬用工具邦<script src="/scripts/init.html"></script></title>
+    <!-- 引入 Google Fonts 與 Font Awesome 圖標庫 -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* 全域基本樣式 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+
+        :root {
+            --primary-color: #FF8C00;
+            --primary-hover: #E07B00;
+            --primary-light: #FFF5EC;
+            --text-dark: #2C3E50;
+            --text-muted: #7F8C8D;
+            --bg-light: #FDFBF7;
+            --bg-card-section: #F5EFEB;
+            --white: #FFFFFF;
+            --transition-speed: 0.3s;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 頂部導覽列 */
+        .navbar {
+            background-color: var(--white);
+            border-bottom: 2px solid var(--primary-light);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .nav-logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform var(--transition-speed) ease;
+        }
+
+        .nav-logo:hover {
+            transform: scale(1.03);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            color: var(--text-dark);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 16px;
+            transition: color var(--transition-speed) ease;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color);
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background-color: var(--primary-light);
+            border: 1.5px solid transparent;
+            border-radius: 30px;
+            padding: 4px 6px 4px 16px;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--primary-color);
+            background-color: var(--white);
+            box-shadow: 0 0 8px rgba(255, 140, 0, 0.15);
+        }
+
+        .search-input {
+            border: none;
+            background: transparent;
+            outline: none;
+            color: var(--text-dark);
+            font-size: 14px;
+            width: 160px;
+            transition: width var(--transition-speed) ease;
+        }
+
+        .search-input:focus {
+            width: 200px;
+        }
+
+        .search-btn {
+            background-color: var(--primary-color);
+            border: none;
+            color: var(--white);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color var(--transition-speed) ease, transform var(--transition-speed) ease;
+        }
+
+        .search-btn:hover {
+            background-color: var(--primary-hover);
+            transform: scale(1.05);
+        }
+
+        /* 主視覺區 (Hero Section) */
+        .hero-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 20px 40px 20px;
+            text-align: center;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .hero-logo {
+            font-size: 56px;
+            font-weight: 800;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+            letter-spacing: -1px;
+            display: inline-block;
+        }
+
+        .hero-subtitle {
+            font-size: 18px;
+            color: var(--text-muted);
+            margin-bottom: 35px;
+            font-weight: 300;
+        }
+
+        .hero-search-wrapper {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .hero-search-box {
+            display: flex;
+            align-items: center;
+            background-color: var(--white);
+            border: 2px solid var(--primary-light);
+            border-radius: 40px;
+            padding: 6px 8px 6px 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            transition: all var(--transition-speed) ease;
+        }
+
+        .hero-search-box:focus-within {
+            border-color: var(--primary-color);
+            box-shadow: 0 6px 25px rgba(255, 140, 0, 0.12);
+            transform: translateY(-2px);
+        }
+
+        .hero-search-input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: 16px;
+            color: var(--text-dark);
+        }
+
+        .hero-search-btn {
+            background-color: var(--primary-color);
+            border: none;
+            color: var(--white);
+            padding: 12px 28px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background-color var(--transition-speed) ease, transform var(--transition-speed) ease;
+        }
+
+        .hero-search-btn:hover {
+            background-color: var(--primary-hover);
+            transform: scale(1.03);
+        }
+
+        /* 工具卡片高對比區塊 */
+        .tools-section {
+            background-color: var(--bg-card-section);
+            border-top: 1px solid rgba(255, 140, 0, 0.1);
+            padding: 60px 20px;
+            flex-grow: 1;
+        }
+
+        .tools-container-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title::before {
+            content: '';
+            display: inline-block;
+            width: 6px;
+            height: 24px;
+            background-color: var(--primary-color);
+            border-radius: 3px;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        /* 工具小卡樣式 */
+        .tool-card {
+            background-color: var(--white);
+            border-radius: 16px;
+            padding: 24px;
+            text-decoration: none;
+            color: inherit;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+            border: 1px solid rgba(0, 0, 0, 0.03);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+            transition: all var(--transition-speed) cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(255, 140, 0, 0.12);
+            border-color: rgba(255, 140, 0, 0.2);
+        }
+
+        .tool-info {
+            margin-bottom: 20px;
+        }
+
+        .tool-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .tool-name i {
+            font-size: 14px;
+            color: var(--primary-color);
+            opacity: 0;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .tool-card:hover .tool-name i {
+            opacity: 1;
+            transform: translateX(3px);
+        }
+
+        .tool-desc {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .tool-footer {
+            font-size: 14px;
+            color: var(--primary-color);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* 錯誤/載入狀態提示 */
+        .status-message {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+            font-size: 16px;
+            grid-column: 1 / -1;
+        }
+
+        .status-message i {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        /* 頁尾 */
+        .footer {
+            background-color: var(--white);
+            padding: 30px 20px;
+            text-align: center;
+            border-top: 1px solid var(--primary-light);
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* 動畫效果定義 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 響應式微調 */
+        @media (max-width: 600px) {
+            .navbar-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .nav-right {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+            .search-box {
+                width: 100%;
+            }
+            .search-input {
+                width: 100%;
+            }
+            .search-input:focus {
+                width: 100%;
+            }
+            .hero-logo {
+                font-size: 40px;
+            }
+            .hero-search-btn span {
+                display: none;
+            }
+            .hero-search-btn {
+                padding: 12px;
+                aspect-ratio: 1;
+                border-radius: 50%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 頂部導覽列 -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="nav-logo">
+                <i class="fa-solid fa-toolbox"></i> Life Tools
+            </a>
+            <div class="nav-right">
+                <a href="/pages/about.html" class="nav-link">關於我們</a>
+                <div class="search-box">
+                    <input type="text" id="navSearchInput" class="search-input" placeholder="搜尋工具...">
+                    <button id="navSearchBtn" class="search-btn">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主視覺區 (Hero Section) -->
+    <header class="hero-section">
+        <h1 class="hero-logo">Life Tools</h1>
+        <p class="hero-subtitle">讓生活更便利的精緻工具箱，隨手即用</p>
+        <div class="hero-search-wrapper">
+            <div class="hero-search-box">
+                <input type="text" id="heroSearchInput" class="hero-search-input" placeholder="想要找什麼工具？輸入關鍵字...">
+                <button id="heroSearchBtn" class="hero-search-btn">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <span>搜尋</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 工具列表高對比區塊 -->
+    <main class="tools-section">
+        <div class="tools-container-wrapper">
+            <h2 class="section-title">工具清單</h2>
+            <div class="tools-grid" id="toolsGrid">
+                <!-- 預設載入中狀態 -->
+                <div class="status-message" id="statusMessage">
+                    <i class="fa-solid fa-circle-notch fa-spin"></i>
+                    <p>正在加載工具，請稍候...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 頁尾 -->
+    <footer class="footer">
+        &copy; Royal Devotee (NeuralNexusLab X 0xseanlee), all rights reserved.
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始化功能與綁定事件
+            initSearchEvents();
+            fetchToolsData();
+        });
+
+        // 搜尋處理邏輯
+        function executeSearch(query) {
+            const trimmedQuery = query.trim();
+            if (trimmedQuery) {
+                // 跳轉至搜尋頁面並帶入查詢參數
+                window.location.href = `/pages/search.html?q=${encodeURIComponent(trimmedQuery)}`;
+            }
+        }
+
+        // 初始化搜尋框事件監聽
+        function initSearchEvents() {
+            const navInput = document.getElementById('navSearchInput');
+            const navBtn = document.getElementById('navSearchBtn');
+            const heroInput = document.getElementById('heroSearchInput');
+            const heroBtn = document.getElementById('heroSearchBtn');
+
+            // 頂部導覽列搜尋按鈕點擊
+            navBtn.addEventListener('click', () => {
+                executeSearch(navInput.value);
+            });
+
+            // 頂部導覽列搜尋框按下 Enter
+            navInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    executeSearch(navInput.value);
+                }
+            });
+
+            // 主視覺區搜尋按鈕點擊
+            heroBtn.addEventListener('click', () => {
+                executeSearch(heroInput.value);
+            });
+
+            // 主視覺區搜尋框按下 Enter
+            heroInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    executeSearch(heroInput.value);
+                }
+            });
+        }
+
+        // 從 metadata.json 動態獲取並渲染工具卡片
+        async function fetchToolsData() {
+            const toolsGrid = document.getElementById('toolsGrid');
+            const statusMessage = document.getElementById('statusMessage');
+
+            try {
+                // 發送請求讀取設定檔
+                const response = await fetch('/config/metadata.json');
+                
+                if (!response.ok) {
+                    throw new Error('無法取得工具清單資料');
+                }
+
+                const toolsList = await response.json();
+                
+                // 移除載入狀態訊息
+                if (statusMessage) {
+                    statusMessage.remove();
+                }
+
+                if (toolsList.length === 0) {
+                    toolsGrid.innerHTML = `
+                        <div class="status-message">
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                            <p>目前沒有可用的工具</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // 產生卡片並渲染至畫面
+                toolsList.forEach((tool) => {
+                    const card = document.createElement('a');
+                    card.href = tool.path;
+                    card.className = 'tool-card';
+                    card.innerHTML = `
+                        <div class="tool-info">
+                            <h3 class="tool-name">
+                                ${escapeHtml(tool.name)}
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </h3>
+                            <p class="tool-desc">${escapeHtml(tool.description)}</p>
+                        </div>
+                        <div class="tool-footer">
+                            <span>立即使用</span>
+                        </div>
+                    `;
+                    toolsGrid.appendChild(card);
+                });
+
+            } catch (error) {
+                // 處理錯誤狀態
+                console.error('Error fetching tools metadata:', error);
+                if (statusMessage) {
+                    statusMessage.innerHTML = `
+                        <i class="fa-solid fa-triangle-exclamation" style="color: #e74c3c;"></i>
+                        <p>載入工具失敗，請稍後再試</p>
+                    `;
+                }
+            }
+        }
+
+        // 簡單的 HTML 轉義函式，預防 XSS
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, (m) => map[m]);
+        }
+    </script>
+</body>
+</html>
