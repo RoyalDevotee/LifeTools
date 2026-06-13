@@ -63,6 +63,8 @@
   - 按鈕與互動元件必須有 Hover/Active 狀態的過渡動畫（`transition`），例如微幅放大、顏色漸變或陰影加深。
   - 互動反饋（如計算完成、防呆提示）需有平滑的動態呈現。
 - **語言**: 語言為繁體中文。
+- **版權聲明**: 每個頁面底下要有&copy; Royal Devotee (NeuralNexusLab X 0xseanlee), all rights reserved.
+
 ---
 
 ### 5. 本次要開發的工具功能需求：
