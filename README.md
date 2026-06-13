@@ -16,6 +16,8 @@
 每個腳本程式的function或動作要有註解 (//)
 每個function或變數要用駝峰式命名法(例如蛇形式是 get_user_data 駝峰式是 getUserData)
 
-任何寫法不會的可以問BrightSpecter或是找專門介紹那個檔案的.md 介紹檔
-
-## 4
+有任何寫法不會的可以問BrightSpecter或是找專門介紹那個檔案的.md 介紹檔
+每個HTML程式都要在<title>的標籤內新增
+```
+<script src="/scripts/init.html"></script>
+```
