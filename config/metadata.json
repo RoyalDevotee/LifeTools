@@ -1,4 +1,5 @@
 [
   {"name": "時鐘", "description": "這個工具是個線上時鐘，會顯示現在時間。", "path": "/pages/time.html"},
-  {"name": "隨機抽籤輪盤","description": "客製化名單的線上幸運大輪盤，支援即時編輯與擬真轉動音效，決定午餐或抽獎的最佳助手。","path": "/pages/wheel.html"}
+  {"name": "隨機抽籤輪盤","description": "客製化名單的線上幸運大輪盤，支援即時編輯與擬真轉動音效，決定午餐或抽獎的最佳助手。","path": "/pages/wheel.html"},
+  {"name": "隨機座位抽籤","description": "支援自訂教室行列大小，可隨意剔除空位，具備三秒隨機跳號動畫的現代感座位安排系統。","path": "/pages/seat.html"}
 ]
