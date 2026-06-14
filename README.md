@@ -17,10 +17,11 @@
 每個function或變數要用駝峰式命名法(例如蛇形式是 get_user_data 駝峰式是 getUserData)
 
 有任何寫法不會的可以問BrightSpecter或是找專門介紹那個檔案的.md 介紹檔
-每個HTML程式都要在<title>的標籤內新增
+每個HTML程式都要在<head>的標籤內新增
 ```
 <script src="/scripts/init.html"></script>
 ```
+每個工具都要到/config/metadata.json註冊 不然不會出現在搜尋結果
 
 ## AI Prompt
 給AI的prompt:
