@@ -1,4 +1,4 @@
-# LifeTools 生活萬用工具邦
+# LifeTools
 
 ## 1. repo介紹:
 這個repo裡的程式碼為靜態網站(HTML)，會被架設在Tencent Cloud的Edgeone。
