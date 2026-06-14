@@ -6,5 +6,6 @@
   {"name": "萬用單位換算器","description": "支援長度、重量、溫度、面積與體積等五大類別、十種以上常用單位的雙向即時換算工具。","path": "/pages/converter.html"},
   {"name": "萬用線上檔案壓縮器","description": "安全且100%本地端進行的檔案壓縮工具。支援圖片有損壓縮，以及 PDF、PPTX 等各類文件之 Gzip 串流無損打包壓縮。","path": "/pages/compressor.html"},
   {"name": "精緻倒數計時器","description": "具備現代感 SVG 圓環進度條的線上計時器。支援常用時間快速預設、自訂時分秒，並內建 Web Audio 氣泡和弦電子音鈴聲。","path": "/pages/timer.html"},
-  {"name": "精緻 QR Code 產生器","description": "本地端快速生成 QR Code 條碼工具。支援自訂尺寸、前景色與背景色，並提供高解析度 PNG 下載功能，確保您的網址與文字內容隱私不外洩。","path": "/pages/qrcode.html"}
+  {"name": "精緻 QR Code 產生器","description": "本地端快速生成 QR Code 條碼工具。支援自訂尺寸、前景色與背景色，並提供高解析度 PNG 下載功能，確保您的網址與文字內容隱私不外洩。","path": "/pages/qrcode.html"},
+  {"name": "萬能唬爛產生器","description": "經典的廢話文章生成工具。輸入任意主題與指定字數下限，即可在彈指之間為您編織出篇幅宏大、用詞高深卻毫無實質內容的華麗文章。","path": "/pages/bullshit.html"}
 ]
