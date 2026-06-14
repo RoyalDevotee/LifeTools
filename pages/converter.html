@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>萬用單位換算器 - Life Tools</title>
+    <!-- 載入規定的初始化腳本 -->
+    <script src="/scripts/init.js"></script>
+    <!-- 引入 Google Fonts 與 Font Awesome 圖標庫 -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* 全域基本樣式 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+
+        :root {
+            --primary-color: #FF8C00;
+            --primary-hover: #E07B00;
+            --primary-light: #FFF5EC;
+            --text-dark: #2C3E50;
+            --text-muted: #7F8C8D;
+            --bg-light: #FDFBF7;
+            --bg-card-section: #F5EFEB;
+            --white: #FFFFFF;
+            --transition-speed: 0.3s;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 頂部導覽列 */
+        .navbar {
+            background-color: var(--white);
+            border-bottom: 2px solid var(--primary-light);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .nav-logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform var(--transition-speed) ease;
+        }
+
+        .nav-logo:hover {
+            transform: scale(1.03);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            color: var(--text-dark);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 16px;
+            transition: color var(--transition-speed) ease;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color);
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background-color: var(--primary-light);
+            border: 1.5px solid transparent;
+            border-radius: 30px;
+            padding: 4px 6px 4px 16px;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--primary-color);
+            background-color: var(--white);
+            box-shadow: 0 0 8px rgba(255, 140, 0, 0.15);
+        }
+
+        .search-input {
+            border: none;
+            background: transparent;
+            outline: none;
+            color: var(--text-dark);
+            font-size: 14px;
+            width: 160px;
+            transition: width var(--transition-speed) ease;
+        }
+
+        .search-input:focus {
+            width: 200px;
+        }
+
+        .search-btn {
+            background-color: var(--primary-color);
+            border: none;
+            color: var(--white);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color var(--transition-speed) ease, transform var(--transition-speed) ease;
+        }
+
+        .search-btn:hover {
+            background-color: var(--primary-hover);
+            transform: scale(1.05);
+        }
+
+        /* 工具主內容區 */
+        .main-content {
+            flex-grow: 1;
+            padding: 40px 20px;
+            background-color: var(--bg-card-section);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tool-container {
+            background-color: var(--white);
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            max-width: 900px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 140, 0, 0.1);
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .tool-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tool-title i {
+            color: var(--primary-color);
+        }
+
+        /* 類別切換按鈕區 */
+        .category-tabs {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 35px;
+            border-bottom: 2px solid var(--primary-light);
+            padding-bottom: 15px;
+        }
+
+        .tab-btn {
+            background-color: var(--white);
+            border: 1.5px solid var(--primary-light);
+            color: var(--text-dark);
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .tab-btn:hover {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .tab-btn.active {
+            background-color: var(--primary-color);
+            color: var(--white);
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 15px rgba(255, 140, 0, 0.2);
+        }
+
+        /* 換算核心操作區 */
+        .converter-workspace {
+            display: grid;
+            grid-template-columns: 1fr 60px 1fr;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        /* 數值輸入區塊卡片 */
+        .converter-card {
+            background-color: var(--bg-light);
+            border: 2px solid var(--primary-light);
+            border-radius: 20px;
+            padding: 30px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .converter-card:focus-within {
+            border-color: var(--primary-color);
+            box-shadow: 0 6px 20px rgba(255, 140, 0, 0.05);
+            background-color: var(--white);
+        }
+
+        .unit-select {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 12px;
+            border: 1.5px solid #E2E8F0;
+            outline: none;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            background-color: var(--white);
+            color: var(--text-dark);
+            transition: border-color var(--transition-speed) ease;
+        }
+
+        .unit-select:focus {
+            border-color: var(--primary-color);
+        }
+
+        .value-input {
+            width: 100%;
+            padding: 14px 20px;
+            border-radius: 12px;
+            border: 1.5px solid #E2E8F0;
+            outline: none;
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--text-dark);
+            background-color: var(--white);
+            transition: border-color var(--transition-speed) ease;
+        }
+
+        .value-input:focus {
+            border-color: var(--primary-color);
+        }
+
+        /* 雙向對調按鈕 */
+        .swap-btn-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .swap-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(255, 140, 0, 0.25);
+            transition: all var(--transition-speed) ease;
+        }
+
+        .swap-btn:hover {
+            background-color: var(--primary-hover);
+            transform: scale(1.1) rotate(180deg);
+        }
+
+        .swap-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* 換算參考提示說明 */
+        .converter-tips {
+            background-color: var(--primary-light);
+            border-radius: 16px;
+            padding: 20px;
+            font-size: 14px;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid rgba(255, 140, 0, 0.15);
+        }
+
+        .converter-tips i {
+            color: var(--primary-color);
+            font-size: 18px;
+        }
+
+        /* 頁尾 */
+        .footer {
+            background-color: var(--white);
+            padding: 30px 20px;
+            text-align: center;
+            border-top: 1px solid var(--primary-light);
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* 動畫宣告 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* RWD 響應式配置 */
+        @media (max-width: 768px) {
+            .navbar-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .nav-right {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+            .search-box {
+                width: 100%;
+            }
+            .search-input {
+                width: 100%;
+            }
+            .search-input:focus {
+                width: 100%;
+            }
+            .converter-workspace {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            .swap-btn {
+                transform: rotate(90deg);
+            }
+            .swap-btn:hover {
+                transform: scale(1.1) rotate(270deg);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 頂部導覽列 -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="nav-logo">
+                <i class="fa-solid fa-toolbox"></i> Life Tools
+            </a>
+            <div class="nav-right">
+                <a href="/pages/about.html" class="nav-link">關於我們</a>
+                <div class="search-box">
+                    <input type="text" id="navSearchInput" class="search-input" placeholder="搜尋工具...">
+                    <button id="navSearchBtn" class="search-btn">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 工具主內容區 -->
+    <main class="main-content">
+        <div class="tool-container">
+            <h1 class="tool-title"><i class="fa-solid fa-scale-balanced"></i> 萬用單位換算器</h1>
+            
+            <!-- 類別切換標籤 -->
+            <div class="category-tabs" id="categoryTabs">
+                <!-- 由 JS 動態產生類別按鈕 -->
+            </div>
+
+            <!-- 換算核心操作區 -->
+            <div class="converter-workspace">
+                
+                <!-- 左側數值與單位 -->
+                <div class="converter-card">
+                    <select id="leftUnitSelect" class="unit-select" onchange="performConversion('left')"></select>
+                    <input type="number" id="leftValueInput" class="value-input" value="1" oninput="performConversion('left')">
+                </div>
+
+                <!-- 中間雙向對調按鈕 -->
+                <div class="swap-btn-container">
+                    <button class="swap-btn" onclick="swapUnits()" title="對調單位">
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                    </button>
+                </div>
+
+                <!-- 右側數值與單位 -->
+                <div class="converter-card">
+                    <select id="rightUnitSelect" class="unit-select" onchange="performConversion('left')"></select>
+                    <input type="number" id="rightValueInput" class="value-input" oninput="performConversion('right')">
+                </div>
+
+            </div>
+
+            <!-- 計算提示小卡 -->
+            <div class="converter-tips">
+                <i class="fa-solid fa-circle-info"></i>
+                <span id="formulaTip">公式提示：正在載入公式資訊...</span>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- 頁尾 -->
+    <footer class="footer">
+        &copy; Royal Devotee (NeuralNexusLab X 0xseanlee), all rights reserved.
+    </footer>
+
+    <script>
+        // 定義完整的物理量單位資料庫（包含超過10種換算單位）
+        const conversionDatabase = {
+            length: {
+                name: "長度換算",
+                icon: "fa-ruler-horizontal",
+                baseUnit: "m", // 以公尺為基準
+                units: {
+                    cm: { name: "公分 (cm)", rate: 0.01 },
+                    m: { name: "公尺 (m)", rate: 1 },
+                    km: { name: "公里 (km)", rate: 1000 },
+                    inch: { name: "英吋 (in)", rate: 0.0254 },
+                    foot: { name: "英呎 (ft)", rate: 0.3048 },
+                    mile: { name: "英里 (mi)", rate: 1609.344 }
+                }
+            },
+            weight: {
+                name: "重量換算",
+                icon: "fa-weight-hanging",
+                baseUnit: "g", // 以公克為基準
+                units: {
+                    g: { name: "公克 (g)", rate: 1 },
+                    kg: { name: "公斤 (kg)", rate: 1000 },
+                    pound: { name: "磅 (lb)", rate: 453.59237 },
+                    ounce: { name: "盎司 (oz)", rate: 28.3495231 }
+                }
+            },
+            temperature: {
+                name: "溫度換算",
+                icon: "fa-temperature-high",
+                isSpecial: true, // 溫度屬於非倍率換算，需特殊邏輯
+                units: {
+                    C: { name: "攝氏 (°C)" },
+                    F: { name: "華氏 (°F)" },
+                    K: { name: "克氏溫標 (K)" }
+                }
+            },
+            area: {
+                name: "面積換算",
+                icon: "fa-chart-area",
+                baseUnit: "m2", // 以平方公尺為基準
+                units: {
+                    m2: { name: "平方公尺 (㎡)", rate: 1 },
+                    ping: { name: "坪 (Taiwan)", rate: 3.30579 },
+                    jia: { name: "甲 (Taiwan)", rate: 9699.2 },
+                    hectare: { name: "公頃 (ha)", rate: 10000 }
+                }
+            },
+            volume: {
+                name: "體積/容量",
+                icon: "fa-glass-water",
+                baseUnit: "ml", // 以毫升為基準
+                units: {
+                    ml: { name: "毫升 (mL)", rate: 1 },
+                    liter: { name: "公升 (L)", rate: 1000 },
+                    gallon: { name: "加侖 (US gal)", rate: 3785.41178 },
+                    fluidOunce: { name: "液體盎司 (fl oz)", rate: 29.5735 }
+                }
+            }
+        };
+
+        let currentCategory = "length"; // 預設目前類別
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始化導覽列搜尋
+            initNavbarSearch();
+            // 動態產生上方類別切換按鈕
+            buildCategoryTabs();
+            // 載入預設類別的下拉選單
+            loadCategoryUnits();
+        });
+
+        // 導覽列搜尋跳轉機制
+        function initNavbarSearch() {
+            const navInput = document.getElementById('navSearchInput');
+            const navBtn = document.getElementById('navSearchBtn');
+
+            const triggerSearch = () => {
+                const query = navInput.value.trim();
+                if (query) {
+                    window.location.href = `/pages/search.html?q=${encodeURIComponent(query)}`;
+                }
+            };
+
+            navBtn.addEventListener('click', triggerSearch);
+            navInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') triggerSearch();
+            });
+        }
+
+        // 動態產生頂部切換按鈕
+        function buildCategoryTabs() {
+            const tabsContainer = document.getElementById("categoryTabs");
+            tabsContainer.innerHTML = "";
+
+            Object.keys(conversionDatabase).forEach((key) => {
+                const category = conversionDatabase[key];
+                const button = document.createElement("button");
+                button.className = `tab-btn ${key === currentCategory ? 'active' : ''}`;
+                button.innerHTML = `<i class="fa-solid ${category.icon}"></i> ${category.name}`;
+                
+                button.onclick = () => {
+                    switchCategory(key);
+                };
+
+                tabsContainer.appendChild(button);
+            });
+        }
+
+        // 切換物理量分類
+        function switchCategory(categoryKey) {
+            currentCategory = categoryKey;
+            
+            // 刷新按鈕激活狀態
+            const buttons = document.querySelectorAll(".tab-btn");
+            buttons.forEach((btn, index) => {
+                const key = Object.keys(conversionDatabase)[index];
+                if (key === categoryKey) {
+                    btn.classList.add("active");
+                } else {
+                    btn.classList.remove("active");
+                }
+            });
+
+            // 重新載入對應單位選單
+            loadCategoryUnits();
+        }
+
+        // 將選定的類別單位填入下拉選單中
+        function loadCategoryUnits() {
+            const categoryData = conversionDatabase[currentCategory];
+            const leftSelect = document.getElementById("leftUnitSelect");
+            const rightSelect = document.getElementById("rightUnitSelect");
+
+            leftSelect.innerHTML = "";
+            rightSelect.innerHTML = "";
+
+            const unitsKeys = Object.keys(categoryData.units);
+
+            unitsKeys.forEach((unitKey, index) => {
+                const unit = categoryData.units[unitKey];
+                
+                const optLeft = document.createElement("option");
+                optLeft.value = unitKey;
+                optLeft.textContent = unit.name;
+                leftSelect.appendChild(optLeft);
+
+                const optRight = document.createElement("option");
+                optRight.value = unitKey;
+                optRight.textContent = unit.name;
+                rightSelect.appendChild(optRight);
+            });
+
+            // 預設左選單選第一個，右選單選第二個單位以利對比
+            if (unitsKeys.length > 1) {
+                rightSelect.selectedIndex = 1;
+            }
+
+            // 重設預設輸入數值並啟動首次計算
+            document.getElementById("leftValueInput").value = 1;
+            performConversion("left");
+        }
+
+        // 核心換算算法
+        function performConversion(direction) {
+            const categoryData = conversionDatabase[currentCategory];
+            
+            const leftSelect = document.getElementById("leftUnitSelect");
+            const rightSelect = document.getElementById("rightUnitSelect");
+            const leftInput = document.getElementById("leftValueInput");
+            const rightInput = document.getElementById("rightValueInput");
+
+            const leftUnit = leftSelect.value;
+            const rightUnit = rightSelect.value;
+
+            // 1. 特殊換算處理（溫度類別）
+            if (categoryData.isSpecial) {
+                handleTemperatureConversion(direction, leftUnit, rightUnit, leftInput, rightInput);
+                return;
+            }
+
+            // 2. 標準倍率單位換算處理
+            const leftRate = categoryData.units[leftUnit].rate;
+            const rightRate = categoryData.units[rightUnit].rate;
+
+            if (direction === "left") {
+                const value = parseFloat(leftInput.value);
+                if (isNaN(value)) {
+                    rightInput.value = "";
+                    return;
+                }
+                // 將左邊值換算至基準單位，再除以右邊單位的倍率，並精確至小數點後 6 位
+                const convertedValue = (value * leftRate) / rightRate;
+                rightInput.value = cleanDecimal(convertedValue);
+            } else {
+                const value = parseFloat(rightInput.value);
+                if (isNaN(value)) {
+                    leftInput.value = "";
+                    return;
+                }
+                const convertedValue = (value * rightRate) / leftRate;
+                leftInput.value = cleanDecimal(convertedValue);
+            }
+
+            // 更新提示字樣
+            updateFormulaTip(categoryData.units[leftUnit].name, categoryData.units[rightUnit].name, leftRate / rightRate);
+        }
+
+        // 溫度專用非線性換算邏輯
+        function handleTemperatureConversion(direction, leftUnit, rightUnit, leftInput, rightInput) {
+            // 將任意溫度轉為攝氏 (°C) 的輔助函式
+            const toCelsius = (val, unit) => {
+                if (unit === "C") return val;
+                if (unit === "F") return (val - 32) / 1.8;
+                if (unit === "K") return val - 273.15;
+            };
+
+            // 將攝氏 (°C) 轉為目標溫度的輔助函式
+            const fromCelsius = (celsius, unit) => {
+                if (unit === "C") return celsius;
+                if (unit === "F") return celsius * 1.8 + 32;
+                if (unit === "K") return celsius + 273.15;
+            };
+
+            if (direction === "left") {
+                const val = parseFloat(leftInput.value);
+                if (isNaN(val)) {
+                    rightInput.value = "";
+                    return;
+                }
+                const celsius = toCelsius(val, leftUnit);
+                rightInput.value = cleanDecimal(fromCelsius(celsius, rightUnit));
+            } else {
+                const val = parseFloat(rightInput.value);
+                if (isNaN(val)) {
+                    leftInput.value = "";
+                    return;
+                }
+                const celsius = toCelsius(val, rightUnit);
+                leftInput.value = cleanDecimal(fromCelsius(celsius, leftUnit));
+            }
+
+            // 更新溫度提示字樣
+            document.getElementById("formulaTip").textContent = `溫度公式提示：[°F] = [°C] × 1.8 + 32 | [K] = [°C] + 273.15`;
+        }
+
+        // 清理浮點數精度問題並格式化輸出
+        function cleanDecimal(val) {
+            // 精確至小數點後 6 位，並自動刪除尾端無意義的 0
+            return parseFloat(val.toFixed(6));
+        }
+
+        // 一鍵對調左右單位
+        function swapUnits() {
+            const leftSelect = document.getElementById("leftUnitSelect");
+            const rightSelect = document.getElementById("rightUnitSelect");
+
+            const tempValue = leftSelect.value;
+            leftSelect.value = rightSelect.value;
+            rightSelect.value = tempValue;
+
+            // 對調後以左邊數值為準，重新觸發換算
+            performConversion("left");
+        }
+
+        // 更新公式提示卡片資訊
+        function updateFormulaTip(leftName, rightName, ratio) {
+            const tipElement = document.getElementById("formulaTip");
+            tipElement.textContent = `公式提示：1 ${leftName.split(" ")[0]} ≈ ${cleanDecimal(ratio)} ${rightName.split(" ")[0]}`;
+        }
+    </script>
+</body>
+</html>
