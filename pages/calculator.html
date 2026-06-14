@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>現代感多功能計算機 - Life Tools</title>
+    <meta name="description" content="Life Tools 提供美觀且具備現代感的線上多功能計算機，支援歷程紀錄與快捷鍵操作，100% 本地端運行，給您最流暢的運算體驗。">
+    <meta name="author" content="Royal Devotee (NeuralNexusLab X 0xseanlee)">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="/scripts/init.js"></script>
+
+    <style>
+        /* 全域基本樣式 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+
+        :root {
+            --primary-color: #FF8C00;
+            --primary-hover: #E07B00;
+            --primary-light: #FFF5EC;
+            --text-dark: #2C3E50;
+            --text-muted: #7F8C8D;
+            --bg-light: #FDFBF7;
+            --bg-card-section: #F5EFEB;
+            --white: #FFFFFF;
+            --transition-speed: 0.3s;
+            
+            /* 計算機專用配色 */
+            --calc-bg: #2C3E50;
+            --calc-display-bg: #1A252F;
+            --btn-num-bg: #34495E;
+            --btn-op-bg: #E67E22;
+            --btn-fn-bg: #7F8C8D;
+            --btn-text: #FFFFFF;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 頂部導覽列 */
+        .navbar {
+            background-color: var(--white);
+            border-bottom: 2px solid var(--primary-light);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: nowrap;
+            gap: 15px;
+        }
+
+        .nav-logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform var(--transition-speed) ease;
+            flex-shrink: 0;
+        }
+
+        .nav-logo:hover {
+            transform: scale(1.03);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: nowrap;
+            flex-grow: 1;
+            justify-content: flex-end;
+        }
+
+        .nav-link {
+            color: var(--text-dark);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 16px;
+            transition: color var(--transition-speed) ease;
+            flex-shrink: 0;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color);
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background-color: var(--primary-light);
+            border: 1.5px solid transparent;
+            border-radius: 30px;
+            padding: 4px 4px 4px 16px;
+            transition: all var(--transition-speed) ease;
+            max-width: 300px;
+            width: 100%;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--primary-color);
+            background-color: var(--white);
+            box-shadow: 0 0 8px rgba(255, 140, 0, 0.15);
+        }
+
+        .search-input {
+            border: none;
+            background: transparent;
+            outline: none;
+            color: var(--text-dark);
+            font-size: 14px;
+            width: 100%;
+            padding-right: 8px;
+        }
+
+        .search-btn {
+            background-color: var(--primary-color);
+            border: none;
+            color: var(--white);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color var(--transition-speed) ease, transform var(--transition-speed) ease;
+            flex-shrink: 0;
+        }
+
+        /* 主內容區區塊 */
+        .main-container {
+            background-color: var(--bg-card-section);
+            padding: 40px 20px;
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .calculator-wrapper {
+            max-width: 800px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 25px;
+            background-color: var(--white);
+            padding: 25px;
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* 計算機主體面板 */
+        .calc-body {
+            background-color: var(--calc-bg);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: inset 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .calc-screen {
+            background-color: var(--calc-display-bg);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: right;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+
+        .calc-formula {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 16px;
+            color: var(--text-muted);
+            min-height: 24px;
+            word-wrap: break-word;
+            word-break: break-all;
+        }
+
+        .calc-output {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--white);
+            margin-top: 5px;
+            word-wrap: break-word;
+            word-break: break-all;
+        }
+
+        .calc-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        /* 按鈕基礎樣式與過渡動畫 */
+        .calc-btn {
+            border: none;
+            border-radius: 12px;
+            padding: 18px 0;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--btn-text);
+            cursor: pointer;
+            transition: all 0.1s ease;
+            box-shadow: 0 4px rgba(0,0,0,0.3);
+        }
+
+        .calc-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px rgba(0,0,0,0.3);
+        }
+
+        .btn-num { background-color: var(--btn-num-bg); }
+        .btn-num:hover { background-color: #3d566e; }
+
+        .btn-op { background-color: var(--btn-op-bg); }
+        .btn-op:hover { background-color: #df7216; }
+
+        .btn-fn { background-color: var(--btn-fn-bg); }
+        .btn-fn:hover { background-color: #95a5a6; }
+
+        .btn-clear { background-color: #e74c3c; }
+        .btn-clear:hover { background-color: #c0392b; }
+
+        .btn-equal { 
+            background-color: var(--primary-color); 
+            grid-column: span 2;
+        }
+        .btn-equal:hover { background-color: var(--primary-hover); }
+
+        /* 歷程紀錄面板 */
+        .history-panel {
+            display: flex;
+            flex-direction: column;
+            border-left: 2px solid var(--primary-light);
+            padding-left: 20px;
+            height: 100%;
+            min-height: 400px;
+        }
+
+        .history-header {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: var(--text-dark);
+        }
+
+        .clear-history-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 14px;
+            transition: color var(--transition-speed) ease;
+        }
+
+        .clear-history-btn:hover {
+            color: #e74c3c;
+        }
+
+        .history-list {
+            flex-grow: 1;
+            overflow-y: auto;
+            max-height: 380px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding-right: 5px;
+        }
+
+        .history-item {
+            background-color: var(--bg-light);
+            padding: 12px;
+            border-radius: 10px;
+            text-align: right;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .history-item:hover {
+            border-color: var(--primary-color);
+            background-color: var(--primary-light);
+            transform: translateX(-2px);
+        }
+
+        .history-formula {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .history-result {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-top: 3px;
+        }
+
+        .history-empty {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-top: 40px;
+        }
+
+        /* 頁尾 */
+        .footer {
+            background-color: var(--white);
+            padding: 30px 20px;
+            text-align: center;
+            border-top: 1px solid var(--primary-light);
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* 動畫效果定義 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 響應式佈局微調 */
+        @media (max-width: 768px) {
+            .calculator-wrapper {
+                grid-template-columns: 1fr;
+            }
+            .history-panel {
+                border-left: none;
+                border-top: 2px solid var(--primary-light);
+                padding-left: 0;
+                padding-top: 20px;
+                min-height: auto;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .navbar-container {
+                padding: 10px 12px;
+                gap: 8px;
+            }
+            .nav-logo { font-size: 20px; }
+            .nav-right { gap: 10px; max-width: 65%; }
+            .nav-link { font-size: 14px; }
+            .search-box { padding: 3px 3px 3px 10px; }
+            .search-input { font-size: 13px; }
+            .search-btn { width: 28px; height: 28px; }
+            .calc-btn { padding: 14px 0; font-size: 18px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar" aria-label="主要導覽列">
+        <div class="navbar-container">
+            <a href="/" class="nav-logo" aria-label="Life Tools 首頁">
+                <i class="fa-solid fa-toolbox" aria-hidden="true"></i> Life Tools
+            </a>
+            <div class="nav-right">
+                <a href="/pages/about.html" class="nav-link">關於我們</a>
+                <div class="search-box" role="search">
+                    <input type="text" id="navSearchInput" class="search-input" placeholder="搜尋工具..." aria-label="搜尋框">
+                    <button id="navSearchBtn" class="search-btn" aria-label="確認搜尋">
+                        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-container">
+        <div class="calculator-wrapper">
+            
+            <section class="calc-body" aria-label="計算機面板">
+                <div class="calc-screen">
+                    <div class="calc-formula" id="calcFormula"></div>
+                    <div class="calc-output" id="calcOutput">0</div>
+                </div>
+                <div class="calc-buttons">
+                    <button class="calc-btn btn-clear" onclick="clearAll()">C</button>
+                    <button class="calc-btn btn-fn" onclick="backspace()"><i class="fa-solid fa-backspace"></i></button>
+                    <button class="calc-btn btn-fn" onclick="appendOperator('%')">%</button>
+                    <button class="calc-btn btn-op" onclick="appendOperator('/')">÷</button>
+
+                    <button class="calc-btn btn-num" onclick="appendNumber('7')">7</button>
+                    <button class="calc-btn btn-num" onclick="appendNumber('8')">8</button>
+                    <button class="calc-btn btn-num" onclick="appendNumber('9')">9</button>
+                    <button class="calc-btn btn-op" onclick="appendOperator('*')">×</button>
+
+                    <button class="calc-btn btn-num" onclick="appendNumber('4')">4</button>
+                    <button class="calc-btn btn-num" onclick="appendNumber('5')">5</button>
+                    <button class="calc-btn btn-num" onclick="appendNumber('6')">6</button>
+                    <button class="calc-btn btn-op" onclick="appendOperator('-')">-</button>
+
+                    <button class="calc-btn btn-num" onclick="appendNumber('1')">1</button>
+                    <button class="calc-btn btn-num" onclick="appendNumber('2')">2</button>
+                    <button class="calc-btn btn-num" onclick="appendNumber('3')">3</button>
+                    <button class="calc-btn btn-op" onclick="appendOperator('+')">+</button>
+
+                    <button class="calc-btn btn-num" onclick="appendNumber('0')">0</button>
+                    <button class="calc-btn btn-num" onclick="appendNumber('.')">.</button>
+                    <button class="calc-btn btn-equal" onclick="calculateResult()">=</button>
+                </div>
+            </section>
+
+            <aside class="history-panel" aria-label="運算歷程紀錄">
+                <div class="history-header">
+                    <span>運算歷程</span>
+                    <button class="clear-history-btn" onclick="clearHistory()"><i class="fa-solid fa-trash-can"></i> 清除</button>
+                </div>
+                <div class="history-list" id="historyList">
+                    <div class="history-empty">尚無任何運算紀錄</div>
+                </div>
+            </aside>
+
+        </div>
+    </main>
+
+    <footer class="footer">
+        &copy; Royal Devotee (NeuralNexusLab X 0xseanlee), all rights reserved.
+    </footer>
+
+    <script>
+        // 宣告全域計算狀態變數
+        let currentInput = '0';
+        let previousInput = '';
+        let operation = null;
+        let isCalculated = false;
+        let historyData = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始化導覽列搜尋事件
+            initSearchEvents();
+            // 從快取載入先前的歷程紀錄
+            loadHistoryFromStorage();
+        });
+
+        // 處理頂部導覽列搜尋邏輯
+        function executeSearch(query) {
+            const trimmedQuery = query.trim();
+            if (trimmedQuery) {
+                window.location.href = `/pages/search.html?q=${encodeURIComponent(trimmedQuery)}`;
+            }
+        }
+
+        // 綁定導覽列搜尋框的鍵盤與點擊事件
+        function initSearchEvents() {
+            const navInput = document.getElementById('navSearchInput');
+            const navBtn = document.getElementById('navSearchBtn');
+
+            navBtn.addEventListener('click', () => {
+                executeSearch(navInput.value);
+            });
+
+            navInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    executeSearch(navInput.value);
+                }
+            });
+        }
+
+        // 點擊數字或小數點之處發動作
+        function appendNumber(num) {
+            // 如果剛剛才計算完畢，再度點選數字時直接清空重算
+            if (isCalculated) {
+                currentInput = num === '.' ? '0.' : num;
+                isCalculated = false;
+            } else {
+                if (num === '.' && currentInput.includes('.')) return; // 避免重複輸入小數點
+                if (currentInput === '0' && num !== '.') {
+                    currentInput = num; // 覆蓋初始的 0
+                } else {
+                    currentInput += num;
+                }
+            }
+            updateScreen();
+        }
+
+        // 點擊運算子符號之處發動作
+        function appendOperator(op) {
+            if (operation !== null && !isCalculated) {
+                calculateResult(); // 支援連續不中斷運算
+            }
+            previousInput = currentInput;
+            operation = op;
+            isCalculated = false;
+            currentInput = '0';
+            updateScreen();
+        }
+
+        // 倒退刪除單一欄位字元
+        function backspace() {
+            if (isCalculated) return;
+            if (currentInput.length > 1) {
+                currentInput = currentInput.slice(0, -1);
+            } else {
+                currentInput = '0';
+            }
+            updateScreen();
+        }
+
+        // 清空整個計算機狀態
+        function clearAll() {
+            currentInput = '0';
+            previousInput = '';
+            operation = null;
+            isCalculated = false;
+            updateScreen();
+        }
+
+        // 執行結果運算的核心處理機制
+        function calculateResult() {
+            if (operation === null || previousInput === '') return;
+            
+            let result = 0;
+            const prev = parseFloat(previousInput);
+            const current = parseFloat(currentInput);
+            const displayOp = operation === '*' ? '×' : (operation === '/' ? '÷' : operation);
+            const formulaString = `${previousInput} ${displayOp} ${currentInput}`;
+
+            // 判斷運算子型態並進行浮點數運算
+            switch (operation) {
+                case '+': result = prev + current; break;
+                case '-': result = prev - current; break;
+                case '*': result = prev * current; break;
+                case '/': 
+                    if (current === 0) {
+                        alert('錯誤：除數不能為零！');
+                        clearAll();
+                        return;
+                    }
+                    result = prev / current; 
+                    break;
+                case '%': result = prev % current; break;
+                default: return;
+            }
+
+            // 清理並限制浮點數最高精度，去除無意義尾贅 0
+            result = parseFloat(result.toFixed(10));
+            
+            // 新增此筆運算紀錄至歷史面板
+            addHistoryItem(formulaString, result);
+
+            currentInput = result.toString();
+            operation = null;
+            previousInput = '';
+            isCalculated = true;
+            updateScreen();
+        }
+
+        // 將當前的變數資料渲染呈現於畫面上
+        function updateScreen() {
+            const outputElement = document.getElementById('calcOutput');
+            const formulaElement = document.getElementById('calcFormula');
+
+            outputElement.textContent = currentInput;
+            
+            if (operation !== null) {
+                const displayOp = operation === '*' ? '×' : (operation === '/' ? '÷' : operation);
+                formulaElement.textContent = `${previousInput} ${displayOp}`;
+            } else {
+                formulaElement.textContent = '';
+            }
+        }
+
+        // 新增運算紀錄至陣列與 LocalStorage 中
+        function addHistoryItem(formula, result) {
+            const newItem = { formula, result };
+            historyData.unshift(newItem); // 推入至陣列最前端展示
+            
+            // 最多僅保留 20 筆最近的紀錄
+            if (historyData.length > 20) {
+                historyData.pop();
+            }
+            
+            saveHistoryToStorage();
+            renderHistoryList();
+        }
+
+        // 將歷史紀錄繪製呈現在 Aside 面板上
+        function renderHistoryList() {
+            const listElement = document.getElementById('historyList');
+            if (historyData.length === 0) {
+                listElement.innerHTML = `<div class="history-empty">尚無任何運算紀錄</div>`;
+                return;
+            }
+
+            listElement.innerHTML = '';
+            historyData.forEach((item, index) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'history-item';
+                itemDiv.onclick = () => reuseHistoryResult(item.result);
+                itemDiv.innerHTML = `
+                    <div class="history-formula">${escapeHtml(item.formula)} =</div>
+                    <div class="history-result">${escapeHtml(item.result.toString())}</div>
+                `;
+                listElement.appendChild(itemDiv);
+            });
+        }
+
+        // 點擊歷程項目時，可快速重用該數據進行下一輪運算
+        function reuseHistoryResult(val) {
+            currentInput = val.toString();
+            isCalculated = false;
+            updateScreen();
+        }
+
+        // 清空歷程紀錄
+        function clearHistory() {
+            historyData = [];
+            saveHistoryToStorage();
+            renderHistoryList();
+        }
+
+        // 將歷程序列化存至快取中
+        function saveHistoryToStorage() {
+            localStorage.setItem('lifeToolsCalcHistory', JSON.stringify(historyData));
+        }
+
+        // 從快取還原反序列化歷史紀錄
+        function loadHistoryFromStorage() {
+            const stored = localStorage.getItem('lifeToolsCalcHistory');
+            if (stored) {
+                try {
+                    historyData = JSON.parse(stored);
+                    renderHistoryList();
+                } catch (e) {
+                    historyData = [];
+                }
+            }
+        }
+
+        // 防止 HTML 的跨網站腳本注入攻擊（XSS 防禦）
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, (m) => map[m]);
+        }
+    </script>
+</body>
+</html>
