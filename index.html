@@ -3,11 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Life Tools 精緻工具箱</title>
+    
+    <!-- 基礎 SEO 詮釋資料 -->
+    <title>Life Tools 生活萬用工具邦 - 輕量、安全、免登入的精緻線上工具箱</title>
+    <meta name="description" content="Life Tools 提供一系列精美、現代化且 100% 本地端運行的線上小工具，包含倒數計時器、3D擲硬幣與骰子、統計分析器、星座配對等，免登入、無廣告、點開即用，保障您的個資私密安全。">
+    <meta name="keywords" content="Life Tools, 工具邦, 線上工具, 倒數計時器, 星座配對, 單位換算, 檔案壓縮, 隨機座位, 3D擲硬幣, 統計分析, 網頁工具">
+    <meta name="author" content="Royal Devotee (NeuralNexusLab X 0xseanlee)">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://lifetools.zone/"> <!-- 請替換為您的實際架設網址 -->
+
+    <!-- Open Graph / Facebook 社群分享標籤 -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://lifetools.zone/">
+    <meta property="og:title" content="Life Tools 生活萬用工具邦 - 輕量、安全、免登入的精緻線上工具箱">
+    <meta property="og:description" content="免登入、免安裝、安全防隱私外洩。提供倒數計時器、檔案壓縮、3D擲硬幣、星座配對等數十種高效能萬用生活小工具。">
+    <meta property="og:image" content="https://lifetools.zone/assets/og-image.jpg"> <!-- 請放置一張預覽縮圖 -->
+    <meta property="og:locale" content="zh_TW">
+
+    <!-- Twitter Card 分享標籤 -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://lifetools.zone/">
+    <meta name="twitter:title" content="Life Tools 生活萬用工具邦 - 輕量、安全、免登入的精緻線上工具箱">
+    <meta name="twitter:description" content="免登入、免安裝、安全防隱私外洩。提供倒數計時器、檔案壓縮、3D擲硬幣、星座配對等數十種高效能萬用生活小工具。">
+    <meta name="twitter:image" content="https://lifetools.zone/assets/og-image.jpg">
+
+    <!-- 預連線優化 (加速字體與圖標庫載入) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+
     <!-- 引入 Google Fonts 與 Font Awesome 圖標庫 -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- 引入規定的初始化防禦腳本 -->
     <script src="/scripts/init.js"></script>
+
+    <!-- Schema.org 結構化資料 (JSON-LD) - 協助搜尋引擎建立 Rich Snippets -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Life Tools 生活萬用工具邦",
+      "url": "https://lifetools.zone/",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://lifetools.zone/pages/search.html?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+
     <style>
         /* 全域基本樣式 */
         * {
@@ -395,17 +441,17 @@
 <body>
 
     <!-- 頂部導覽列 -->
-    <nav class="navbar">
+    <nav class="navbar" aria-label="主要導覽列">
         <div class="navbar-container">
-            <a href="/" class="nav-logo">
-                <i class="fa-solid fa-toolbox"></i> Life Tools
+            <a href="/" class="nav-logo" aria-label="Life Tools 首頁">
+                <i class="fa-solid fa-toolbox" aria-hidden="true"></i> Life Tools
             </a>
             <div class="nav-right">
                 <a href="/pages/about.html" class="nav-link">關於我們</a>
-                <div class="search-box">
-                    <input type="text" id="navSearchInput" class="search-input" placeholder="搜尋工具...">
-                    <button id="navSearchBtn" class="search-btn">
-                        <i class="fa-solid fa-magnifying-glass"></i>
+                <div class="search-box" role="search">
+                    <input type="text" id="navSearchInput" class="search-input" placeholder="搜尋工具..." aria-label="搜尋框">
+                    <button id="navSearchBtn" class="search-btn" aria-label="確認搜尋">
+                        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
                     </button>
                 </div>
             </div>
@@ -416,11 +462,11 @@
     <header class="hero-section">
         <h1 class="hero-logo">Life Tools</h1>
         <p class="hero-subtitle">讓生活更便利的精緻工具箱，隨手即用</p>
-        <div class="hero-search-wrapper">
+        <div class="hero-search-wrapper" role="search">
             <div class="hero-search-box">
-                <input type="text" id="heroSearchInput" class="hero-search-input" placeholder="想要找什麼工具？輸入關鍵字...">
-                <button id="heroSearchBtn" class="hero-search-btn">
-                    <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="heroSearchInput" class="hero-search-input" placeholder="想要找什麼工具？輸入關鍵字..." aria-label="主頁面搜尋框">
+                <button id="heroSearchBtn" class="hero-search-btn" aria-label="執行搜尋">
+                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
                     <span>搜尋</span>
                 </button>
             </div>
@@ -429,16 +475,16 @@
 
     <!-- 工具列表高對比區塊 -->
     <main class="tools-section">
-        <div class="tools-container-wrapper">
+        <article class="tools-container-wrapper">
             <h2 class="section-title">工具清單</h2>
             <div class="tools-grid" id="toolsGrid">
                 <!-- 預設載入中狀態 -->
                 <div class="status-message" id="statusMessage">
-                    <i class="fa-solid fa-circle-notch fa-spin"></i>
+                    <i class="fa-solid fa-circle-notch fa-spin" aria-hidden="true"></i>
                     <p>正在加載工具，請稍候...</p>
                 </div>
             </div>
-        </div>
+        </article>
     </main>
 
     <!-- 頁尾 -->
@@ -448,12 +494,13 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // 初始化功能與綁定事件
+            // 初始化搜尋功能與綁定事件
             initSearchEvents();
+            // 開始動態獲取設定資料並繪製卡片
             fetchToolsData();
         });
 
-        // 搜尋處理邏輯
+        // 搜尋重導向處理邏輯
         function executeSearch(query) {
             const trimmedQuery = query.trim();
             if (trimmedQuery) {
@@ -462,31 +509,31 @@
             }
         }
 
-        // 初始化搜尋框事件監聽
+        // 初始化所有搜尋框之鍵盤與點擊事件監聽
         function initSearchEvents() {
             const navInput = document.getElementById('navSearchInput');
             const navBtn = document.getElementById('navSearchBtn');
             const heroInput = document.getElementById('heroSearchInput');
             const heroBtn = document.getElementById('heroSearchBtn');
 
-            // 頂部導覽列搜尋按鈕點擊
+            // 1. 頂部導覽列搜尋按鈕點擊
             navBtn.addEventListener('click', () => {
                 executeSearch(navInput.value);
             });
 
-            // 頂部導覽列搜尋框按下 Enter
+            // 2. 頂部導覽列搜尋框按下 Enter
             navInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
                     executeSearch(navInput.value);
                 }
             });
 
-            // 主視覺區搜尋按鈕點擊
+            // 3. 主視覺區搜尋按鈕點擊
             heroBtn.addEventListener('click', () => {
                 executeSearch(heroInput.value);
             });
 
-            // 主視覺區搜尋框按下 Enter
+            // 4. 主視覺區搜尋框按下 Enter
             heroInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
                     executeSearch(heroInput.value);
@@ -500,7 +547,7 @@
             const statusMessage = document.getElementById('statusMessage');
 
             try {
-                // 發送請求讀取設定檔
+                // 發送請求讀取設定檔，防快取邏輯將由 init.js 統一處理
                 const response = await fetch('/config/metadata.json');
                 
                 if (!response.ok) {
@@ -517,7 +564,7 @@
                 if (toolsList.length === 0) {
                     toolsGrid.innerHTML = `
                         <div class="status-message">
-                            <i class="fa-solid fa-circle-exclamation"></i>
+                            <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
                             <p>目前沒有可用的工具</p>
                         </div>
                     `;
@@ -529,11 +576,12 @@
                     const card = document.createElement('a');
                     card.href = tool.path;
                     card.className = 'tool-card';
+                    card.setAttribute('aria-label', `開啟 ${tool.name} 工具`);
                     card.innerHTML = `
                         <div class="tool-info">
                             <h3 class="tool-name">
                                 ${escapeHtml(tool.name)}
-                                <i class="fa-solid fa-arrow-right"></i>
+                                <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
                             </h3>
                             <p class="tool-desc">${escapeHtml(tool.description)}</p>
                         </div>
@@ -545,18 +593,18 @@
                 });
 
             } catch (error) {
-                // 處理錯誤狀態
+                // 處理連線與解析異常狀態
                 console.error('Error fetching tools metadata:', error);
                 if (statusMessage) {
                     statusMessage.innerHTML = `
-                        <i class="fa-solid fa-triangle-exclamation" style="color: #e74c3c;"></i>
+                        <i class="fa-solid fa-triangle-exclamation" style="color: #e74c3c;" aria-hidden="true"></i>
                         <p>載入工具失敗，請稍後再試</p>
                     `;
                 }
             }
         }
 
-        // 簡單的 HTML 轉義函式，預防 XSS
+        // 簡單的 HTML 轉義函式，預防 XSS 注入攻擊
         function escapeHtml(text) {
             const map = {
                 '&': '&amp;',
