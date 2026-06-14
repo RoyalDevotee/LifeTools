@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>萬用線上檔案壓縮器 - Life Tools</title>
+    <!-- 載入規定的初始化腳本 -->
+    <script src="/scripts/init.js"></script>
+    <!-- 引入 Google Fonts 與 Font Awesome 圖標庫 -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* 全域基本樣式 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+
+        :root {
+            --primary-color: #FF8C00;
+            --primary-hover: #E07B00;
+            --primary-light: #FFF5EC;
+            --text-dark: #2C3E50;
+            --text-muted: #7F8C8D;
+            --bg-light: #FDFBF7;
+            --bg-card-section: #F5EFEB;
+            --white: #FFFFFF;
+            --success-color: #2ECC71;
+            --transition-speed: 0.3s;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 頂部導覽列 */
+        .navbar {
+            background-color: var(--white);
+            border-bottom: 2px solid var(--primary-light);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .nav-logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform var(--transition-speed) ease;
+        }
+
+        .nav-logo:hover {
+            transform: scale(1.03);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            color: var(--text-dark);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 16px;
+            transition: color var(--transition-speed) ease;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color);
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background-color: var(--primary-light);
+            border: 1.5px solid transparent;
+            border-radius: 30px;
+            padding: 4px 6px 4px 16px;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--primary-color);
+            background-color: var(--white);
+            box-shadow: 0 0 8px rgba(255, 140, 0, 0.15);
+        }
+
+        .search-input {
+            border: none;
+            background: transparent;
+            outline: none;
+            color: var(--text-dark);
+            font-size: 14px;
+            width: 160px;
+            transition: width var(--transition-speed) ease;
+        }
+
+        .search-input:focus {
+            width: 200px;
+        }
+
+        .search-btn {
+            background-color: var(--primary-color);
+            border: none;
+            color: var(--white);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color var(--transition-speed) ease, transform var(--transition-speed) ease;
+        }
+
+        .search-btn:hover {
+            background-color: var(--primary-hover);
+            transform: scale(1.05);
+        }
+
+        /* 工具主內容區 */
+        .main-content {
+            flex-grow: 1;
+            padding: 40px 20px;
+            background-color: var(--bg-card-section);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tool-container {
+            background-color: var(--white);
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            max-width: 800px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 140, 0, 0.1);
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .tool-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tool-title i {
+            color: var(--primary-color);
+        }
+
+        /* 拖曳上傳控制面板 */
+        .upload-zone {
+            border: 3px dashed var(--primary-light);
+            background-color: var(--bg-light);
+            border-radius: 20px;
+            padding: 50px 30px;
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+            transition: all var(--transition-speed) ease;
+            margin-bottom: 30px;
+        }
+
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: var(--primary-color);
+            background-color: var(--primary-light);
+        }
+
+        .upload-icon {
+            font-size: 54px;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 5px;
+        }
+
+        .upload-subtext {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        /* 檔案資訊與壓縮品質調整 */
+        .compress-panel {
+            display: none;
+            background-color: var(--bg-light);
+            border: 1.5px solid var(--primary-light);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .file-info-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 140, 0, 0.15);
+            margin-bottom: 20px;
+        }
+
+        .file-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-dark);
+            word-break: break-all;
+        }
+
+        .file-type-badge {
+            background-color: var(--primary-color);
+            color: var(--white);
+            font-size: 12px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 12px;
+        }
+
+        .quality-control {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .quality-label {
+            font-size: 15px;
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .quality-slider {
+            width: 100%;
+            height: 6px;
+            background-color: #E2E8F0;
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+        }
+
+        .quality-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            transition: transform 0.1s ease;
+        }
+
+        .quality-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        /* 執行壓縮大按鈕 */
+        .action-btn {
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            border-radius: 30px;
+            padding: 14px 40px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 5px 15px rgba(255, 140, 0, 0.2);
+            transition: all var(--transition-speed) ease;
+        }
+
+        .action-btn:hover:not(:disabled) {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 140, 0, 0.3);
+        }
+
+        .action-btn:disabled {
+            background-color: var(--text-muted);
+            box-shadow: none;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        /* 進度條與狀態 */
+        .status-panel {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background-color: #E2E8F0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background-color: var(--primary-color);
+            transition: width 0.1s ease;
+        }
+
+        /* 壓縮完成結果面板 */
+        .result-panel {
+            display: none;
+            background-color: var(--primary-light);
+            border: 2px solid var(--primary-color);
+            border-radius: 20px;
+            padding: 25px;
+            margin-top: 30px;
+            text-align: center;
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .savings-badge {
+            display: inline-block;
+            background-color: var(--success-color);
+            color: var(--white);
+            font-size: 20px;
+            font-weight: 700;
+            padding: 6px 18px;
+            border-radius: 30px;
+            margin-bottom: 20px;
+        }
+
+        .result-stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background-color: var(--white);
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+        }
+
+        .stat-title {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        /* 隱私資訊防護提示卡片 */
+        .privacy-tip {
+            margin-top: 30px;
+            background-color: #F8FAFC;
+            border-radius: 16px;
+            padding: 15px 20px;
+            font-size: 13px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid #E2E8F0;
+        }
+
+        .privacy-tip i {
+            color: var(--success-color);
+            font-size: 16px;
+        }
+
+        /* 頁尾 */
+        .footer {
+            background-color: var(--white);
+            padding: 30px 20px;
+            text-align: center;
+            border-top: 1px solid var(--primary-light);
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* 動畫宣告 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* RWD 響應式配置 */
+        @media (max-width: 600px) {
+            .navbar-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .nav-right {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+            .search-box {
+                width: 100%;
+            }
+            .search-input {
+                width: 100%;
+            }
+            .search-input:focus {
+                width: 100%;
+            }
+            .tool-container {
+                padding: 25px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 頂部導覽列 -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="nav-logo">
+                <i class="fa-solid fa-toolbox"></i> Life Tools
+            </a>
+            <div class="nav-right">
+                <a href="/pages/about.html" class="nav-link">關於我們</a>
+                <div class="search-box">
+                    <input type="text" id="navSearchInput" class="search-input" placeholder="搜尋工具...">
+                    <button id="navSearchBtn" class="search-btn">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 工具主內容區 -->
+    <main class="main-content">
+        <div class="tool-container">
+            <h1 class="tool-title"><i class="fa-solid fa-file-zipper"></i> 萬用線上檔案壓縮器</h1>
+            
+            <!-- 拖曳上傳盒 -->
+            <div class="upload-zone" id="dropZone" onclick="triggerFileSelect()">
+                <div class="upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                <p class="upload-text">拖曳檔案到此處，或點擊選取檔案</p>
+                <p class="upload-subtext">支援 PDF、JPG、PNG、PPTX、Word 等任意檔案格式</p>
+                <input type="file" id="fileInput" onchange="handleFileSelected(event)">
+            </div>
+
+            <!-- 檔案設定控制台 -->
+            <section class="compress-panel" id="compressPanel">
+                <div class="file-info-header">
+                    <span class="file-name" id="fileNameLabel">...</span>
+                    <span class="file-type-badge" id="fileTypeBadge">PDF</span>
+                </div>
+
+                <!-- 僅在圖片格式時顯示的品質拉條 -->
+                <div class="quality-control" id="qualityControlSection">
+                    <label class="quality-label" for="qualitySlider">
+                        <span>壓縮品質比率 (品質越低，體積越小)</span>
+                        <strong id="qualityValueLabel" style="color: var(--primary-color);">80%</strong>
+                    </label>
+                    <input type="range" id="qualitySlider" class="quality-slider" min="10" max="100" value="80" oninput="updateQualityLabel(this.value)">
+                </div>
+
+                <!-- 執行壓縮按鈕 -->
+                <button class="action-btn" id="compressBtn" style="margin-top: 25px;" onclick="processCompression()">
+                    <i class="fa-solid fa-bolt"></i> 立即執行本地端壓縮
+                </button>
+            </section>
+
+            <!-- 運算狀態與進度條 -->
+            <div class="status-panel" id="statusPanel">
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+                <p style="font-size: 14px; color: var(--text-muted);" id="statusText">正在壓縮檔案，請稍候...</p>
+            </div>
+
+            <!-- 壓縮結果與下載區 -->
+            <section class="result-panel" id="resultPanel">
+                <div class="savings-badge">
+                    <i class="fa-solid fa-sparkles"></i> 體積成功減少 <span id="savingsPercent">0%</span>！
+                </div>
+                
+                <div class="result-stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-title">原始檔案大小</div>
+                        <div class="stat-value" id="originalSizeLabel">0 KB</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">壓縮後檔案大小</div>
+                        <div class="stat-value" id="compressedSizeLabel" style="color: var(--success-color);">0 KB</div>
+                    </div>
+                </div>
+
+                <button class="action-btn" id="downloadBtn" onclick="triggerDownload()">
+                    <i class="fa-solid fa-download"></i> 下載壓縮後的檔案
+                </button>
+            </section>
+
+            <!-- 隱私宣告 -->
+            <div class="privacy-tip">
+                <i class="fa-solid fa-shield-halved"></i>
+                <span>安全隱私宣告：所有的壓縮程序均在您本機的瀏覽器內部運作，您的檔案絕不會被上傳到任何伺服器。</span>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- 頁尾 -->
+    <footer class="footer">
+        &copy; Royal Devotee (NeuralNexusLab X 0xseanlee), all rights reserved.
+    </footer>
+
+    <script>
+        let selectedFile = null; // 儲存使用者上傳的 File 物件
+        let compressedBlob = null; // 儲存壓縮後生成的 Blob
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始化導覽列搜尋功能
+            initNavbarSearch();
+            // 初始化拖曳上傳事件監聽
+            initDragAndDrop();
+        });
+
+        // 導覽列搜尋跳轉機制
+        function initNavbarSearch() {
+            const navInput = document.getElementById('navSearchInput');
+            const navBtn = document.getElementById('navSearchBtn');
+
+            const triggerSearch = () => {
+                const query = navInput.value.trim();
+                if (query) {
+                    window.location.href = `/pages/search.html?q=${encodeURIComponent(query)}`;
+                }
+            };
+
+            navBtn.addEventListener('click', triggerSearch);
+            navInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') triggerSearch();
+            });
+        }
+
+        // 綁定拖曳檔案上傳事件
+        function initDragAndDrop() {
+            const dropZone = document.getElementById("dropZone");
+
+            ["dragenter", "dragover"].forEach(eventName => {
+                dropZone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    dropZone.classList.add("dragover");
+                }, false);
+            });
+
+            ["dragleave", "drop"].forEach(eventName => {
+                dropZone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    dropZone.classList.remove("dragover");
+                }, false);
+            });
+
+            dropZone.addEventListener("drop", (e) => {
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    processUploadedFile(files[0]);
+                }
+            }, false);
+        }
+
+        // 點擊拖曳盒觸發選擇檔案視窗
+        function triggerFileSelect() {
+            document.getElementById("fileInput").click();
+        }
+
+        // 使用者點選檔案後觸發
+        function handleFileSelected(event) {
+            const files = event.target.files;
+            if (files.length > 0) {
+                processUploadedFile(files[0]);
+            }
+        }
+
+        // 分析並展示上傳檔案之資訊
+        function processUploadedFile(file) {
+            selectedFile = file;
+            
+            const compressPanel = document.getElementById("compressPanel");
+            const resultPanel = document.getElementById("resultPanel");
+            const qualitySection = document.getElementById("qualityControlSection");
+            const fileTypeBadge = document.getElementById("fileTypeBadge");
+            const fileNameLabel = document.getElementById("fileNameLabel");
+
+            // 隱藏先前的結果
+            resultPanel.style.display = "none";
+            compressedBlob = null;
+
+            // 寫入檔案名稱與類型副檔名
+            fileNameLabel.textContent = file.name;
+            const ext = file.name.split('.').pop().toUpperCase();
+            fileTypeBadge.textContent = ext;
+
+            // 判斷是否為圖片：僅圖片才開放進行有損 Canvas 品質調整
+            const isImage = file.type.startsWith("image/");
+            if (isImage) {
+                qualitySection.style.display = "flex";
+            } else {
+                qualitySection.style.display = "none";
+            }
+
+            // 展開控制面板
+            compressPanel.style.display = "block";
+        }
+
+        // 更新圖片壓縮品質標籤
+        function updateQualityLabel(value) {
+            document.getElementById("qualityValueLabel").textContent = `${value}%`;
+        }
+
+        // 分流執行壓縮
+        async function processCompression() {
+            if (!selectedFile) return;
+
+            const progressBar = document.getElementById("progressBar");
+            const statusPanel = document.getElementById("statusPanel");
+            const statusText = document.getElementById("statusText");
+            const resultPanel = document.getElementById("resultPanel");
+
+            statusPanel.style.display = "block";
+            resultPanel.style.display = "none";
+            progressBar.style.width = "20%";
+            statusText.textContent = "正在配置壓縮管線...";
+
+            // 鎖定壓縮按鈕避免重疊點擊
+            document.getElementById("compressBtn").disabled = true;
+
+            try {
+                if (selectedFile.type.startsWith("image/")) {
+                    // A. 圖片有損 canvas 壓縮
+                    const quality = parseInt(document.getElementById("qualitySlider").value) / 100;
+                    progressBar.style.width = "60%";
+                    statusText.textContent = "正在重繪並減少多餘噪點...";
+                    compressedBlob = await compressImageToBlob(selectedFile, quality);
+                } else {
+                    // B. 文件與任意其他檔案使用 Compression Streams API 進行 Gzip 無損打包壓縮
+                    progressBar.style.width = "60%";
+                    statusText.textContent = "正在將檔案轉換為 Gzip 壓縮二進位串流...";
+                    compressedBlob = await compressFileToGzip(selectedFile);
+                }
+
+                progressBar.style.width = "100%";
+                statusText.textContent = "本地端壓縮成功！";
+
+                // 呈現壓縮比例結果
+                displayCompressionResult();
+
+            } catch (error) {
+                console.error("Compression failed:", error);
+                statusText.textContent = "壓縮失敗！請檢查瀏覽器版本是否支援 Stream API。";
+            } finally {
+                document.getElementById("compressBtn").disabled = false;
+            }
+        }
+
+        // 技術 A：利用 Canvas 壓縮圖片二進位檔案
+        function compressImageToBlob(file, quality) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = function (event) {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = function () {
+                        const canvas = document.createElement("canvas");
+                        const ctx = canvas.getContext("2d");
+                        
+                        // 維持原解析度進行 Canvas 渲染
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        ctx.drawImage(img, 0, 0);
+                        
+                        // 匯出為壓縮後的 JPEG 格式 Blob
+                        canvas.toBlob((blob) => {
+                            if (blob) {
+                                resolve(blob);
+                            } else {
+                                reject(new Error("Canvas export failed"));
+                            }
+                        }, "image/jpeg", quality);
+                    };
+                };
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        // 技術 B：使用 native browser CompressionStream (Gzip)
+        async function compressFileToGzip(file) {
+            // 將檔案讀取為 ReadableStream
+            const stream = file.stream();
+            // 建立一個 Gzip 標準的壓縮管線轉換器
+            const compressionStream = new CompressionStream("gzip");
+            const compressedStream = stream.pipeThrough(compressionStream);
+            
+            // 讀取轉換後之二進位並包裝為 Blob
+            const response = new Response(compressedStream);
+            return await response.blob();
+        }
+
+        // 計算並呈現大小節省資訊
+        function displayCompressionResult() {
+            const originalSize = selectedFile.size;
+            const compressedSize = compressedBlob.size;
+
+            document.getElementById("originalSizeLabel").textContent = formatBytes(originalSize);
+            document.getElementById("compressedSizeLabel").textContent = formatBytes(compressedSize);
+
+            // 計算容量減少比率（若壓縮後反而變大，顯示 0%）
+            const savings = originalSize > compressedSize ? ((originalSize - compressedSize) / originalSize) * 100 : 0;
+            document.getElementById("savingsPercent").textContent = `${Math.round(savings)}%`;
+
+            // 顯現結果下載區
+            document.getElementById("resultPanel").style.display = "block";
+            document.getElementById("statusPanel").style.display = "none";
+        }
+
+        // 觸發本地端瀏覽器下載 Blob
+        function triggerDownload() {
+            if (!compressedBlob) return;
+
+            const isImage = selectedFile.type.startsWith("image/");
+            // 若為圖片，輸出維持為原副檔名或 .jpg；若為 Gzip，副檔名後方補上 .gz
+            const downloadName = isImage ? selectedFile.name : `${selectedFile.name}.gz`;
+
+            // 建立下載專用虛擬 a 標籤
+            const url = URL.createObjectURL(compressedBlob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = downloadName;
+            document.body.appendChild(a);
+            a.click();
+            
+            // 釋放記憶體記憶物件 URL
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // 輔助函式：檔案大小文字友善格式化 (B -> KB / MB)
+        function formatBytes(bytes) {
+            if (bytes === 0) return "0 Bytes";
+            const k = 1024;
+            const sizes = ["Bytes", "KB", "MB", "GB"];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+        }
+    </script>
+</body>
+</html>
