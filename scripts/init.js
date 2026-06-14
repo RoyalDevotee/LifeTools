@@ -1,18 +1,46 @@
 (function () {
   "use strict";
 
-  // 1. 宣告主控台警告文字的 CSS 樣式
+  // 1. 於初始化時，立即檢索是否處於 5 分鐘的請求超限鎖定狀態
+  const currentTimeOnLoad = Date.now();
+  const lockoutEnd = parseInt(localStorage.getItem("lifeToolsLockoutEnd")) || 0;
+  
+  if (lockoutEnd > currentTimeOnLoad) {
+    // 處於鎖定期間，直接將網頁渲染為完全空白，並中斷後續程式碼執行
+    document.documentElement.innerHTML = "";
+    return;
+  }
+
+  // 2. 機器人行為防禦：自動化框架檢測（如 Selenium、Puppeteer 等無頭瀏覽器）
+  if (navigator.webdriver) {
+    // 偵測到機器人驅動環境，強制清空頁面
+    document.documentElement.innerHTML = "";
+    return;
+  }
+
+  // 3. 機器人行為防禦：極速非人為點擊頻率偵測
+  let lastClickTime = 0;
+  document.addEventListener("click", () => {
+    const clickTime = Date.now();
+    // 若兩次點擊間隔小於 8 毫秒，判定為自動化腳本點擊而非人類行為
+    if (lastClickTime && (clickTime - lastClickTime < 8)) {
+      document.documentElement.innerHTML = "";
+    }
+    lastClickTime = clickTime;
+  });
+
+  // 4. 宣告主控台警告文字的 CSS 樣式
   const warningHeaderStyle = "color: #FF3B30; font-size: 24px; font-weight: bold; background-color: #FFE5E5; padding: 8px 16px; border-radius: 4px; border: 1px solid #FF3B30;";
   const warningBodyStyle = "color: #2C3E50; font-size: 14px; font-weight: bold; line-height: 1.8; margin-top: 10px;";
 
-  // 2. 於控制台印出醒目的安全警示，防止 Self-XSS 社交工程攻擊
+  // 5. 於控制台印出醒目的安全警示，防止 Self-XSS 社交工程攻擊
   console.log("%c⚠️ 請注意！Security Warning ⚠️", warningHeaderStyle);
   console.log(
     "%c此控制台專供程式設計師偵錯使用。請勿在此輸入、貼上或執行任何來源不明的程式腳本，以免您的帳號與個人資料遭受惡意竊取！", 
     warningBodyStyle
   );
 
-  // 3. 執行防劫持框架（Frame-busting）檢測，避免網頁被惡意內嵌於 iframe 中
+  // 6. 執行防劫持框架（Frame-busting）檢測，避免網頁被惡意內嵌於 iframe 中
   try {
     if (window.self !== window.top) {
       // 偵測到網頁處於 iframe 內部，將父視窗重導向至安全聲明頁面
@@ -23,52 +51,47 @@
     window.parent.location.href = "/pages/embed.html";
   }
 
-  // 4. 監測網頁核心 HTML 結構，防範使用者手動篡改
-  function startHtmlMonitoring() {
-    const targetNode = document.documentElement;
+  // 7. 請求頻率限制器（1分鐘內超過 60 次 fetch 請求，則鎖定 5 分鐘）
+  function trackRequestFrequency() {
+    const now = Date.now();
+    let requestHistory = [];
+
+    try {
+      // 從 localStorage 讀取請求歷史戳記陣列
+      requestHistory = JSON.parse(localStorage.getItem("lifeToolsRequestHistory")) || [];
+    } catch (e) {
+      requestHistory = [];
+    }
+
+    // 僅保留過去 60 秒內（60000毫秒）發生的請求戳記
+    requestHistory = requestHistory.filter(timestamp => now - timestamp < 60000);
     
-    // 設定觀察選項，監控子節點變化、屬性變化及所有子樹節點
-    const observerConfig = {
-      childList: true,
-      attributes: true,
-      subtree: true
-    };
+    // 加入本次請求
+    requestHistory.push(now);
 
-    // 變更事件觸發時的監聽函式
-    const callback = function (mutationsList) {
-      for (const mutation of mutationsList) {
-        const mutatedElement = mutation.target;
+    try {
+      // 將過濾後的新陣列存回 localStorage
+      localStorage.setItem("lifeToolsRequestHistory", JSON.stringify(requestHistory));
+    } catch (e) {
+      // 忽視隱私模式下 localStorage 寫入受阻的異常
+    }
 
-        // 定義不可被變更的靜態核心結構條件
-        //（包含：<head> 標籤、其中的腳本、以及底部的版權宣告區）
-        const isHeadChanged = mutatedElement.tagName === "HEAD" || mutatedElement.closest("head") !== null;
-        const isScriptChanged = mutatedElement.tagName === "SCRIPT" || mutation.addedNodes[0]?.tagName === "SCRIPT" || mutation.removedNodes[0]?.tagName === "SCRIPT";
-        const isFooterChanged = mutatedElement.closest("footer") !== null || (mutatedElement.classList && mutatedElement.classList.contains("footer"));
-
-        if (isHeadChanged || isScriptChanged || isFooterChanged) {
-          // 偵測到使用者手動刪除/修改靜態核心元件，立即重新載入網頁以還原預設狀態
-          window.location.reload();
-          break;
-        }
-      }
-    };
-
-    // 宣告並啟動 DOM 監聽器
-    const mutationObserver = new MutationObserver(callback);
-    mutationObserver.observe(targetNode, observerConfig);
+    // 當 1 分鐘內累積請求大於 60 次，啟動鎖定懲罰
+    if (requestHistory.length > 60) {
+      const penaltyEndTime = now + 5 * 60 * 1000; // 5分鐘後
+      localStorage.setItem("lifeToolsLockoutEnd", penaltyEndTime);
+      // 立即讓當前網頁變空白
+      document.documentElement.innerHTML = "";
+    }
   }
 
-  // 5. 確保 DOM 載入完成後再啟動監聽器，避免與瀏覽器初始解析衝突
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", startHtmlMonitoring);
-  } else {
-    startHtmlMonitoring();
-  }
-
-  // 6. 覆寫全域 fetch，針對本站設定檔進行防快取（Cache-Busting）處理
+  // 8. 覆寫全域 fetch，針對本站設定檔進行防快取（Cache-Busting）處理並統計請求次數
   const originalFetch = window.fetch;
   window.fetch = function (input, init) {
     let requestUrl = "";
+
+    // 進行全域請求次數累加監控
+    trackRequestFrequency();
 
     // 判斷請求輸入類型，並提取出網址字串
     if (typeof input === "string") {
