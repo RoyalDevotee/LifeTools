@@ -1,9 +1,9 @@
 (function () {
   "use strict";
 
-  // 1. 宣告主控台警告文字的 CSS 樣式
+  // 1. 宣告主控台警告文字的 CSS 樣式（已將內文改為亮灰色 #EAEAEA，確保深色模式可讀）
   const warningHeaderStyle = "color: #FF3B30; font-size: 24px; font-weight: bold; background-color: #FFE5E5; padding: 8px 16px; border-radius: 4px; border: 1px solid #FF3B30;";
-  const warningBodyStyle = "color: #2C3E50; font-size: 14px; font-weight: bold; line-height: 1.8; margin-top: 10px;";
+  const warningBodyStyle = "color: #EAEAEA; font-size: 14px; font-weight: bold; line-height: 1.8; margin-top: 10px;";
 
   // 2. 於控制台印出醒目的安全警示，防止 Self-XSS 社交工程攻擊
   console.log("%c⚠️ 請注意！Security Warning ⚠️", warningHeaderStyle);
