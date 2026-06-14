@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>精緻 QR Code 產生器 - Life Tools</title>
+    <!-- 載入規定的初始化腳本 -->
+    <script src="/scripts/init.js"></script>
+    <!-- 引入開源標準 qrcode.js 函式庫 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- 引入 Google Fonts 與 Font Awesome 圖標庫 -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* 全域基本樣式 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+
+        :root {
+            --primary-color: #FF8C00;
+            --primary-hover: #E07B00;
+            --primary-light: #FFF5EC;
+            --text-dark: #2C3E50;
+            --text-muted: #7F8C8D;
+            --bg-light: #FDFBF7;
+            --bg-card-section: #F5EFEB;
+            --white: #FFFFFF;
+            --transition-speed: 0.3s;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 頂部導覽列 */
+        .navbar {
+            background-color: var(--white);
+            border-bottom: 2px solid var(--primary-light);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .nav-logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform var(--transition-speed) ease;
+        }
+
+        .nav-logo:hover {
+            transform: scale(1.03);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            color: var(--text-dark);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 16px;
+            transition: color var(--transition-speed) ease;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color);
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background-color: var(--primary-light);
+            border: 1.5px solid transparent;
+            border-radius: 30px;
+            padding: 4px 6px 4px 16px;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--primary-color);
+            background-color: var(--white);
+            box-shadow: 0 0 8px rgba(255, 140, 0, 0.15);
+        }
+
+        .search-input {
+            border: none;
+            background: transparent;
+            outline: none;
+            color: var(--text-dark);
+            font-size: 14px;
+            width: 160px;
+            transition: width var(--transition-speed) ease;
+        }
+
+        .search-input:focus {
+            width: 200px;
+        }
+
+        .search-btn {
+            background-color: var(--primary-color);
+            border: none;
+            color: var(--white);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color var(--transition-speed) ease, transform var(--transition-speed) ease;
+        }
+
+        .search-btn:hover {
+            background-color: var(--primary-hover);
+            transform: scale(1.05);
+        }
+
+        /* 工具主內容區 */
+        .main-content {
+            flex-grow: 1;
+            padding: 40px 20px;
+            background-color: var(--bg-card-section);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tool-container {
+            background-color: var(--white);
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            max-width: 950px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 140, 0, 0.1);
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .tool-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 35px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tool-title i {
+            color: var(--primary-color);
+        }
+
+        /* 工作區雙欄排版 */
+        .workspace {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 40px;
+            align-items: start;
+        }
+
+        /* 左側：設定控制面板 */
+        .settings-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-label {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .textarea-field {
+            width: 100%;
+            height: 120px;
+            border: 2px solid var(--primary-light);
+            border-radius: 12px;
+            padding: 12px;
+            font-size: 15px;
+            outline: none;
+            resize: none;
+            transition: border-color var(--transition-speed) ease;
+        }
+
+        .textarea-field:focus {
+            border-color: var(--primary-color);
+        }
+
+        /* 屬性細項配置區 */
+        .config-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .color-pickers {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: var(--bg-light);
+            border: 1.5px solid var(--primary-light);
+            padding: 8px 12px;
+            border-radius: 12px;
+        }
+
+        .color-input {
+            width: 36px;
+            height: 36px;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            border-radius: 6px;
+            background: none;
+        }
+
+        .select-field {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 2px solid var(--primary-light);
+            outline: none;
+            font-size: 15px;
+            cursor: pointer;
+            background-color: var(--white);
+        }
+
+        .select-field:focus {
+            border-color: var(--primary-color);
+        }
+
+        /* 按鈕群 */
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .action-btn {
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            border-radius: 30px;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(255, 140, 0, 0.2);
+            transition: all var(--transition-speed) ease;
+        }
+
+        .action-btn:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 140, 0, 0.3);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--text-dark);
+            border: 1.5px solid var(--primary-light);
+            box-shadow: none;
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        /* 右側：QR Code 繪製預覽區 */
+        .preview-panel {
+            background-color: var(--bg-light);
+            border: 2px dashed var(--primary-light);
+            border-radius: 20px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 380px;
+            text-align: center;
+        }
+
+        /* QR Code 畫布展示容器 */
+        .qrcode-output {
+            background-color: var(--white);
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
+            display: none; /* 預設無資料時隱藏 */
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.2);
+        }
+
+        .qrcode-output img {
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* 空值預設狀態提示 */
+        .placeholder-message {
+            color: var(--text-muted);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .placeholder-message i {
+            font-size: 64px;
+            color: var(--primary-light);
+        }
+
+        /* 頁尾 */
+        .footer {
+            background-color: var(--white);
+            padding: 30px 20px;
+            text-align: center;
+            border-top: 1px solid var(--primary-light);
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* 動畫宣告 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.6); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* RWD 響應式佈局 */
+        @media (max-width: 768px) {
+            .navbar-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .nav-right {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+            .search-box {
+                width: 100%;
+            }
+            .search-input {
+                width: 100%;
+            }
+            .search-input:focus {
+                width: 100%;
+            }
+            .workspace {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            .preview-panel {
+                min-height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 頂部導覽列 -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="nav-logo">
+                <i class="fa-solid fa-toolbox"></i> Life Tools
+            </a>
+            <div class="nav-right">
+                <a href="/pages/about.html" class="nav-link">關於我們</a>
+                <div class="search-box">
+                    <input type="text" id="navSearchInput" class="search-input" placeholder="搜尋工具...">
+                    <button id="navSearchBtn" class="search-btn">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 工具主內容區 -->
+    <main class="main-content">
+        <div class="tool-container">
+            <h1 class="tool-title"><i class="fa-solid fa-qrcode"></i> 精緻 QR Code 產生器</h1>
+            
+            <div class="workspace">
+                
+                <!-- 左側：設定面板 -->
+                <section class="settings-panel">
+                    <!-- 文字與網址輸入框 -->
+                    <div class="input-group">
+                        <label class="input-label" for="qrText">請輸入文字或網址</label>
+                        <textarea id="qrText" class="textarea-field" placeholder="請輸入網址或任意文字內容..." oninput="autoGenerateQr()"></textarea>
+                    </div>
+
+                    <!-- 屬性進階微調 -->
+                    <div class="config-grid">
+                        <div class="input-group">
+                            <label class="input-label">前景色 (條碼顏色)</label>
+                            <div class="color-pickers">
+                                <input type="color" id="fgColor" class="color-input" value="#000000" onchange="autoGenerateQr()">
+                                <span style="font-size: 13px; font-weight: 500;">深色佳</span>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">背景色</label>
+                            <div class="color-pickers">
+                                <input type="color" id="bgColor" class="color-input" value="#ffffff" onchange="autoGenerateQr()">
+                                <span style="font-size: 13px; font-weight: 500;">淺色佳</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label" for="qrSize">條碼大小 (尺寸像素)</label>
+                        <select id="qrSize" class="select-field" onchange="autoGenerateQr()">
+                            <option value="128">128 x 128 px</option>
+                            <option value="256" selected>256 x 256 px</option>
+                            <option value="384">384 x 384 px</option>
+                            <option value="512">512 x 512 px</option>
+                        </select>
+                    </div>
+
+                    <!-- 操作按鈕區 -->
+                    <div class="button-group">
+                        <button class="action-btn" onclick="generateQrCode()">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> 產生 QR Code
+                        </button>
+                        <button class="action-btn btn-secondary" id="downloadBtn" onclick="downloadQrCode()" disabled>
+                            <i class="fa-solid fa-download"></i> 下載 PNG 圖檔
+                        </button>
+                    </div>
+                </section>
+
+                <!-- 右側：即時預覽 -->
+                <section class="preview-panel" id="previewPanel">
+                    <!-- 未產生時的預設骨架 -->
+                    <div class="placeholder-message" id="placeholderMsg">
+                        <i class="fa-solid fa-qrcode"></i>
+                        <p style="font-size: 15px; font-weight: 500;">在左側輸入網址或內容<br>即可在此處即時生成 QR Code 預覽</p>
+                    </div>
+                    
+                    <!-- 條碼實際渲染輸出 -->
+                    <div class="qrcode-output" id="qrcodeOutput"></div>
+                </section>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- 頁尾 -->
+    <footer class="footer">
+        &copy; Royal Devotee (NeuralNexusLab X 0xseanlee), all rights reserved.
+    </footer>
+
+    <script>
+        let qrCodeInstance = null; // 紀錄 qrcode.js 物件實例
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始化導覽列搜尋
+            initNavbarSearch();
+        });
+
+        // 導覽列搜尋跳轉邏輯
+        function initNavbarSearch() {
+            const navInput = document.getElementById('navSearchInput');
+            const navBtn = document.getElementById('navSearchBtn');
+
+            const triggerSearch = () => {
+                const query = navInput.value.trim();
+                if (query) {
+                    window.location.href = `/pages/search.html?q=${encodeURIComponent(query)}`;
+                }
+            };
+
+            navBtn.addEventListener('click', triggerSearch);
+            navInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') triggerSearch();
+            });
+        }
+
+        // 輸入內容時自動觸發生成（防抖優化）
+        function autoGenerateQr() {
+            const textValue = document.getElementById("qrText").value.trim();
+            
+            // 若為空值，還原預設提示面板
+            if (!textValue) {
+                document.getElementById("placeholderMsg").style.display = "flex";
+                document.getElementById("qrcodeOutput").style.display = "none";
+                document.getElementById("downloadBtn").disabled = true;
+                return;
+            }
+
+            // 執行繪製
+            generateQrCode();
+        }
+
+        // 生成 QR Code 核心方法
+        function generateQrCode() {
+            const textValue = document.getElementById("qrText").value.trim();
+            const size = parseInt(document.getElementById("qrSize").value);
+            const fgColor = document.getElementById("fgColor").value;
+            const bgColor = document.getElementById("bgColor").value;
+
+            const qrcodeOutput = document.getElementById("qrcodeOutput");
+            const placeholderMsg = document.getElementById("placeholderMsg");
+            const downloadBtn = document.getElementById("downloadBtn");
+
+            if (!textValue) {
+                alert("請先輸入要產生 QR Code 的文字或網址！");
+                return;
+            }
+
+            // 清空舊畫布內容
+            qrcodeOutput.innerHTML = "";
+            placeholderMsg.style.display = "none";
+            qrcodeOutput.style.display = "block";
+
+            // 初始化或更新 qrcodejs 畫布繪製
+            qrCodeInstance = new QRCode(qrcodeOutput, {
+                text: textValue,
+                width: size,
+                height: size,
+                colorDark: fgColor,
+                colorLight: bgColor,
+                correctLevel: QRCode.CorrectLevel.H // 高容錯率
+            });
+
+            // 開啟下載按鈕功能
+            downloadBtn.disabled = false;
+        }
+
+        // 匯出並下載條碼 PNG
+        function downloadQrCode() {
+            const qrcodeOutput = document.getElementById("qrcodeOutput");
+            
+            // qrcode.js 會在內部渲染一個 img 或是 canvas
+            const imgElement = qrcodeOutput.querySelector("img");
+            const canvasElement = qrcodeOutput.querySelector("canvas");
+
+            // 封裝通用下載邏輯
+            const triggerDownloadAction = (dataUrl) => {
+                const a = document.createElement("a");
+                a.href = dataUrl;
+                a.download = "lifetools-qrcode.png";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            };
+
+            if (imgElement && imgElement.src) {
+                // 部分瀏覽器採用 img 的 base64 直接下載
+                triggerDownloadAction(imgElement.src);
+            } else if (canvasElement) {
+                // 否則採用 canvas 的 toDataURL
+                const dataUrl = canvasElement.toDataURL("image/png");
+                triggerDownloadAction(dataUrl);
+            } else {
+                alert("抱歉，無法讀取 QR Code 圖像進行下載。");
+            }
+        }
+    </script>
+</body>
+</html>
