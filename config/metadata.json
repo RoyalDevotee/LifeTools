@@ -3,5 +3,6 @@
   {"name": "隨機抽籤輪盤","description": "客製化名單的線上幸運大輪盤，支援即時編輯與擬真轉動音效，決定午餐或抽獎的最佳助手。","path": "/pages/wheel.html"},
   {"name": "隨機座位抽籤","description": "支援自訂教室行列大小，可隨意剔除空位，具備三秒隨機跳號動畫的現代感座位安排系統。","path": "/pages/seat.html"},
   {"name": "情侶星座匹配度分析","description": "運用占星學星象共鳴演算法，即時算出男女雙方星座的契合度分數，並提供深度的愛情解析與相處指南。","path": "/pages/zodiac.html"},
-  {"name": "萬用單位換算器","description": "支援長度、重量、溫度、面積與體積等五大類別、十種以上常用單位的雙向即時換算工具。","path": "/pages/converter.html"}
+  {"name": "萬用單位換算器","description": "支援長度、重量、溫度、面積與體積等五大類別、十種以上常用單位的雙向即時換算工具。","path": "/pages/converter.html"},
+  {"name": "萬用線上檔案壓縮器","description": "安全且100%本地端進行的檔案壓縮工具。支援圖片有損壓縮，以及 PDF、PPTX 等各類文件之 Gzip 串流無損打包壓縮。","path": "/pages/compressor.html"}
 ]
