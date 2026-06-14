@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>萬能唬爛產生器 - Life Tools</title>
+    <!-- 載入規定的初始化腳本 -->
+    <script src="/scripts/init.js"></script>
+    <!-- 引入 Google Fonts 與 Font Awesome 圖標庫 -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* 全域基本樣式 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+
+        :root {
+            --primary-color: #FF8C00;
+            --primary-hover: #E07B00;
+            --primary-light: #FFF5EC;
+            --text-dark: #2C3E50;
+            --text-muted: #7F8C8D;
+            --bg-light: #FDFBF7;
+            --bg-card-section: #F5EFEB;
+            --white: #FFFFFF;
+            --success-color: #2ECC71;
+            --transition-speed: 0.3s;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 頂部導覽列 */
+        .navbar {
+            background-color: var(--white);
+            border-bottom: 2px solid var(--primary-light);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .nav-logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform var(--transition-speed) ease;
+        }
+
+        .nav-logo:hover {
+            transform: scale(1.03);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            color: var(--text-dark);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 16px;
+            transition: color var(--transition-speed) ease;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color);
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background-color: var(--primary-light);
+            border: 1.5px solid transparent;
+            border-radius: 30px;
+            padding: 4px 6px 4px 16px;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--primary-color);
+            background-color: var(--white);
+            box-shadow: 0 0 8px rgba(255, 140, 0, 0.15);
+        }
+
+        .search-input {
+            border: none;
+            background: transparent;
+            outline: none;
+            color: var(--text-dark);
+            font-size: 14px;
+            width: 160px;
+            transition: width var(--transition-speed) ease;
+        }
+
+        .search-input:focus {
+            width: 200px;
+        }
+
+        .search-btn {
+            background-color: var(--primary-color);
+            border: none;
+            color: var(--white);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color var(--transition-speed) ease, transform var(--transition-speed) ease;
+        }
+
+        .search-btn:hover {
+            background-color: var(--primary-hover);
+            transform: scale(1.05);
+        }
+
+        /* 工具主內容區 */
+        .main-content {
+            flex-grow: 1;
+            padding: 40px 20px;
+            background-color: var(--bg-card-section);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tool-container {
+            background-color: var(--white);
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            max-width: 950px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 140, 0, 0.1);
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .tool-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 35px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tool-title i {
+            color: var(--primary-color);
+        }
+
+        /* 雙欄排版區 */
+        .workspace {
+            display: grid;
+            grid-template-columns: 1fr 1.3fr;
+            gap: 40px;
+            align-items: start;
+        }
+
+        /* 左側輸入設定面板 */
+        .settings-panel {
+            background-color: var(--bg-light);
+            border: 2px solid var(--primary-light);
+            border-radius: 20px;
+            padding: 30px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-label {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-dark);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 12px;
+            border: 1.5px solid #CBD5E1;
+            outline: none;
+            font-size: 16px;
+            font-weight: 500;
+            background-color: var(--white);
+            transition: border-color var(--transition-speed) ease;
+        }
+
+        .input-field:focus {
+            border-color: var(--primary-color);
+        }
+
+        .range-slider {
+            width: 100%;
+            height: 6px;
+            background-color: #E2E8F0;
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+        }
+
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            transition: transform 0.1s ease;
+        }
+
+        .range-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .action-btn {
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            border-radius: 30px;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(255, 140, 0, 0.2);
+            transition: all var(--transition-speed) ease;
+            margin-top: 10px;
+        }
+
+        .action-btn:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 140, 0, 0.3);
+        }
+
+        /* 右側生成的唬爛成果展示區 */
+        .output-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            height: 100%;
+        }
+
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .output-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .word-count-badge {
+            font-size: 13px;
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 700;
+        }
+
+        .essay-box {
+            width: 100%;
+            height: 420px;
+            background-color: #FAF6F0;
+            border: 2px solid #E6DEC9;
+            border-radius: 16px;
+            padding: 24px;
+            overflow-y: auto;
+            color: #3E382B;
+            font-size: 15px;
+            line-height: 2;
+            text-align: justify;
+            white-space: pre-wrap; /* 支援段落換行 */
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.03);
+        }
+
+        .copy-btn {
+            background-color: var(--text-dark);
+            color: var(--white);
+            border: none;
+            border-radius: 30px;
+            padding: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .copy-btn:hover {
+            background-color: #1a252f;
+            transform: translateY(-2px);
+        }
+
+        /* 微互動 Toast 提示 */
+        .toast-message {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background-color: var(--text-dark);
+            color: var(--white);
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            opacity: 0;
+            z-index: 2000;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toast-message.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* 頁尾 */
+        .footer {
+            background-color: var(--white);
+            padding: 30px 20px;
+            text-align: center;
+            border-top: 1px solid var(--primary-light);
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* 動畫宣告 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* RWD 響應式配置 */
+        @media (max-width: 800px) {
+            .workspace {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            .essay-box {
+                height: 320px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 頂部導覽列 -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="nav-logo">
+                <i class="fa-solid fa-toolbox"></i> Life Tools
+            </a>
+            <div class="nav-right">
+                <a href="/pages/about.html" class="nav-link">關於我們</a>
+                <div class="search-box">
+                    <input type="text" id="navSearchInput" class="search-input" placeholder="搜尋工具...">
+                    <button id="navSearchBtn" class="search-btn">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 工具主內容區 -->
+    <main class="main-content">
+        <div class="tool-container">
+            <h1 class="tool-title"><i class="fa-solid fa-feather-pointed"></i> 萬能唬爛文章產生器</h1>
+            
+            <div class="workspace">
+                
+                <!-- 左側：輸入控制面板 -->
+                <section class="settings-panel">
+                    <div class="input-group">
+                        <label class="input-label" for="topicInput">唬爛主題</label>
+                        <input type="text" id="topicInput" class="input-field" placeholder="例如：中午吃什麼、寫功課..." value="中午吃什麼">
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label" for="lengthSlider">
+                            <span>文章長度下限 (最少字數)</span>
+                            <strong id="lengthValLabel" style="color: var(--primary-color);">500 字</strong>
+                        </label>
+                        <input type="range" id="lengthSlider" class="range-slider" min="100" max="2000" step="50" value="500" oninput="updateLengthLabel(this.value)">
+                    </div>
+
+                    <button class="action-btn" onclick="generateEssay()">
+                        <i class="fa-solid fa-pencil"></i> 即刻開始胡言亂語
+                    </button>
+                </section>
+
+                <!-- 右側：生成的長篇文章輸出 -->
+                <section class="output-panel">
+                    <div class="output-header">
+                        <span class="output-title">產生成果</span>
+                        <span class="word-count-badge" id="wordCountLabel">共 0 字</span>
+                    </div>
+
+                    <!-- 唬爛文繪製展示框 -->
+                    <article class="essay-box" id="essayText">請填寫左側的主題與字數，然後點擊「即刻開始胡言亂語」按鈕來產生文章...</article>
+
+                    <!-- 一鍵複製功能 -->
+                    <button class="copy-btn" onclick="copyToClipboard()">
+                        <i class="fa-regular fa-copy"></i> 複製整篇文章
+                    </button>
+                </section>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- 複製成功 Toast 通知 -->
+    <div class="toast-message" id="toastMsg">
+        <i class="fa-solid fa-circle-check" style="color: #4CD964;"></i> 成功複製文章內容至剪貼簿！
+    </div>
+
+    <!-- 頁尾 -->
+    <footer class="footer">
+        &copy; Royal Devotee (NeuralNexusLab X 0xseanlee), all rights reserved.
+    </footer>
+
+    <script>
+        // 1. 名人名言範本庫 (動態注入主題)
+        const famousQuotes = [
+            "阿基米德告訴我們，給我一個支點，我能舉起整個地球。這句話套用到[主題]也是成立的。",
+            "歌德曾經說過，人之所以愛，是因為愛，不需要任何原因。同樣的，探討[主題]也不需要理由。",
+            "蘇格拉底告訴我們，真正高深的思想往往隱藏在最簡單的言詞中。這正如我們面對[主題]時的心境。",
+            "培根在《隨筆集》中曾指出：機會留給準備好的人。那麼，面對[主題]，我們是否也做好了完全的準備？",
+            "愛因斯坦無疑是智慧的化身，他曾經說過，想像力比知識更重要。思考[主題]的本質，正是需要這股無限的想像力。",
+            "莎士比亞的名劇中曾寫道：生存還是毀滅，這是一個值得考慮的問題。今天看來，[主題]無疑就是這樣一個拷問靈魂的問題。",
+            "泰戈爾有詩云，生如夏花之絢爛，死如秋葉之靜美。這為我們思索[主題]鋪設了美學的底蘊。"
+        ];
+
+        // 2. 萬能論述廢話句庫 (動態注入主題)
+        const boilerplateSentences = [
+            "這不禁令我們深思，[主題]的背後究竟隱藏著什麼樣的社會共識與道德框架？",
+            "我們不能僅僅從表面上看待這個問題，而是需要將[主題]抽絲剝繭，深入到其最核心的本質結構中去探討。",
+            "在這種不可避免的衝突之下，思考如何妥善安置[主題]，已經成為了現代人避無可避的重要課題。",
+            "既然如此，我們又何必對[主題]抱持著懷疑與不安？唯有勇敢面對，方能在迷霧中探尋到真理的微光。",
+            "在這個繁華且多變的時代中，[主題]的存在，既是歷史的必然，也是我們每個人命運中的偶然轉折點。",
+            "歷史的長河滾滾向前，唯有[主題]依然如璀璨之繁星，指引著我們在思維的泥淖中一步步前行。",
+            "或許有人會質疑[主題]的核心功能性，但我們不能忽視它在無形中塑造出的群體認同感與價值共識。"
+        ];
+
+        // 3. 轉折與連貫性廢話修飾句 (增加文章長度與讀書人氣息)
+        const connectivePhrases = [
+            "綜上所述，事情似乎有了一個明確的方向。",
+            "然而，這種看法未免過於片面與樂觀。",
+            "在這種艱難的處境下，我們不得不轉而尋求另一種可能性。",
+            "這件事情本身，其實有著極為深遠且難以用言語一語道破的歷史背景與現實牽引。",
+            "換句話說，這項研究的意義並不在於問題的解答，而在於提問本身。",
+            "不可否認的是，當我們帶著全新的視角去重新審視它時，會看見不一樣的風景。"
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始化導覽列搜尋
+            initNavbarSearch();
+        });
+
+        // 導覽列搜尋機制
+        function initNavbarSearch() {
+            const navInput = document.getElementById('navSearchInput');
+            const navBtn = document.getElementById('navSearchBtn');
+
+            const triggerSearch = () => {
+                const query = navInput.value.trim();
+                if (query) {
+                    window.location.href = `/pages/search.html?q=${encodeURIComponent(query)}`;
+                }
+            };
+
+            navBtn.addEventListener('click', triggerSearch);
+            navInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') triggerSearch();
+            });
+        }
+
+        // 更新長度拉條標籤數值
+        function updateLengthLabel(value) {
+            document.getElementById("lengthValLabel").textContent = `${value} 字`;
+        }
+
+        // 隨機抽選陣列元素的輔助函式
+        function getRandomElement(array) {
+            return array[Math.floor(Math.random() * array.length)];
+        }
+
+        // 生成唬爛文主演算法
+        function generateEssay() {
+            const topic = document.getElementById("topicInput").value.trim() || "中午吃什麼";
+            const minLength = parseInt(document.getElementById("lengthSlider").value);
+            const essayBox = document.getElementById("essayText");
+            const wordCountLabel = document.getElementById("wordCountLabel");
+
+            let resultText = "  "; // 開頭空兩格
+            let currentParagraphLength = 0;
+
+            // 迴圈編織文章直到超過指定字數下限
+            while (resultText.length < minLength) {
+                const randomAction = Math.random();
+
+                let sentence = "";
+                if (randomAction < 0.3) {
+                    // 30% 機率：抽名人名言並置換主題
+                    sentence = getRandomElement(famousQuotes).replace(/\[主題\]/g, topic);
+                } else if (randomAction < 0.7) {
+                    // 40% 機率：抽論述廢話並置換主題
+                    sentence = getRandomElement(boilerplateSentences).replace(/\[主題\]/g, topic);
+                } else {
+                    // 30% 機率：抽轉折連接詞
+                    sentence = getRandomElement(connectivePhrases);
+                }
+
+                resultText += sentence;
+                currentParagraphLength += sentence.length;
+
+                // 每當單段字數約超過 180 ~ 250 字時，自動換行並縮進，形成規律的篇章結構
+                if (currentParagraphLength > 200 && resultText.length < minLength) {
+                    resultText += "\n\n  ";
+                    currentParagraphLength = 0; // 重置當前段落計數
+                }
+            }
+
+            // 將結果寫入網頁
+            essayBox.textContent = resultText;
+            wordCountLabel.textContent = `共 ${resultText.length} 字`;
+        }
+
+        // 複製至剪貼簿
+        function copyToClipboard() {
+            const textContent = document.getElementById("essayText").textContent;
+            
+            // 排除初始提示字眼，避免使用者誤複製
+            if (textContent.includes("請填寫左側的主題")) {
+                alert("請先產生文章後再執行複製！");
+                return;
+            }
+
+            navigator.clipboard.writeText(textContent).then(() => {
+                showToast();
+            }).catch(error => {
+                console.error("Copy failed: ", error);
+            });
+        }
+
+        // 顯示複製成功 Toast
+        function showToast() {
+            const toast = document.getElementById("toastMsg");
+            toast.classList.add("show");
+            
+            setTimeout(() => {
+                toast.classList.remove("show");
+            }, 2500);
+        }
+    </script>
+</body>
+</html>
