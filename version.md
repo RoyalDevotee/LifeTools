@@ -5,3 +5,4 @@
 ### v0.1.3 Alpha NeuralNexusLab/Domain lifetools.nett.to and lifetools.zone.id forwarded to Life Tools
 ### v0.1.4 Alpha 0xseanlee/Create version.md
 ### v1.0.0 Beta NeuralNexusLab/Website launched
+### v1.0.1 Beta 0xseanlee/add calculator.html
