@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>萬能清單亂序洗牌器 - Life Tools</title>
+    <!-- 載入規定的初始化腳本 -->
+    <script src="/scripts/init.js"></script>
+    <!-- 引入 Google Fonts 與 Font Awesome 圖標庫 -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* 全域基本樣式 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+
+        :root {
+            --primary-color: #FF8C00;
+            --primary-hover: #E07B00;
+            --primary-light: #FFF5EC;
+            --text-dark: #2C3E50;
+            --text-muted: #7F8C8D;
+            --bg-light: #FDFBF7;
+            --bg-card-section: #F5EFEB;
+            --white: #FFFFFF;
+            --success-color: #2ECC71;
+            --transition-speed: 0.3s;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 頂部導覽列 */
+        .navbar {
+            background-color: var(--white);
+            border-bottom: 2px solid var(--primary-light);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .nav-logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform var(--transition-speed) ease;
+        }
+
+        .nav-logo:hover {
+            transform: scale(1.03);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            color: var(--text-dark);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 16px;
+            transition: color var(--transition-speed) ease;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color);
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background-color: var(--primary-light);
+            border: 1.5px solid transparent;
+            border-radius: 30px;
+            padding: 4px 6px 4px 16px;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--primary-color);
+            background-color: var(--white);
+            box-shadow: 0 0 8px rgba(255, 140, 0, 0.15);
+        }
+
+        .search-input {
+            border: none;
+            background: transparent;
+            outline: none;
+            color: var(--text-dark);
+            font-size: 14px;
+            width: 160px;
+            transition: width var(--transition-speed) ease;
+        }
+
+        .search-input:focus {
+            width: 200px;
+        }
+
+        .search-btn {
+            background-color: var(--primary-color);
+            border: none;
+            color: var(--white);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color var(--transition-speed) ease, transform var(--transition-speed) ease;
+        }
+
+        .search-btn:hover {
+            background-color: var(--primary-hover);
+            transform: scale(1.05);
+        }
+
+        /* 工具主內容區 */
+        .main-content {
+            flex-grow: 1;
+            padding: 40px 20px;
+            background-color: var(--bg-card-section);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tool-container {
+            background-color: var(--white);
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            max-width: 950px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 140, 0, 0.1);
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .tool-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tool-title i {
+            color: var(--primary-color);
+        }
+
+        /* 雙欄排版區 */
+        .workspace {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: start;
+        }
+
+        /* 輸入與輸出面板容器 */
+        .panel-card {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-label {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stats-badge {
+            font-size: 13px;
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 700;
+        }
+
+        .textarea-field {
+            width: 100%;
+            height: 320px;
+            border: 2px solid var(--primary-light);
+            border-radius: 16px;
+            padding: 16px;
+            font-size: 15px;
+            line-height: 1.6;
+            outline: none;
+            resize: none;
+            background-color: var(--bg-light);
+            transition: all var(--transition-speed) ease;
+        }
+
+        .textarea-field:focus {
+            border-color: var(--primary-color);
+            background-color: var(--white);
+            box-shadow: 0 4px 12px rgba(255, 140, 0, 0.05);
+        }
+
+        /* 按鈕設計 */
+        .action-btn {
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            border-radius: 30px;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(255, 140, 0, 0.2);
+            transition: all var(--transition-speed) ease;
+        }
+
+        .action-btn:hover:not(:disabled) {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 140, 0, 0.3);
+        }
+
+        .action-btn:disabled {
+            background-color: var(--text-muted);
+            box-shadow: none;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .btn-secondary {
+            background-color: var(--text-dark);
+            box-shadow: 0 4px 15px rgba(44, 62, 80, 0.15);
+        }
+
+        .btn-secondary:hover {
+            background-color: #1a252f;
+        }
+
+        /* 微互動 Toast 提示 */
+        .toast-message {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background-color: var(--text-dark);
+            color: var(--white);
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            opacity: 0;
+            z-index: 2000;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toast-message.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* 頁尾 */
+        .footer {
+            background-color: var(--white);
+            padding: 30px 20px;
+            text-align: center;
+            border-top: 1px solid var(--primary-light);
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* 動畫宣告 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* RWD 響應式配置 */
+        @media (max-width: 768px) {
+            .navbar-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .nav-right {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+            .search-box {
+                width: 100%;
+            }
+            .search-input {
+                width: 100%;
+            }
+            .search-input:focus {
+                width: 100%;
+            }
+            .workspace {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            .textarea-field {
+                height: 240px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 頂部導覽列 -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="nav-logo">
+                <i class="fa-solid fa-toolbox"></i> Life Tools
+            </a>
+            <div class="nav-right">
+                <a href="/pages/about.html" class="nav-link">關於我們</a>
+                <div class="search-box">
+                    <input type="text" id="navSearchInput" class="search-input" placeholder="搜尋工具...">
+                    <button id="navSearchBtn" class="search-btn">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 工具主內容區 -->
+    <main class="main-content">
+        <div class="tool-container">
+            <h1 class="tool-title"><i class="fa-solid fa-shuffle"></i> 萬能清單亂序洗牌器</h1>
+            
+            <div class="workspace">
+                
+                <!-- 左側：輸入清單 -->
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <span class="panel-label"><i class="fa-solid fa-align-left"></i> 原始項目清單 (每行一筆)</span>
+                        <span class="stats-badge" id="inputCountLabel">共 4 項</span>
+                    </div>
+                    <textarea id="inputList" class="textarea-field" placeholder="請輸入項目，每行輸入一項..." oninput="updateInputCount()">1&#10;2&#10;3&#10;4</textarea>
+                    
+                    <button class="action-btn" id="shuffleBtn" onclick="runShufflingAnimation()">
+                        <i class="fa-solid fa-shuffle"></i> 開始隨機洗牌
+                    </button>
+                </div>
+
+                <!-- 右側：洗牌結果輸出 -->
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <span class="panel-label" style="color: var(--primary-hover);"><i class="fa-solid fa-square-poll-horizontal"></i> 洗牌打亂結果</span>
+                        <span class="stats-badge" id="outputCountLabel">共 0 項</span>
+                    </div>
+                    <textarea id="outputList" class="textarea-field" placeholder="洗牌結果將呈現在此..." readonly></textarea>
+                    
+                    <button class="action-btn btn-secondary" id="copyBtn" onclick="copyResultToClipboard()" disabled>
+                        <i class="fa-regular fa-copy"></i> 複製打亂結果
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- 複製成功 Toast 提示 -->
+    <div class="toast-message" id="toastMsg">
+        <i class="fa-solid fa-circle-check" style="color: #4CD964;"></i> 成功複製清單內容至剪貼簿！
+    </div>
+
+    <!-- 頁尾 -->
+    <footer class="footer">
+        &copy; Royal Devotee (NeuralNexusLab X 0xseanlee), all rights reserved.
+    </footer>
+
+    <script>
+        let isShuffling = false; // 紀錄目前是否正在執行洗牌動畫
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始化導覽列搜尋
+            initNavbarSearch();
+            // 初始化統計原始項目的個數
+            updateInputCount();
+        });
+
+        // 導覽列搜尋重導向
+        function initNavbarSearch() {
+            const navInput = document.getElementById('navSearchInput');
+            const navBtn = document.getElementById('navSearchBtn');
+
+            const triggerSearch = () => {
+                const query = navInput.value.trim();
+                if (query) {
+                    window.location.href = `/pages/search.html?q=${encodeURIComponent(query)}`;
+                }
+            };
+
+            navBtn.addEventListener('click', triggerSearch);
+            navInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') triggerSearch();
+            });
+        }
+
+        // 取得並整理使用者輸入的行陣列
+        function getInputLines() {
+            const rawText = document.getElementById("inputList").value;
+            // 依據換行符切割，並過濾掉純空白行
+            return rawText.split("\n").map(line => line.trim()).filter(line => line !== "");
+        }
+
+        // 動態計算並更新左側輸入項目的數量標籤
+        function updateInputCount() {
+            const lines = getInputLines();
+            document.getElementById("inputCountLabel").textContent = `共 ${lines.length} 項`;
+        }
+
+        // 核心洗牌演算法：費雪-葉茲隨機置換 (Fisher-Yates Shuffle)
+        function fisherYatesShuffle(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        // 執行洗牌，並加上 0.6 秒的亂數跳動視覺動畫
+        function runShufflingAnimation() {
+            if (isShuffling) return;
+
+            const lines = getInputLines();
+
+            if (lines.length === 0) {
+                alert("請先在左側輸入需要打亂的名單項目！");
+                return;
+            }
+
+            isShuffling = true;
+            toggleControls(true);
+
+            const outputTextarea = document.getElementById("outputList");
+            const outputCountLabel = document.getElementById("outputCountLabel");
+
+            const duration = 600; // 動畫總時長：0.6秒
+            const intervalTime = 60; // 快速跳動時間間隔：60毫秒
+            const startTime = Date.now();
+
+            // 設定定時器在 600 毫秒內快速隨機洗牌，造成視覺上的滾動效果
+            const shuffleInterval = setInterval(() => {
+                const tempShuffled = fisherYatesShuffle(lines);
+                outputTextarea.value = tempShuffled.join("\n");
+                outputCountLabel.textContent = `共 ${tempShuffled.length} 項`;
+            }, intervalTime);
+
+            // 到期停止並鎖定最终結果
+            setTimeout(() => {
+                clearInterval(shuffleInterval);
+
+                const finalShuffled = fisherYatesShuffle(lines);
+                outputTextarea.value = finalShuffled.join("\n");
+                outputCountLabel.textContent = `共 ${finalShuffled.length} 項`;
+
+                isShuffling = false;
+                toggleControls(false);
+            }, duration);
+        }
+
+        // 控制面板鎖定切換（防止洗牌過程中使用者再度修改或點擊複製）
+        function toggleControls(disable) {
+            document.getElementById("shuffleBtn").disabled = disable;
+            document.getElementById("inputList").disabled = disable;
+            document.getElementById("copyBtn").disabled = disable;
+            
+            if (disable) {
+                document.getElementById("shuffleBtn").innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 洗牌中...`;
+            } else {
+                document.getElementById("shuffleBtn").innerHTML = `<i class="fa-solid fa-shuffle"></i> 開始隨機洗牌`;
+            }
+        }
+
+        // 複製輸出框內打亂的結果至剪貼簿
+        function copyResultToClipboard() {
+            const outputTextarea = document.getElementById("outputList");
+            const resultText = outputTextarea.value.trim();
+
+            if (!resultText) return;
+
+            navigator.clipboard.writeText(resultText).then(() => {
+                showToastNotification();
+            }).catch(error => {
+                console.error("Copy failed: ", error);
+            });
+        }
+
+        // 觸發並顯示複製成功 Toast 通知
+        function showToastNotification() {
+            const toast = document.getElementById("toastMsg");
+            toast.classList.add("show");
+            
+            setTimeout(() => {
+                toast.classList.remove("show");
+            }, 2500);
+        }
+    </script>
+</body>
+</html>
