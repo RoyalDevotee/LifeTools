@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>精緻倒數計時器 - Life Tools</title>
+    <!-- 載入規定的初始化腳本 -->
+    <script src="/scripts/init.js"></script>
+    <!-- 引入 Google Fonts 與 Font Awesome 圖標庫 -->
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* 全域基本樣式 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+
+        :root {
+            --primary-color: #FF8C00;
+            --primary-hover: #E07B00;
+            --primary-light: #FFF5EC;
+            --text-dark: #2C3E50;
+            --text-muted: #7F8C8D;
+            --bg-light: #FDFBF7;
+            --bg-card-section: #F5EFEB;
+            --white: #FFFFFF;
+            --transition-speed: 0.3s;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 頂部導覽列 */
+        .navbar {
+            background-color: var(--white);
+            border-bottom: 2px solid var(--primary-light);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .nav-logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform var(--transition-speed) ease;
+        }
+
+        .nav-logo:hover {
+            transform: scale(1.03);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            color: var(--text-dark);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 16px;
+            transition: color var(--transition-speed) ease;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color);
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background-color: var(--primary-light);
+            border: 1.5px solid transparent;
+            border-radius: 30px;
+            padding: 4px 6px 4px 16px;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--primary-color);
+            background-color: var(--white);
+            box-shadow: 0 0 8px rgba(255, 140, 0, 0.15);
+        }
+
+        .search-input {
+            border: none;
+            background: transparent;
+            outline: none;
+            color: var(--text-dark);
+            font-size: 14px;
+            width: 160px;
+            transition: width var(--transition-speed) ease;
+        }
+
+        .search-input:focus {
+            width: 200px;
+        }
+
+        .search-btn {
+            background-color: var(--primary-color);
+            border: none;
+            color: var(--white);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color var(--transition-speed) ease, transform var(--transition-speed) ease;
+        }
+
+        .search-btn:hover {
+            background-color: var(--primary-hover);
+            transform: scale(1.05);
+        }
+
+        /* 工具主內容區 */
+        .main-content {
+            flex-grow: 1;
+            padding: 40px 20px;
+            background-color: var(--bg-card-section);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tool-container {
+            background-color: var(--white);
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            max-width: 750px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 140, 0, 0.1);
+            animation: fadeInUp 0.8s ease-out;
+            text-align: center;
+        }
+
+        .tool-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .tool-title i {
+            color: var(--primary-color);
+        }
+
+        /* 環形進度顯示區 */
+        .timer-circle-wrapper {
+            position: relative;
+            width: 280px;
+            height: 280px;
+            margin: 20px auto 40px auto;
+        }
+
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+
+        .progress-ring-circle-bg {
+            fill: transparent;
+            stroke: var(--primary-light);
+            stroke-width: 8px;
+        }
+
+        .progress-ring-circle {
+            fill: transparent;
+            stroke: var(--primary-color);
+            stroke-width: 8px;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.1s linear;
+        }
+
+        /* 倒數計時數字面板 */
+        .timer-display {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 42px;
+            font-weight: 700;
+            color: var(--text-dark);
+            letter-spacing: -1px;
+            user-select: none;
+        }
+
+        /* 時間手動輸入面板 */
+        .inputs-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 40px;
+            transition: opacity var(--transition-speed) ease;
+        }
+
+        .input-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .input-field {
+            width: 70px;
+            height: 50px;
+            border: 2px solid var(--primary-light);
+            border-radius: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 22px;
+            font-weight: bold;
+            text-align: center;
+            outline: none;
+            background-color: var(--white);
+            color: var(--text-dark);
+            transition: border-color var(--transition-speed) ease;
+        }
+
+        .input-field:focus {
+            border-color: var(--primary-color);
+        }
+
+        .input-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        .input-colon {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-top: -24px;
+        }
+
+        /* 控制按鈕群 */
+        .controls-wrapper {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .control-btn {
+            border: none;
+            border-radius: 50px;
+            padding: 14px 35px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .btn-start {
+            background-color: var(--primary-color);
+            color: var(--white);
+            box-shadow: 0 4px 15px rgba(255, 140, 0, 0.2);
+        }
+
+        .btn-start:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 140, 0, 0.3);
+        }
+
+        .btn-pause {
+            background-color: var(--text-dark);
+            color: var(--white);
+            box-shadow: 0 4px 15px rgba(44, 62, 80, 0.2);
+        }
+
+        .btn-pause:hover {
+            background-color: #1a252f;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(44, 62, 80, 0.3);
+        }
+
+        .btn-reset {
+            background-color: transparent;
+            color: var(--text-dark);
+            border: 1.5px solid var(--primary-light);
+        }
+
+        .btn-reset:hover {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        /* 頁尾 */
+        .footer {
+            background-color: var(--white);
+            padding: 30px 20px;
+            text-align: center;
+            border-top: 1px solid var(--primary-light);
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* 動畫宣告 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* RWD 響應式佈局 */
+        @media (max-width: 600px) {
+            .navbar-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .nav-right {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+            .search-box {
+                width: 100%;
+            }
+            .search-input {
+                width: 100%;
+            }
+            .search-input:focus {
+                width: 100%;
+            }
+            .timer-circle-wrapper {
+                width: 240px;
+                height: 240px;
+            }
+            .timer-display {
+                font-size: 32px;
+            }
+            .input-field {
+                width: 55px;
+                height: 45px;
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 頂部導覽列 -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="nav-logo">
+                <i class="fa-solid fa-toolbox"></i> Life Tools
+            </a>
+            <div class="nav-right">
+                <a href="/pages/about.html" class="nav-link">關於我們</a>
+                <div class="search-box">
+                    <input type="text" id="navSearchInput" class="search-input" placeholder="搜尋工具...">
+                    <button id="navSearchBtn" class="search-btn">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 工具主內容區 -->
+    <main class="main-content">
+        <div class="tool-container">
+            <h1 class="tool-title"><i class="fa-solid fa-clock"></i> 倒數計時器</h1>
+
+            <!-- SVG 向量進度條圓盤 -->
+            <div class="timer-circle-wrapper">
+                <svg class="progress-ring" width="280" height="280" viewBox="0 0 280 280">
+                    <circle class="progress-ring-circle-bg" cx="140" cy="140" r="120"></circle>
+                    <circle class="progress-ring-circle" id="progressCircle" cx="140" cy="140" r="120"></circle>
+                </svg>
+                <div class="timer-display" id="timeLabel">00:01:30</div>
+            </div>
+
+            <!-- 時間輸入控制區 -->
+            <div class="inputs-wrapper" id="inputsWrapper">
+                <div class="input-box">
+                    <input type="number" id="hoursInput" class="input-field" min="0" max="23" value="00" placeholder="00" onchange="formatInputZero(this)">
+                    <span class="input-label">時 (Hrs)</span>
+                </div>
+                <div class="input-colon">:</div>
+                <div class="input-box">
+                    <input type="number" id="minutesInput" class="input-field" min="0" max="59" value="01" placeholder="00" onchange="formatInputZero(this)">
+                    <span class="input-label">分 (Mins)</span>
+                </div>
+                <div class="input-colon">:</div>
+                <div class="input-box">
+                    <input type="number" id="secondsInput" class="input-field" min="0" max="59" value="30" placeholder="00" onchange="formatInputZero(this)">
+                    <span class="input-label">秒 (Secs)</span>
+                </div>
+            </div>
+
+            <!-- 操作控制按鈕群 -->
+            <div class="controls-wrapper">
+                <button class="control-btn btn-start" id="startBtn" onclick="toggleTimer()">
+                    <i class="fa-solid fa-play"></i> <span>開始</span>
+                </button>
+                <button class="control-btn btn-reset" id="resetBtn" onclick="resetTimer()">
+                    <i class="fa-solid fa-arrow-rotate-left"></i> 重設
+                </button>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- 頁尾 -->
+    <footer class="footer">
+        &copy; Royal Devotee (NeuralNexusLab X 0xseanlee), all rights reserved.
+    </footer>
+
+    <script>
+        let totalSeconds = 0; // 設定之倒數總秒數
+        let secondsLeft = 0; // 剩餘秒數
+        let timerInterval = null; // 定時器 ID
+        let isRunning = false; // 紀錄運作狀態
+
+        let circle, radius, circumference;
+        let audioContext = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始化導覽列搜尋
+            initNavbarSearch();
+            // 綁定圓形進度條元件
+            initProgressRing();
+            // 載入 1分30秒 預設顯示
+            updateDisplayFromInputs();
+        });
+
+        // 導覽列搜尋機制
+        function initNavbarSearch() {
+            const navInput = document.getElementById('navSearchInput');
+            const navBtn = document.getElementById('navSearchBtn');
+
+            const triggerSearch = () => {
+                const query = navInput.value.trim();
+                if (query) {
+                    window.location.href = `/pages/search.html?q=${encodeURIComponent(query)}`;
+                }
+            };
+
+            navBtn.addEventListener('click', triggerSearch);
+            navInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') triggerSearch();
+            });
+        }
+
+        // 初始化 SVG 圓形百分比描邊屬性
+        function initProgressRing() {
+            circle = document.getElementById("progressCircle");
+            radius = circle.r.baseVal.value;
+            circumference = 2 * Math.PI * radius;
+
+            // 初始化描邊長度
+            circle.style.strokeDasharray = `${circumference} ${circumference}`;
+            circle.style.strokeDashoffset = circumference;
+        }
+
+        // 當計時結束時，利用 Web Audio API 產製音效（C5 ➔ E5 ➔ G5）
+        function playChimeSound() {
+            try {
+                // 延遲載入以防瀏覽器安全性政策阻擋播放
+                if (!audioContext) {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+
+                const now = audioContext.currentTime;
+
+                // 發聲輔助函式
+                const playNote = (frequency, startOffset, duration) => {
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+                    
+                    osc.type = "sine";
+                    osc.frequency.setValueAtTime(frequency, now + startOffset);
+                    
+                    gain.gain.setValueAtTime(0.15, now + startOffset);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + startOffset + duration);
+                    
+                    osc.start(now + startOffset);
+                    osc.stop(now + startOffset + duration);
+                };
+
+                // 演奏高雅的 C5 => E5 => G5 階梯和聲
+                playNote(523.25, 0, 0.2);     // C5
+                playNote(659.25, 0.15, 0.2);  // E5
+                playNote(783.99, 0.3, 0.4);   // G5
+
+            } catch (error) {
+                console.error("Web Audio playback failed:", error);
+            }
+        }
+
+        // 格式化數字欄位，補足前置 0 
+        function formatInputZero(input) {
+            let value = parseInt(input.value);
+            if (isNaN(value) || value < 0) value = 0;
+            if (input.id !== "hoursInput" && value > 59) value = 59;
+            if (input.id === "hoursInput" && value > 23) value = 23;
+            input.value = value.toString().padStart(2, "0");
+            
+            // 每次欄位數值更動時同步更新顯示
+            if (!isRunning) {
+                updateDisplayFromInputs();
+            }
+        }
+
+        // 同步輸入框內容到中央時間面板
+        function updateDisplayFromInputs() {
+            const hrs = parseInt(document.getElementById("hoursInput").value) || 0;
+            const mins = parseInt(document.getElementById("minutesInput").value) || 0;
+            const secs = parseInt(document.getElementById("secondsInput").value) || 0;
+
+            totalSeconds = hrs * 3600 + mins * 60 + secs;
+            secondsLeft = totalSeconds;
+
+            drawTimerDisplay(secondsLeft);
+            updateProgressRing(1);
+        }
+
+        // 渲染倒數數字
+        function drawTimerDisplay(seconds) {
+            const hrs = Math.floor(seconds / 3600);
+            const mins = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+
+            const format = (num) => num.toString().padStart(2, "0");
+            document.getElementById("timeLabel").textContent = `${format(hrs)}:${format(mins)}:${format(secs)}`;
+        }
+
+        // 更新圓圈進度描邊偏移
+        function updateProgressRing(fraction) {
+            const offset = circumference - fraction * circumference;
+            circle.style.strokeDashoffset = offset;
+        }
+
+        // 啟動/暫停切換
+        function toggleTimer() {
+            if (isRunning) {
+                // 當前運作中 ➔ 暫停
+                pauseTimer();
+            } else {
+                // 當前暫停 ➔ 啟動
+                startTimer();
+            }
+        }
+
+        // 啟動計時器
+        function startTimer() {
+            if (secondsLeft === 0) {
+                // 若尚未設定任何時間，自動拉取輸入框內容
+                updateDisplayFromInputs();
+            }
+
+            if (secondsLeft <= 0) return;
+
+            isRunning = true;
+            document.getElementById("startBtn").innerHTML = `<i class="fa-solid fa-pause"></i> <span>暫停</span>`;
+            document.getElementById("startBtn").className = "control-btn btn-pause";
+            
+            // 隱藏時間輸入選單
+            document.getElementById("inputsWrapper").style.opacity = "0.2";
+
+            // 執行定時器倒數
+            timerInterval = setInterval(() => {
+                secondsLeft--;
+                
+                // 1. 更新數字
+                drawTimerDisplay(secondsLeft);
+                // 2. 更新圓圈比率
+                updateProgressRing(secondsLeft / totalSeconds);
+
+                if (secondsLeft <= 0) {
+                    // 計時完成
+                    triggerTimerEnd();
+                }
+            }, 1000);
+        }
+
+        // 暫停計時器
+        function pauseTimer() {
+            isRunning = false;
+            clearInterval(timerInterval);
+            document.getElementById("startBtn").innerHTML = `<i class="fa-solid fa-play"></i> <span>開始</span>`;
+            document.getElementById("startBtn").className = "control-btn btn-start";
+            document.getElementById("inputsWrapper").style.opacity = "1";
+        }
+
+        // 計時終了
+        function triggerTimerEnd() {
+            pauseTimer();
+            // 播放鈴聲
+            playChimeSound();
+            // 還原顯示狀態
+            resetTimer();
+        }
+
+        // 完全重設為預設的 1 分 30 秒
+        function resetTimer() {
+            pauseTimer();
+            secondsLeft = 0;
+            totalSeconds = 0;
+            
+            // 還原為 00:01:30 預設顯示
+            document.getElementById("hoursInput").value = "00";
+            document.getElementById("minutesInput").value = "01";
+            document.getElementById("secondsInput").value = "30";
+            document.getElementById("inputsWrapper").style.opacity = "1";
+
+            updateDisplayFromInputs();
+        }
+    </script>
+</body>
+</html>
