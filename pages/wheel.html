@@ -534,7 +534,6 @@
         let optionsList = ["1", "2", "3", "4"];
         let isSpinning = false;
         let startAngle = 0; // 當前旋轉角度
-        let currentRotationSpeed = 0; // 當前轉速
         
         let canvas, ctx;
         let audioContext = null;
@@ -713,16 +712,43 @@
             isSpinning = true;
             document.getElementById("spinBtn").disabled = true;
 
-            const duration = 4500; // 旋轉總時間：4.5秒
-            const startTime = performance.now();
+            const len = optionsList.length;
+            const segmentAngle = (2 * Math.PI) / len;
+
+            // 1. 【核心：保證絕對公平】在旋轉前先使用 JavaScript PRNG 隨機均勻抽選出最終贏家索引
+            const winningIndex = Math.floor(Math.random() * len);
+
+            // 2. 計算能讓該贏家落在正上方 (12點鐘方向 = -Math.PI/2 弧度) 的目標角度
+            // 加上隨機微幅偏置 (15% ~ 85% 區間內)，確保每次指針不會死板地停在正中央
+            const jitterFraction = 0.15 + Math.random() * 0.7; 
+            const targetAngleWithinSegment = (winningIndex + jitterFraction) * segmentAngle;
+
+            // 目標起始角度 targetStartAngle 需符合公式：
+            // targetStartAngle + targetAngleWithinSegment = 1.5 * Math.PI (12點鐘)
+            let targetStartAngle = (1.5 * Math.PI - targetAngleWithinSegment) % (2 * Math.PI);
+            if (targetStartAngle < 0) {
+                targetStartAngle += 2 * Math.PI;
+            }
+
+            // 3. 計算本次旋轉需要旋轉的總弧度
+            const currentAngleNormalized = startAngle % (2 * Math.PI);
+            // 隨機旋轉 8 至 12 圈增加戲劇張力
+            const baseRotations = (8 + Math.floor(Math.random() * 5)) * 2 * Math.PI; 
             
-            // 決定旋轉力道：隨機基礎圈數 (10~15圈) + 隨機角度
-            const totalSpinAngle = (10 + Math.random() * 5) * 2 * Math.PI; 
+            let angleDiff = targetStartAngle - currentAngleNormalized;
+            if (angleDiff <= 0) {
+                angleDiff += 2 * Math.PI;
+            }
+
+            const totalSpinAngle = baseRotations + angleDiff;
             const baseStartAngle = startAngle;
 
             // 追蹤「咖咖聲」進度
-            const segmentAngle = (2 * Math.PI) / optionsList.length;
             let lastTickSegmentIndex = Math.floor((baseStartAngle + Math.PI / 2) / segmentAngle);
+
+            // 4. 動畫播放控制
+            const duration = 4500; // 旋轉總時間：4.5秒
+            const startTime = performance.now();
 
             // 4/5次方緩動曲線：慢 => 快 => 慢
             function easeInOutQuart(t) {
@@ -738,7 +764,6 @@
                 startAngle = baseStartAngle + currentProgressAngle;
 
                 // 檢查是否跨越了扇形邊界，觸發咖咖聲音效
-                // 指標朝下指向輪盤正頂端 (-Math.PI/2 弧度)
                 const relativeAngle = startAngle + Math.PI / 2;
                 const currentSegmentIndex = Math.floor(relativeAngle / segmentAngle);
                 
@@ -753,29 +778,22 @@
                 if (progress < 1) {
                     requestAnimationFrame(animate);
                 } else {
-                    // 動畫完結，計算落在紅色箭頭 (12點鐘方向，角度為 -Math.PI/2) 的勝出項目
-                    finalizeSpin();
+                    // 動畫完結，將角度強制歸一在目標角度並重繪一次，確保物理視覺百分之百吻合
+                    startAngle = (baseStartAngle + totalSpinAngle) % (2 * Math.PI);
+                    drawWheel();
+                    
+                    // 呈現最終結果
+                    finalizeSpin(winningIndex);
                 }
             }
 
             requestAnimationFrame(animate);
         }
 
-        // 計算並呈現結果
-        function finalizeSpin() {
+        // 呈現中獎結果
+        function finalizeSpin(winningIndex) {
             isSpinning = false;
             document.getElementById("spinBtn").disabled = false;
-
-            const len = optionsList.length;
-            const segmentSize = (2 * Math.PI) / len;
-
-            // 箭頭位於 -Math.PI / 2（等同 270 度或 3/2 PI）
-            // 取得歸一化後的最終停止角
-            const normalizedAngle = (startAngle + Math.PI / 2) % (2 * Math.PI);
-            
-            // 計算選定索引：由於轉盤角度是順時鐘增加，索引要用倒扣運算
-            let winningIndex = Math.floor((2 * Math.PI - normalizedAngle) / segmentSize) % len;
-            if (winningIndex < 0) winningIndex += len;
 
             const winnerText = optionsList[winningIndex];
 
