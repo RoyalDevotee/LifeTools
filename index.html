@@ -220,7 +220,7 @@
             background-color: var(--white);
             border: 2px solid var(--primary-light);
             border-radius: 40px;
-            padding: 6px 6px 6px 24px; /* 優化 Padding 確保舒適的間距 */
+            padding: 6px 6px 6px 24px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
             transition: all var(--transition-speed) ease;
         }
@@ -232,7 +232,7 @@
         }
 
         .hero-search-input {
-            flex: 1; /* 主動搶佔剩餘寬度 */
+            flex: 1;
             border: none;
             background: transparent;
             outline: none;
@@ -240,7 +240,7 @@
             color: var(--text-dark);
             width: 100%;
             min-width: 0; /* 關鍵：使 Flex 子元素能流暢縮小，完美防溢出疊加 */
-            padding-right: 12px; /* 與按鈕保持安全視覺距離 */
+            padding-right: 12px;
         }
 
         .hero-search-btn {
@@ -257,7 +257,7 @@
             justify-content: center;
             gap: 8px;
             transition: background-color var(--transition-speed) ease, transform var(--transition-speed) ease;
-            flex-shrink: 0; /* 關鍵：強制鎖定按鈕寬度，避免被輸入框擠壓變形 */
+            flex-shrink: 0; /* 關鍵：強制鎖定按鈕寬度 */
         }
 
         .hero-search-btn:hover {
@@ -340,14 +340,14 @@
             justify-content: space-between;
         }
 
-        .tool-name i {
+        .tool-name i.fa-arrow-right {
             font-size: 14px;
             color: var(--primary-color);
             opacity: 0;
             transition: all var(--transition-speed) ease;
         }
 
-        .tool-card:hover .tool-name i {
+        .tool-card:hover .tool-name i.fa-arrow-right {
             opacity: 1;
             transform: translateX(3px);
         }
@@ -434,13 +434,13 @@
                 font-size: 40px;
             }
             .hero-search-btn span {
-                display: none; /* 手機板隱藏按鈕文字，轉成純 icon 按鈕 */
+                display: none; /* 手機板隱藏按鈕文字 */
             }
             .hero-search-btn {
                 padding: 0;
-                width: 44px;  /* 鎖定固定長寬，防拉伸變形 */
+                width: 44px;  /* 鎖定固定長寬 */
                 height: 44px;
-                border-radius: 50%; /* 確保形成完美的正圓形按鈕 */
+                border-radius: 50%; /* 形成完美的正圓形按鈕 */
             }
         }
     </style>
@@ -579,15 +579,22 @@
                     card.href = tool.path;
                     card.className = 'tool-card';
                     card.setAttribute('aria-label', `開啟 ${tool.name} 工具`);
+                    
+                    // 檢查 JSON 中是否有設定 icon，若無則給予預設圖標 fa-toolbox
+                    const iconClass = tool.icon ? tool.icon : 'fa-solid fa-toolbox';
+                    
                     card.innerHTML = `
                         <div class="tool-info">
                             <h3 class="tool-name">
-                                ${escapeHtml(tool.name)}
+                                <span style="display: flex; align-items: center; gap: 10px;">
+                                    <i class="${iconClass}" style="color: var(--primary-color); width: 24px; text-align: center; font-size: 18px;"></i>
+                                    ${escapeHtml(tool.name)}
+                                </span>
                                 <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
                             </h3>
-                            <p class="tool-desc">${escapeHtml(tool.description)}</p>
+                            <p class="tool-desc" style="margin-left: 34px;">${escapeHtml(tool.description)}</p>
                         </div>
-                        <div class="tool-footer">
+                        <div class="tool-footer" style="margin-left: 34px;">
                             <span>立即使用</span>
                         </div>
                     `;
