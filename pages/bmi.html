@@ -163,6 +163,13 @@
             display: flex;
             justify-content: center;
             align-items: flex-start;
+            transition: filter var(--transition-speed) ease;
+        }
+
+        /* 當未授權時，主內容虛擬模糊化防止偷看 */
+        .main-container.blur-locked {
+            filter: blur(10px);
+            pointer-events: none; /* 禁用任何網頁點擊互動 */
         }
 
         .health-card-container {
@@ -428,6 +435,108 @@
             line-height: 1.4;
         }
 
+        /* === 專屬免責聲明彈窗 (Modal) 樣式 === */
+        .disclaimer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(44, 62, 80, 0.6);
+            backdrop-filter: blur(8px); /* 現代感背景模糊 */
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity var(--transition-speed) ease;
+        }
+
+        .disclaimer-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .disclaimer-modal {
+            background-color: var(--white);
+            max-width: 500px;
+            width: 100%;
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+            border: 1px solid rgba(255, 140, 0, 0.1);
+            text-align: center;
+            transform: scale(0.9);
+            transition: transform var(--transition-speed) cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .disclaimer-overlay.show .disclaimer-modal {
+            transform: scale(1);
+        }
+
+        .disclaimer-icon {
+            font-size: 42px;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .disclaimer-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 12px;
+        }
+
+        .disclaimer-content {
+            font-size: 14px;
+            color: var(--text-dark);
+            text-align: left;
+            background-color: var(--bg-light);
+            padding: 16px;
+            border-radius: 14px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            border: 1px solid var(--primary-light);
+            line-height: 1.6;
+        }
+
+        .disclaimer-btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 12px;
+        }
+
+        .disclaimer-btn {
+            border: none;
+            padding: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .btn-decline {
+            background-color: var(--bg-card-section);
+            color: var(--text-dark);
+        }
+        .btn-decline:hover {
+            background-color: #e2d8d2;
+        }
+
+        .btn-accept {
+            background-color: var(--primary-color);
+            color: var(--white);
+            box-shadow: 0 4px 10px rgba(255, 140, 0, 0.2);
+        }
+        .btn-accept:hover {
+            background-color: var(--primary-hover);
+            box-shadow: 0 6px 15px rgba(255, 140, 0, 0.3);
+        }
+
         /* 頁尾 */
         .footer {
             background-color: var(--white);
@@ -491,7 +600,7 @@
         </div>
     </nav>
 
-    <main class="main-container">
+    <main class="main-container blur-locked" id="mainContent">
         <div class="health-card-container">
             
             <section class="input-panel" aria-label="輸入生理數據">
@@ -603,6 +712,22 @@
         </div>
     </main>
 
+    <div class="disclaimer-overlay" id="disclaimerOverlay">
+        <article class="disclaimer-modal" role="dialog" aria-labelledby="disclaimerTitle">
+            <div class="disclaimer-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <h3 class="disclaimer-title" id="disclaimerTitle">健康工具使用免責聲明</h3>
+            <div class="disclaimer-content">
+                歡迎使用 Life Tools 體態計算機。本工具所計算之 BMI、BMR 及 TDEE 等數據及健康建議僅供日常參考與自我健康管理之用，並不能取代任何專業醫療診斷、諮詢或治療。
+                <br><br>
+                每個人生理狀況（如肌肉量、特殊疾病、懷孕等）皆有不同。在改變飲食習慣或展開激烈運動計畫前，請務必諮詢合格之醫師或營養師。本站不對因參考本工具數據所進行之任何行為負法律責任。
+            </div>
+            <div class="disclaimer-btn-group">
+                <button type="button" class="disclaimer-btn btn-decline" onclick="declineDisclaimer()">拒絕並離開</button>
+                <button type="button" class="disclaimer-btn btn-accept" onclick="acceptDisclaimer()">我已閱讀並同意</button>
+            </div>
+        </article>
+    </div>
+
     <footer class="footer">
         &copy; Royal Devotee (NeuralNexusLab X 0xseanlee), all rights reserved.
     </footer>
@@ -614,7 +739,45 @@
         document.addEventListener('DOMContentLoaded', () => {
             // 初始化導覽列搜尋事件
             initSearchEvents();
+            // 核心：檢查使用者是否已通過免責聲明授權
+            checkDisclaimerStatus();
         });
+
+        // 核心安全防禦：檢查 Session 狀態，阻擋直接盲刷網址進入的使用者
+        function checkDisclaimerStatus() {
+            const isAuthorized = sessionStorage.getItem('lifeToolsBmiAuthorized');
+            const overlay = document.getElementById('disclaimerOverlay');
+            const mainContent = document.getElementById('mainContent');
+
+            if (isAuthorized === 'true') {
+                // 如果已經通過驗證，解鎖主內容，並確保不彈窗
+                mainContent.classList.remove('blur-locked');
+                overlay.classList.remove('show');
+            } else {
+                // 如果未經驗證（如直接輸入網址），強制鎖定背景並跳出彈窗
+                mainContent.classList.add('blur-locked');
+                overlay.classList.add('show');
+            }
+        }
+
+        // 使用者點選「同意」：紀錄授權狀態並平滑解鎖網頁
+        function acceptDisclaimer() {
+            // 將授權標記寫入當前視窗會話 (SessionStorage)，關閉分頁即失效，保障安全性
+            sessionStorage.setItem('lifeToolsBmiAuthorized', 'true');
+            
+            const overlay = document.getElementById('disclaimerOverlay');
+            const mainContent = document.getElementById('mainContent');
+
+            // 移除鎖定，關閉彈窗
+            overlay.classList.remove('show');
+            mainContent.classList.remove('blur-locked');
+        }
+
+        // 使用者點選「拒絕」：將其強制導回首頁，不允許觀看與操作
+        function declineDisclaimer() {
+            sessionStorage.removeItem('lifeToolsBmiAuthorized');
+            window.location.href = '/';
+        }
 
         // 處理頂部導覽列搜尋重導向
         function executeSearch(query) {
@@ -701,22 +864,22 @@
             if (bmi < 18.5) {
                 statusText = '體重過輕';
                 statusColor = '#3498db'; // --bmi-thin
-                // 對應滑條 0% - 25% 區感
+                // 對應滑條 0% - 25% 區間
                 indicatorPosition = Math.max(5, (bmi / 18.5) * 25);
             } else if (bmi >= 18.5 && bmi < 24) {
                 statusText = '正常範圍';
                 statusColor = '#2ecc71'; // --bmi-normal
-                // 對應滑條 25% - 55% 區感
+                // 對應滑條 25% - 55% 區間
                 indicatorPosition = 25 + ((bmi - 18.5) / (24 - 18.5)) * 30;
             } else if (bmi >= 24 && bmi < 27) {
                 statusText = '體重過重';
                 statusColor = '#f1c40f'; // --bmi-overweight
-                // 對應滑條 55% - 75% 區感
+                // 對應滑條 55% - 75% 區間
                 indicatorPosition = 55 + ((bmi - 24) / (27 - 24)) * 20;
             } else {
                 statusText = '肥胖體態';
                 statusColor = '#e74c3c'; // --bmi-obese
-                // 對應滑條 75% - 95% 區感
+                // 對應滑條 75% - 95% 區間
                 indicatorPosition = 75 + Math.min(20, ((bmi - 27) / 15) * 20);
             }
 
@@ -741,6 +904,18 @@
             // 設定 BMR 與 TDEE
             document.getElementById('bmrValue').textContent = bmr.toLocaleString();
             document.getElementById('tdeeValue').textContent = tdee.toLocaleString();
+        }
+
+        // 簡單的 HTML 轉義函式，預防 XSS 注入攻擊
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, (m) => map[m]);
         }
     </script>
 </body>
