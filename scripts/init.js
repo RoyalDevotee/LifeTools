@@ -1,46 +1,18 @@
 (function () {
   "use strict";
 
-  // 1. 於初始化時，立即檢索是否處於 5 分鐘的請求超限鎖定狀態
-  const currentTimeOnLoad = Date.now();
-  const lockoutEnd = parseInt(localStorage.getItem("lifeToolsLockoutEnd")) || 0;
-  
-  if (lockoutEnd > currentTimeOnLoad) {
-    // 處於鎖定期間，直接將網頁渲染為完全空白，並中斷後續程式碼執行
-    document.documentElement.innerHTML = "";
-    return;
-  }
-
-  // 2. 機器人行為防禦：自動化框架檢測（如 Selenium、Puppeteer 等無頭瀏覽器）
-  if (navigator.webdriver) {
-    // 偵測到機器人驅動環境，強制清空頁面
-    document.documentElement.innerHTML = "";
-    return;
-  }
-
-  // 3. 機器人行為防禦：極速非人為點擊頻率偵測
-  let lastClickTime = 0;
-  document.addEventListener("click", () => {
-    const clickTime = Date.now();
-    // 若兩次點擊間隔小於 8 毫秒，判定為自動化腳本點擊而非人類行為
-    if (lastClickTime && (clickTime - lastClickTime < 8)) {
-      document.documentElement.innerHTML = "";
-    }
-    lastClickTime = clickTime;
-  });
-
-  // 4. 宣告主控台警告文字的 CSS 樣式
+  // 1. 宣告主控台警告文字的 CSS 樣式
   const warningHeaderStyle = "color: #FF3B30; font-size: 24px; font-weight: bold; background-color: #FFE5E5; padding: 8px 16px; border-radius: 4px; border: 1px solid #FF3B30;";
   const warningBodyStyle = "color: #2C3E50; font-size: 14px; font-weight: bold; line-height: 1.8; margin-top: 10px;";
 
-  // 5. 於控制台印出醒目的安全警示，防止 Self-XSS 社交工程攻擊
+  // 2. 於控制台印出醒目的安全警示，防止 Self-XSS 社交工程攻擊
   console.log("%c⚠️ 請注意！Security Warning ⚠️", warningHeaderStyle);
   console.log(
     "%c此控制台專供程式設計師偵錯使用。請勿在此輸入、貼上或執行任何來源不明的程式腳本，以免您的帳號與個人資料遭受惡意竊取！", 
     warningBodyStyle
   );
 
-  // 6. 執行防劫持框架（Frame-busting）檢測，避免網頁被惡意內嵌於 iframe 中
+  // 3. 執行防劫持框架（Frame-busting）檢測，避免網頁被惡意內嵌於 iframe 中
   try {
     if (window.self !== window.top) {
       // 偵測到網頁處於 iframe 內部，將父視窗重導向至安全聲明頁面
@@ -51,7 +23,7 @@
     window.parent.location.href = "/pages/embed.html";
   }
 
-  // 7. 請求頻率限制器（1分鐘內超過 60 次 fetch 請求，則鎖定 5 分鐘）
+  // 4. 請求頻率限制器（1分鐘內超過 60 次 fetch 請求，則鎖定 5 分鐘）
   function trackRequestFrequency() {
     const now = Date.now();
     let requestHistory = [];
