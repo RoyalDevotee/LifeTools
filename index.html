@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- 基礎 SEO 詮釋資料 -->
     <title>Life Tools 精緻工具箱 - 輕量、安全、免登入的精緻線上工具箱</title>
     <meta name="description" content="Life Tools 提供一系列精美、現代化且 100% 本地端運行的線上小工具，包含倒數計時器、3D擲硬幣與骰子、統計分析器、星座配對等，免登入、無廣告、點開即用，保障您的個資私密安全。">
     <meta name="keywords" content="Life Tools, ,工具, 工具箱, 工具邦, 線上工具, 倒數計時器, 隨機抽籤, 星座配對, 單位換算, 檔案壓縮, 隨機座位, 3D擲硬幣, 統計分析, 網頁工具">
@@ -12,32 +11,26 @@
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://lifetools.nett.to/"> 
 
-    <!-- Open Graph / Facebook 社群分享標籤 -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://lifetools.nett.to/">
     <meta property="og:title" content="Life Tools 精緻工具箱 - 輕量、安全、免登入的精緻線上工具箱">
     <meta property="og:description" content="免登入、免安裝、安全防隱私外洩。提供倒數計時器、檔案壓縮、3D擲硬幣、星座配對等數十種高效能萬用生活小工具。">
     <meta property="og:locale" content="zh_TW">
 
-    <!-- Twitter Card 分享標籤 -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://lifetools.nett.to/">
     <meta name="twitter:title" content="Life Tools 精緻工具箱 - 輕量、安全、免登入的精緻線上工具箱">
     <meta name="twitter:description" content="免登入、免安裝、安全防隱私外洩。提供倒數計時器、檔案壓縮、3D擲硬幣、星座配對等數十種高效能萬用生活小工具。">
 
-    <!-- 預連線優化 (加速字體與圖標庫載入) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 
-    <!-- 引入 Google Fonts 與 Font Awesome 圖標庫 -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- 引入規定的初始化防禦腳本 -->
     <script src="/scripts/init.js"></script>
 
-    <!-- Schema.org 結構化資料 (JSON-LD) - 協助搜尋引擎建立 Rich Snippets -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -100,7 +93,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
+            flex-wrap: nowrap; /* 防止手機板強制斷行爆開 */
             gap: 15px;
         }
 
@@ -113,6 +106,7 @@
             align-items: center;
             gap: 8px;
             transition: transform var(--transition-speed) ease;
+            flex-shrink: 0; /* 防止Logo被擠壓變形 */
         }
 
         .nav-logo:hover {
@@ -123,7 +117,9 @@
             display: flex;
             align-items: center;
             gap: 20px;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
+            flex-grow: 1;
+            justify-content: flex-end;
         }
 
         .nav-link {
@@ -132,6 +128,7 @@
             font-weight: 500;
             font-size: 16px;
             transition: color var(--transition-speed) ease;
+            flex-shrink: 0;
         }
 
         .nav-link:hover {
@@ -144,8 +141,10 @@
             background-color: var(--primary-light);
             border: 1.5px solid transparent;
             border-radius: 30px;
-            padding: 4px 6px 4px 16px;
+            padding: 4px 4px 4px 16px;
             transition: all var(--transition-speed) ease;
+            max-width: 300px;
+            width: 100%;
         }
 
         .search-box:focus-within {
@@ -160,12 +159,8 @@
             outline: none;
             color: var(--text-dark);
             font-size: 14px;
-            width: 160px;
-            transition: width var(--transition-speed) ease;
-        }
-
-        .search-input:focus {
-            width: 200px;
+            width: 100%; /* 使用 100% 配合外層 max-width 控寬 */
+            padding-right: 8px;
         }
 
         .search-btn {
@@ -180,6 +175,7 @@
             align-items: center;
             justify-content: center;
             transition: background-color var(--transition-speed) ease, transform var(--transition-speed) ease;
+            flex-shrink: 0;
         }
 
         .search-btn:hover {
@@ -215,6 +211,7 @@
         .hero-search-wrapper {
             max-width: 600px;
             margin: 0 auto;
+            width: 100%;
         }
 
         .hero-search-box {
@@ -223,7 +220,7 @@
             background-color: var(--white);
             border: 2px solid var(--primary-light);
             border-radius: 40px;
-            padding: 6px 8px 6px 24px;
+            padding: 6px 6px 6px 24px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
             transition: all var(--transition-speed) ease;
         }
@@ -241,6 +238,7 @@
             outline: none;
             font-size: 16px;
             color: var(--text-dark);
+            width: 100%;
         }
 
         .hero-search-btn {
@@ -254,8 +252,10 @@
             cursor: pointer;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
             transition: background-color var(--transition-speed) ease, transform var(--transition-speed) ease;
+            flex-shrink: 0;
         }
 
         .hero-search-btn:hover {
@@ -405,40 +405,46 @@
         /* 響應式微調 */
         @media (max-width: 600px) {
             .navbar-container {
-                flex-direction: column;
-                align-items: stretch;
+                padding: 10px 12px;
+                gap: 8px;
+            }
+            .nav-logo {
+                font-size: 20px;
             }
             .nav-right {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 12px;
+                gap: 10px;
+                max-width: 65%; /* 限制右側最大比例，留空間給標題 */
+            }
+            .nav-link {
+                font-size: 14px;
             }
             .search-box {
-                width: 100%;
+                padding: 3px 3px 3px 10px;
             }
             .search-input {
-                width: 100%;
+                font-size: 13px;
             }
-            .search-input:focus {
-                width: 100%;
+            .search-btn {
+                width: 28px;
+                height: 28px;
             }
             .hero-logo {
                 font-size: 40px;
             }
             .hero-search-btn span {
-                display: none;
+                display: none; /* 小螢幕隱藏文字 */
             }
             .hero-search-btn {
-                padding: 12px;
-                aspect-ratio: 1;
-                border-radius: 50%;
+                padding: 0;
+                width: 44px;
+                height: 44px;
+                border-radius: 50%; /* 完美正圓形按鈕 */
             }
         }
     </style>
 </head>
 <body>
 
-    <!-- 頂部導覽列 -->
     <nav class="navbar" aria-label="主要導覽列">
         <div class="navbar-container">
             <a href="/" class="nav-logo" aria-label="Life Tools 首頁">
@@ -456,7 +462,6 @@
         </div>
     </nav>
 
-    <!-- 主視覺區 (Hero Section) -->
     <header class="hero-section">
         <h1 class="hero-logo">Life Tools</h1>
         <p class="hero-subtitle">讓生活更便利的精緻工具箱，隨手即用</p>
@@ -471,12 +476,10 @@
         </div>
     </header>
 
-    <!-- 工具列表高對比區塊 -->
     <main class="tools-section">
         <article class="tools-container-wrapper">
             <h2 class="section-title">工具清單</h2>
             <div class="tools-grid" id="toolsGrid">
-                <!-- 預設載入中狀態 -->
                 <div class="status-message" id="statusMessage">
                     <i class="fa-solid fa-circle-notch fa-spin" aria-hidden="true"></i>
                     <p>正在加載工具，請稍候...</p>
@@ -485,7 +488,6 @@
         </article>
     </main>
 
-    <!-- 頁尾 -->
     <footer class="footer">
         &copy; Royal Devotee (NeuralNexusLab X 0xseanlee), all rights reserved.
     </footer>
