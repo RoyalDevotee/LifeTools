@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>情侶星座匹配度 - Life Tools</title>
+    <!-- 載入規定的初始化腳本 -->
+    <script src="/scripts/init.js"></script>
+    <!-- 引入 Google Fonts 與 Font Awesome 圖標庫 -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* 全域基本樣式 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+
+        :root {
+            --primary-color: #FF8C00;
+            --primary-hover: #E07B00;
+            --primary-light: #FFF5EC;
+            --text-dark: #2C3E50;
+            --text-muted: #7F8C8D;
+            --bg-light: #FDFBF7;
+            --bg-card-section: #F5EFEB;
+            --white: #FFFFFF;
+            --accent-pink: #FF4D79;
+            --transition-speed: 0.3s;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 頂部導覽列 */
+        .navbar {
+            background-color: var(--white);
+            border-bottom: 2px solid var(--primary-light);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .nav-logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform var(--transition-speed) ease;
+        }
+
+        .nav-logo:hover {
+            transform: scale(1.03);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            color: var(--text-dark);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 16px;
+            transition: color var(--transition-speed) ease;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color);
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background-color: var(--primary-light);
+            border: 1.5px solid transparent;
+            border-radius: 30px;
+            padding: 4px 6px 4px 16px;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--primary-color);
+            background-color: var(--white);
+            box-shadow: 0 0 8px rgba(255, 140, 0, 0.15);
+        }
+
+        .search-input {
+            border: none;
+            background: transparent;
+            outline: none;
+            color: var(--text-dark);
+            font-size: 14px;
+            width: 160px;
+            transition: width var(--transition-speed) ease;
+        }
+
+        .search-input:focus {
+            width: 200px;
+        }
+
+        .search-btn {
+            background-color: var(--primary-color);
+            border: none;
+            color: var(--white);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color var(--transition-speed) ease, transform var(--transition-speed) ease;
+        }
+
+        .search-btn:hover {
+            background-color: var(--primary-hover);
+            transform: scale(1.05);
+        }
+
+        /* 主內容區 */
+        .main-content {
+            flex-grow: 1;
+            padding: 40px 20px;
+            background-color: var(--bg-card-section);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tool-container {
+            background-color: var(--white);
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            max-width: 900px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 140, 0, 0.1);
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .tool-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 30px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .tool-title i {
+            color: var(--accent-pink);
+            animation: heartbeat 1.5s infinite;
+        }
+
+        /* 星座選取盤 */
+        .selector-grid {
+            display: grid;
+            grid-template-columns: 1fr 80px 1fr;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .gender-card {
+            background-color: var(--bg-light);
+            border: 2px solid var(--primary-light);
+            border-radius: 20px;
+            padding: 30px 20px;
+            text-align: center;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .gender-card.male {
+            border-color: rgba(77, 150, 255, 0.2);
+            background-color: #F4F8FF;
+        }
+
+        .gender-card.female {
+            border-color: rgba(255, 77, 121, 0.2);
+            background-color: #FFF4F6;
+        }
+
+        .gender-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .gender-card.male .gender-title { color: #4D96FF; }
+        .gender-card.female .gender-title { color: var(--accent-pink); }
+
+        .zodiac-select {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 12px;
+            border: 1.5px solid #E2E8F0;
+            outline: none;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            background-color: var(--white);
+            transition: border-color var(--transition-speed) ease;
+        }
+
+        .gender-card.male .zodiac-select:focus { border-color: #4D96FF; }
+        .gender-card.female .zodiac-select:focus { border-color: var(--accent-pink); }
+
+        /* 中央心形連接圖標 */
+        .heart-connector {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: var(--accent-pink);
+        }
+
+        /* 啟動按鈕 */
+        .match-btn {
+            background: linear-gradient(135deg, var(--accent-pink) 0%, #FF85A2 100%);
+            color: var(--white);
+            border: none;
+            border-radius: 50px;
+            padding: 16px 40px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            max-width: 320px;
+            margin: 0 auto 40px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 8px 25px rgba(255, 77, 121, 0.3);
+            transition: all var(--transition-speed) ease;
+        }
+
+        .match-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(255, 77, 121, 0.4);
+        }
+
+        .match-btn:disabled {
+            background: var(--text-muted);
+            box-shadow: none;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        /* 載入動畫 (雷達掃描樣式) */
+        .matching-loader {
+            display: none;
+            text-align: center;
+            padding: 40px 0;
+        }
+
+        .radar-pulse {
+            width: 80px;
+            height: 80px;
+            background-color: rgba(255, 77, 121, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px auto;
+            position: relative;
+        }
+
+        .radar-pulse i {
+            font-size: 32px;
+            color: var(--accent-pink);
+            z-index: 2;
+        }
+
+        .radar-pulse::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 2px solid var(--accent-pink);
+            border-radius: 50%;
+            animation: radarScan 1.5s infinite;
+            z-index: 1;
+        }
+
+        /* 結果展示面板 */
+        .result-panel {
+            display: none;
+            border-top: 2px dashed var(--primary-light);
+            padding-top: 40px;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .result-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 35px;
+        }
+
+        /* 圓環進度條分數盤 */
+        .score-circle {
+            position: relative;
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            background: radial-gradient(closest-side, white 79%, transparent 80% 100%),
+                        conic-gradient(var(--accent-pink) 0%, #E2E8F0 0%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+            margin-bottom: 15px;
+        }
+
+        .score-value {
+            font-size: 48px;
+            font-weight: 800;
+            color: var(--text-dark);
+        }
+
+        .score-unit {
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .score-summary {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--accent-pink);
+            letter-spacing: 1px;
+        }
+
+        /* 詳細分析卡片 */
+        .analysis-card {
+            background-color: var(--bg-light);
+            border: 1.5px solid var(--primary-light);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 25px;
+        }
+
+        .analysis-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .analysis-title i {
+            color: var(--primary-color);
+        }
+
+        .analysis-desc {
+            font-size: 15px;
+            color: var(--text-dark);
+            line-height: 1.8;
+            text-align: justify;
+        }
+
+        /* 頁尾 */
+        .footer {
+            background-color: var(--white);
+            padding: 30px 20px;
+            text-align: center;
+            border-top: 1px solid var(--primary-light);
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* 動畫宣告 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
+        @keyframes radarScan {
+            0% { transform: scale(0.9); opacity: 1; }
+            100% { transform: scale(1.6); opacity: 0; }
+        }
+
+        /* RWD 響應式配置 */
+        @media (max-width: 600px) {
+            .navbar-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .nav-right {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+            .search-box {
+                width: 100%;
+            }
+            .search-input {
+                width: 100%;
+            }
+            .search-input:focus {
+                width: 100%;
+            }
+            .selector-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            .heart-connector {
+                transform: rotate(90deg);
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 頂部導覽列 -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="nav-logo">
+                <i class="fa-solid fa-toolbox"></i> Life Tools
+            </a>
+            <div class="nav-right">
+                <a href="/pages/about.html" class="nav-link">關於我們</a>
+                <div class="search-box">
+                    <input type="text" id="navSearchInput" class="search-input" placeholder="搜尋工具...">
+                    <button id="navSearchBtn" class="search-btn">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 工具主內容區 -->
+    <main class="main-content">
+        <div class="tool-container">
+            <h1 class="tool-title"><i class="fa-solid fa-heart"></i> 情侶星座匹配度分析</h1>
+            
+            <!-- 星座選擇盤 -->
+            <div class="selector-grid">
+                <!-- 男方選單 -->
+                <div class="gender-card male">
+                    <div class="gender-title"><i class="fa-solid fa-mars"></i> 男生星座</div>
+                    <select id="maleZodiac" class="zodiac-select">
+                        <option value="Aries">牡羊座 (Aries)</option>
+                        <option value="Taurus">金牛座 (Taurus)</option>
+                        <option value="Gemini">雙子座 (Gemini)</option>
+                        <option value="Cancer">巨蟹座 (Cancer)</option>
+                        <option value="Leo">獅子座 (Leo)</option>
+                        <option value="Virgo">處女座 (Virgo)</option>
+                        <option value="Libra" selected>天秤座 (Libra)</option>
+                        <option value="Scorpio">天蠍座 (Scorpio)</option>
+                        <option value="Sagittarius">射手座 (Sagittarius)</option>
+                        <option value="Capricorn">摩羯座 (Capricorn)</option>
+                        <option value="Aquarius">水瓶座 (Aquarius)</option>
+                        <option value="Pisces">雙魚座 (Pisces)</option>
+                    </select>
+                </div>
+
+                <!-- 愛心連接點 -->
+                <div class="heart-connector">
+                    <i class="fa-solid fa-heart-pulse"></i>
+                </div>
+
+                <!-- 女方選單 -->
+                <div class="gender-card female">
+                    <div class="gender-title"><i class="fa-solid fa-venus"></i> 女生星座</div>
+                    <select id="femaleZodiac" class="zodiac-select">
+                        <option value="Aries">牡羊座 (Aries)</option>
+                        <option value="Taurus">金牛座 (Taurus)</option>
+                        <option value="Gemini">雙子座 (Gemini)</option>
+                        <option value="Cancer">巨蟹座 (Cancer)</option>
+                        <option value="Leo">獅子座 (Leo)</option>
+                        <option value="Virgo">處女座 (Virgo)</option>
+                        <option value="Libra">天秤座 (Libra)</option>
+                        <option value="Scorpio">天蠍座 (Scorpio)</option>
+                        <option value="Sagittarius">射手座 (Sagittarius)</option>
+                        <option value="Capricorn">摩羯座 (Capricorn)</option>
+                        <option value="Aquarius">水瓶座 (Aquarius)</option>
+                        <option value="Pisces" selected>雙魚座 (Pisces)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 分析按鈕 -->
+            <button class="match-btn" id="matchBtn" onclick="runZodiacMatch()">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> 開始精準配對
+            </button>
+
+            <!-- 載入中動畫 -->
+            <div class="matching-loader" id="matchingLoader">
+                <div class="radar-pulse">
+                    <i class="fa-solid fa-heart"></i>
+                </div>
+                <p style="color: var(--text-muted); font-size: 15px;">正在與星圖進行共鳴調合，請稍候...</p>
+            </div>
+
+            <!-- 配對結果面板 -->
+            <div class="result-panel" id="resultPanel">
+                <div class="result-header">
+                    <div class="score-circle" id="scoreCircle">
+                        <div class="score-value" id="scoreValue">0<span class="score-unit">%</span></div>
+                    </div>
+                    <div class="score-summary" id="scoreSummary">天生一對，默契十足</div>
+                </div>
+
+                <!-- 深度愛情解析 -->
+                <div class="analysis-card">
+                    <h3 class="analysis-title"><i class="fa-solid fa-comments"></i> 戀愛共鳴解析</h3>
+                    <p class="analysis-desc" id="analysisText">...</p>
+                </div>
+
+                <!-- 相處實戰建議 -->
+                <div class="analysis-card">
+                    <h3 class="analysis-title" style="color: var(--accent-pink);"><i class="fa-solid fa-hand-holding-heart"></i> 如何甜蜜相處？</h3>
+                    <p class="analysis-desc" id="adviceText">...</p>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- 頁尾 -->
+    <footer class="footer">
+        &copy; Royal Devotee (NeuralNexusLab X 0xseanlee), all rights reserved.
+    </footer>
+
+    <script>
+        // 定義四大星象分類
+        const zodiacElements = {
+            Aries: "Fire", Leo: "Fire", Sagittarius: "Fire",
+            Taurus: "Earth", Virgo: "Earth", Capricorn: "Earth",
+            Gemini: "Air", Libra: "Air", Aquarius: "Air",
+            Cancer: "Water", Scorpio: "Water", Pisces: "Water"
+        };
+
+        // 定義星座名稱中文映射
+        const zodiacNamesCn = {
+            Aries: "牡羊座", Taurus: "金牛座", Gemini: "雙子座", Cancer: "巨蟹座",
+            Leo: "獅子座", Virgo: "處女座", Libra: "天秤座", Scorpio: "天蠍座",
+            Sagittarius: "射手座", Capricorn: "摩羯座", Aquarius: "水瓶座", Pisces: "雙魚座"
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始化導覽列搜尋
+            initNavbarSearch();
+        });
+
+        // 導覽列搜尋轉址
+        function initNavbarSearch() {
+            const navInput = document.getElementById('navSearchInput');
+            const navBtn = document.getElementById('navSearchBtn');
+
+            const triggerSearch = () => {
+                const query = navInput.value.trim();
+                if (query) {
+                    window.location.href = `/pages/search.html?q=${encodeURIComponent(query)}`;
+                }
+            };
+
+            navBtn.addEventListener('click', triggerSearch);
+            navInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') triggerSearch();
+            });
+        }
+
+        // 星座匹配度核心運算與文本生成
+        function calculateZodiacMatch(male, female) {
+            const maleElement = zodiacElements[male];
+            const femaleElement = zodiacElements[female];
+            
+            let score = 50;
+            let summary = "";
+            let analysis = "";
+            let advice = "";
+
+            const maleName = zodiacNamesCn[male];
+            const femaleName = zodiacNamesCn[female];
+
+            // 1. 基於星象學基礎配對演算法
+            if (male === female) {
+                // 同星座組合
+                score = 80;
+                summary = "同極相吸，心靈鏡像";
+                analysis = `男方 ${maleName} 與女方 ${femaleName} 的組合，就像是在照鏡子一般。你們擁有高度相似的世界觀、思維邏輯與核心價值。一開始雙方就能極快地建立親密感，不需要過多的言語便能互相理解。然而，相似也代表你們容易擁有共同的死角與情緒黑洞。`;
+                advice = "因為彼此個性太過相似，當起衝突時容易陷入無休止的冷戰。建議雙方都要學會主動退讓，多向外界接觸，不要將兩人的相處模式完全封閉，給彼此一些呼吸空間。";
+            } else if (maleElement === femaleElement) {
+                // 同星象（如火象 + 火象）
+                score = 95;
+                summary = "天生一對，星光交織";
+                analysis = `身為同為 ${maleName} 與 ${femaleName} 的組合，你們在靈魂深處共享相同的星象基因。一見鍾情的機率極高，價值觀契合、生活節奏步調高度一致。你們在社交生活、理財概念甚至未來生活藍圖上都極具共鳴。`;
+                advice = "你們的關係充滿能量，但有時火氣或倔強脾氣也會雙倍放大。在遇到關鍵決策時，務必建立理性的討論模式，互相克制內心的固執，就能長長久久。";
+            } else if (
+                (maleElement === "Fire" && femaleElement === "Air") || 
+                (maleElement === "Air" && femaleElement === "Fire") ||
+                (maleElement === "Earth" && femaleElement === "Water") ||
+                (maleElement === "Water" && femaleElement === "Earth")
+            ) {
+                // 相生星象（風火相遇、水土相生）
+                score = 85;
+                summary = "相生相伴，極佳拍檔";
+                analysis = `風象與火象相遇會如野火燎原般璀璨，水象與土象相遇則是萬物繁衍的港灣。男方 ${maleName} 與女方 ${femaleName} 在性格上具備非常優異的互補機制。風能助火勢，土能盛水容。你們能夠成為彼此生活中最強力的靠山與心靈導師。`;
+                advice = "雖然搭配默契良好，但要小心互補帶來的盲點。風象或水象一方要多注意給予對方安全感；火象或土象一方則要減少過度掌控、多展現溫柔的一面。";
+            } else if (
+                (maleElement === "Fire" && femaleElement === "Water") ||
+                (maleElement === "Water" && femaleElement === "Fire")
+            ) {
+                // 水火相克
+                score = 55;
+                summary = "水火交融，宿命試煉";
+                analysis = `這是占星學中經典的水火考驗。男方 ${maleName}（${maleElement === "Fire" ? "熱情如火" : "柔情似水"}）與女方 ${femaleName}（${femaleElement === "Fire" ? "熱情如火" : "柔情似水"}）在一起，代表你們會經歷一場既刻骨銘心又容易受傷的宿命之戀。火的熱烈容易被水的冷靜澆熄，水的細膩也可能被火的粗糙蒸發。`;
+                advice = "水火並非無法並存，若能學會「水火既濟」，就能將衝突化作熱烈蒸汽。男方要多傾聽女方內心的細微感受，女方則要多包容男方的直白性子。多給彼此安全邊界。";
+            } else {
+                // 土風不合、土火等其他非直接配對
+                score = 65;
+                summary = "相互吸引，考驗包容";
+                analysis = `男方 ${maleName} 與女方 ${femaleName} 屬於需要時間慢慢磨合的細水長流型。你們在生活節奏與認知方向上存在不小差異。一個追求速度或心靈自由，一個追求踏實安全感。在戀愛初期，雙方會被彼此身上自己所沒有的特質強烈吸引。`;
+                advice = "不要急著改變對方。你們最好的相處方式是學習欣賞彼此不同的美。試著多去嘗試對方的興趣，安排一場既有規劃、又不失浪漫驚喜的約會能有效拉近距離。";
+            }
+
+            return { score, summary, analysis, advice };
+        }
+
+        // 開始進行星座匹配動效與計算
+        function runZodiacMatch() {
+            const male = document.getElementById("maleZodiac").value;
+            const female = document.getElementById("femaleZodiac").value;
+
+            const loader = document.getElementById("matchingLoader");
+            const resultPanel = document.getElementById("resultPanel");
+            const matchBtn = document.getElementById("matchBtn");
+
+            // 1. 開啟載入雷達動畫，隱藏結果與將按鈕物理禁用
+            loader.style.display = "block";
+            resultPanel.style.display = "none";
+            matchBtn.disabled = true;
+
+            // 2. 進行 1.5 秒的模擬星象讀取時間
+            setTimeout(() => {
+                const result = calculateZodiacMatch(male, female);
+
+                // 3. 關閉載入狀態並還原按鈕可用狀態
+                loader.style.display = "none";
+                matchBtn.disabled = false;
+
+                // 4. 更新結果內容
+                document.getElementById("scoreSummary").textContent = result.summary;
+                document.getElementById("analysisText").textContent = result.analysis;
+                document.getElementById("adviceText").textContent = result.advice;
+
+                // 5. 渲染圓圈進度條並開展動態跳號計數器
+                animateScoreCircle(result.score);
+                
+                // 6. 顯現結果面板
+                resultPanel.style.display = "block";
+            }, 1500);
+        }
+
+        // 動態遞增繪製圓圈進度條
+        function animateScoreCircle(targetScore) {
+            const circle = document.getElementById("scoreCircle");
+            const scoreVal = document.getElementById("scoreValue");
+            let count = 0;
+            
+            const animationInterval = setInterval(() => {
+                count++;
+                scoreVal.innerHTML = `${count}<span class="score-unit">%</span>`;
+                
+                // 動態更新 CSS Conic Gradient 漸層渲染進度圈
+                circle.style.background = `radial-gradient(closest-side, white 79%, transparent 80% 100%), conic-gradient(var(--accent-pink) ${count}%, #E2E8F0 0%)`;
+
+                if (count >= targetScore) {
+                    clearInterval(animationInterval);
+                }
+            }, 12);
+        }
+    </script>
+</body>
+</html>
