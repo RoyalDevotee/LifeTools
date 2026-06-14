@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>統計數據分析器 - Life Tools</title>
+    <!-- 載入規定的初始化腳本 -->
+    <script src="/scripts/init.js"></script>
+    <!-- 引入 Google Fonts 與 Font Awesome 圖標庫 -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* 全域基本樣式 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+
+        :root {
+            --primary-color: #FF8C00;
+            --primary-hover: #E07B00;
+            --primary-light: #FFF5EC;
+            --text-dark: #2C3E50;
+            --text-muted: #7F8C8D;
+            --bg-light: #FDFBF7;
+            --bg-card-section: #F5EFEB;
+            --white: #FFFFFF;
+            --success-color: #2ECC71;
+            --transition-speed: 0.3s;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 頂部導覽列 */
+        .navbar {
+            background-color: var(--white);
+            border-bottom: 2px solid var(--primary-light);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .nav-logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform var(--transition-speed) ease;
+        }
+
+        .nav-logo:hover {
+            transform: scale(1.03);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            color: var(--text-dark);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 16px;
+            transition: color var(--transition-speed) ease;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color);
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background-color: var(--primary-light);
+            border: 1.5px solid transparent;
+            border-radius: 30px;
+            padding: 4px 6px 4px 16px;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--primary-color);
+            background-color: var(--white);
+            box-shadow: 0 0 8px rgba(255, 140, 0, 0.15);
+        }
+
+        .search-input {
+            border: none;
+            background: transparent;
+            outline: none;
+            color: var(--text-dark);
+            font-size: 14px;
+            width: 160px;
+            transition: width var(--transition-speed) ease;
+        }
+
+        .search-input:focus {
+            width: 200px;
+        }
+
+        .search-btn {
+            background-color: var(--primary-color);
+            border: none;
+            color: var(--white);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color var(--transition-speed) ease, transform var(--transition-speed) ease;
+        }
+
+        .search-btn:hover {
+            background-color: var(--primary-hover);
+            transform: scale(1.05);
+        }
+
+        /* 工具主內容區 */
+        .main-content {
+            flex-grow: 1;
+            padding: 40px 20px;
+            background-color: var(--bg-card-section);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tool-container {
+            background-color: var(--white);
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            max-width: 950px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 140, 0, 0.1);
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .tool-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tool-title i {
+            color: var(--primary-color);
+        }
+
+        /* 輸入與示範區 */
+        .input-panel {
+            background-color: var(--bg-light);
+            border: 2px solid var(--primary-light);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 35px;
+        }
+
+        .input-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .input-label {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .demo-btn {
+            background-color: transparent;
+            color: var(--primary-color);
+            border: 1.5px solid var(--primary-light);
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .demo-btn:hover {
+            background-color: var(--primary-light);
+            border-color: var(--primary-color);
+        }
+
+        .textarea-field {
+            width: 100%;
+            height: 100px;
+            border: 1.5px solid #CBD5E1;
+            border-radius: 12px;
+            padding: 15px;
+            font-size: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            outline: none;
+            resize: none;
+            transition: border-color var(--transition-speed) ease;
+        }
+
+        .textarea-field:focus {
+            border-color: var(--primary-color);
+            background-color: var(--white);
+        }
+
+        .action-btn {
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            border-radius: 30px;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 15px;
+            box-shadow: 0 4px 15px rgba(255, 140, 0, 0.2);
+            transition: all var(--transition-speed) ease;
+        }
+
+        .action-btn:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 140, 0, 0.3);
+        }
+
+        /* 統計數據結果面板 (預設隱藏) */
+        .result-panel {
+            display: none;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .sorted-list-box {
+            background-color: var(--primary-light);
+            border-radius: 12px;
+            padding: 12px 20px;
+            font-size: 14px;
+            color: var(--primary-hover);
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 30px;
+            word-break: break-all;
+        }
+
+        /* 指標卡片格柵網格 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-card {
+            background-color: var(--white);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+            border: 1.5px solid #F1F5F9;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary-light);
+            box-shadow: 0 8px 25px rgba(255, 140, 0, 0.08);
+        }
+
+        .stat-title {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--text-dark);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* 頁尾 */
+        .footer {
+            background-color: var(--white);
+            padding: 30px 20px;
+            text-align: center;
+            border-top: 1px solid var(--primary-light);
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* 動畫宣告 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* RWD 響應式佈局 */
+        @media (max-width: 600px) {
+            .navbar-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .nav-right {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+            .search-box {
+                width: 100%;
+            }
+            .search-input {
+                width: 100%;
+            }
+            .search-input:focus {
+                width: 100%;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 頂部導覽列 -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="nav-logo">
+                <i class="fa-solid fa-toolbox"></i> Life Tools
+            </a>
+            <div class="nav-right">
+                <a href="/pages/about.html" class="nav-link">關於我們</a>
+                <div class="search-box">
+                    <input type="text" id="navSearchInput" class="search-input" placeholder="搜尋工具...">
+                    <button id="navSearchBtn" class="search-btn">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 工具主內容區 -->
+    <main class="main-content">
+        <div class="tool-container">
+            <h1 class="tool-title"><i class="fa-solid fa-chart-simple"></i> 統計數據分析器</h1>
+            
+            <!-- 數據輸入面板 -->
+            <section class="input-panel">
+                <div class="input-header">
+                    <label class="input-label" for="numbersInput">請輸入數值（以逗號、空格或換行分隔）</label>
+                    <button class="demo-btn" onclick="loadDemoData()"><i class="fa-solid fa-flask"></i> 填入範例測試</button>
+                </div>
+                <textarea id="numbersInput" class="textarea-field" placeholder="例如：85, 92, 70, 64, 85, 99, 50 ..."></textarea>
+                <button class="action-btn" onclick="processStatisticalAnalysis()">
+                    <i class="fa-solid fa-calculator"></i> 立即執行統計分析
+                </button>
+            </section>
+
+            <!-- 數據分析成果區 -->
+            <section class="result-panel" id="resultPanel">
+                <!-- 排序後的數據檢視 -->
+                <div class="sorted-list-box" id="sortedListBox">
+                    經排序後的數據：正在格式化...
+                </div>
+
+                <!-- 統計學指標卡片區 -->
+                <div class="stats-grid">
+                    <!-- 樣本數 -->
+                    <div class="stat-card">
+                        <div class="stat-title">樣本數 (N)</div>
+                        <div class="stat-value" id="valCount">0</div>
+                    </div>
+                    <!-- 平均值 -->
+                    <div class="stat-card">
+                        <div class="stat-title">平均值 (Mean)</div>
+                        <div class="stat-value" id="valMean">0</div>
+                    </div>
+                    <!-- 中位數 -->
+                    <div class="stat-card">
+                        <div class="stat-title">中位數 (Median)</div>
+                        <div class="stat-value" id="valMedian">0</div>
+                    </div>
+                    <!-- 眾數 -->
+                    <div class="stat-card">
+                        <div class="stat-title">眾數 (Mode)</div>
+                        <div class="stat-value" id="valMode" style="font-size: 18px;">0</div>
+                    </div>
+                    <!-- 極差 (全距) -->
+                    <div class="stat-card">
+                        <div class="stat-title">極差 (Range)</div>
+                        <div class="stat-value" id="valRange">0</div>
+                    </div>
+                    <!-- 樣本標準差 -->
+                    <div class="stat-card">
+                        <div class="stat-title">樣本標準差 (SD)</div>
+                        <div class="stat-value" id="valSampleSd">0</div>
+                    </div>
+                    <!-- 樣本變異數 -->
+                    <div class="stat-card">
+                        <div class="stat-title">樣本變異數 (Variance)</div>
+                        <div class="stat-value" id="valSampleVar">0</div>
+                    </div>
+                    <!-- 母體標準差 -->
+                    <div class="stat-card">
+                        <div class="stat-title">母體標準差 (σ)</div>
+                        <div class="stat-value" id="valPopSd">0</div>
+                    </div>
+                    <!-- 母體變異數 -->
+                    <div class="stat-card">
+                        <div class="stat-title">母體變異數 (σ²)</div>
+                        <div class="stat-value" id="valPopVar">0</div>
+                    </div>
+                    <!-- 第一四分位數 Q1 -->
+                    <div class="stat-card">
+                        <div class="stat-title">第一四分位數 (Q1)</div>
+                        <div class="stat-value" id="valQ1">0</div>
+                    </div>
+                    <!-- 第三四分位數 Q3 -->
+                    <div class="stat-card">
+                        <div class="stat-title">第三四分位數 (Q3)</div>
+                        <div class="stat-value" id="valQ3">0</div>
+                    </div>
+                    <!-- 四分位距 IQR -->
+                    <div class="stat-card">
+                        <div class="stat-title">四分位距 (IQR)</div>
+                        <div class="stat-value" id="valIqr">0</div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- 頁尾 -->
+    <footer class="footer">
+        &copy; Royal Devotee (NeuralNexusLab X 0xseanlee), all rights reserved.
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始化導覽列搜尋
+            initNavbarSearch();
+        });
+
+        // 導覽列搜尋跳轉邏輯
+        function initNavbarSearch() {
+            const navInput = document.getElementById('navSearchInput');
+            const navBtn = document.getElementById('navSearchBtn');
+
+            const triggerSearch = () => {
+                const query = navInput.value.trim();
+                if (query) {
+                    window.location.href = `/pages/search.html?q=${encodeURIComponent(query)}`;
+                }
+            };
+
+            navBtn.addEventListener('click', triggerSearch);
+            navInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') triggerSearch();
+            });
+        }
+
+        // 載入預設學術範例數據
+        function loadDemoData() {
+            const demoValues = "85, 92, 70, 64, 85, 99, 50, 78, 92, 85";
+            document.getElementById("numbersInput").value = demoValues;
+            processStatisticalAnalysis();
+        }
+
+        // 四分位數計算法 (線性插值逼近法)
+        function getPercentile(sortedArray, p) {
+            if (sortedArray.length === 0) return 0;
+            if (p <= 0) return sortedArray[0];
+            if (p >= 1) return sortedArray[sortedArray.length - 1];
+
+            const index = (sortedArray.length - 1) * p;
+            const lower = Math.floor(index);
+            const upper = Math.ceil(index);
+            const weight = index - lower;
+
+            return sortedArray[lower] * (1 - weight) + sortedArray[upper] * weight;
+        }
+
+        // 統計學描述性核心演算法
+        function processStatisticalAnalysis() {
+            const inputVal = document.getElementById("numbersInput").value.trim();
+            const resultPanel = document.getElementById("resultPanel");
+
+            if (!inputVal) {
+                alert("請先輸入一些數據！");
+                return;
+            }
+
+            // 1. 利用正則表達式切分輸入（相容逗號、空白、換行等分隔符）
+            const rawNumbers = inputVal.split(/[,\s\n]+/).map(num => parseFloat(optTrim(num))).filter(num => !isNaN(num));
+
+            if (rawNumbers.length === 0) {
+                alert("找不到任何有效的數值！請檢查輸入格式。");
+                return;
+            }
+
+            // 2. 進行數據遞增排序，方便後續中位數與四分位數計算
+            const sortedNumbers = rawNumbers.slice().sort((a, b) => a - b);
+            const n = sortedNumbers.length;
+
+            // 展示排序後的數據清單
+            document.getElementById("sortedListBox").textContent = `經排序後的數據 (N=${n})：${sortedNumbers.join(', ')}`;
+
+            // 3. 計算平均值 (Mean)
+            const sum = sortedNumbers.reduce((acc, curr) => acc + curr, 0);
+            const mean = sum / n;
+
+            // 4. 計算中位數 (Median)
+            let median = 0;
+            if (n % 2 === 1) {
+                median = sortedNumbers[Math.floor(n / 2)];
+            } else {
+                median = (sortedNumbers[n / 2 - 1] + sortedNumbers[n / 2]) / 2;
+            }
+
+            // 5. 計算眾數 (Mode)
+            const mode = calculateMode(sortedNumbers);
+
+            // 6. 計算極差 (Range)
+            const range = sortedNumbers[n - 1] - sortedNumbers[0];
+
+            // 7. 計算變異數與標準差 (Variance & Standard Deviation)
+            const sumOfSquares = sortedNumbers.reduce((acc, curr) => acc + Math.pow(curr - mean, 2), 0);
+            
+            // 樣本變異數（分母為 N - 1）
+            const sampleVariance = n > 1 ? sumOfSquares / (n - 1) : 0;
+            const sampleSd = Math.sqrt(sampleVariance);
+
+            // 母體變異數（分母為 N）
+            const popVariance = sumOfSquares / n;
+            const popSd = Math.sqrt(popVariance);
+
+            // 8. 計算四分位數與四分位距 (Quartiles & IQR)
+            const q1 = getPercentile(sortedNumbers, 0.25);
+            const q3 = getPercentile(sortedNumbers, 0.75);
+            const iqr = q3 - q1;
+
+            // 9. 將運算指標寫入前端視窗
+            document.getElementById("valCount").textContent = n;
+            document.getElementById("valMean").textContent = cleanDecimal(mean);
+            document.getElementById("valMedian").textContent = cleanDecimal(median);
+            document.getElementById("valMode").textContent = mode;
+            document.getElementById("valRange").textContent = cleanDecimal(range);
+            document.getElementById("valSampleSd").textContent = cleanDecimal(sampleSd);
+            document.getElementById("valSampleVar").textContent = cleanDecimal(sampleVariance);
+            document.getElementById("valPopSd").textContent = cleanDecimal(popSd);
+            document.getElementById("valPopVar").textContent = cleanDecimal(popVariance);
+            document.getElementById("valQ1").textContent = cleanDecimal(q1);
+            document.getElementById("valQ3").textContent = cleanDecimal(q3);
+            document.getElementById("valIqr").textContent = cleanDecimal(iqr);
+
+            // 展開分析成果面板
+            resultPanel.style.display = "block";
+        }
+
+        // 計算眾數輔助函式
+        function calculateMode(arr) {
+            const frequencyMap = {};
+            let maxFreq = 0;
+            let modes = [];
+
+            // 統計各數值出現次數
+            arr.forEach(num => {
+                frequencyMap[num] = (frequencyMap[num] || 0) + 1;
+                if (frequencyMap[num] > maxFreq) {
+                    maxFreq = frequencyMap[num];
+                }
+            });
+
+            // 提取出現頻率最高的所有數值
+            for (const key in frequencyMap) {
+                if (frequencyMap[key] === maxFreq) {
+                    modes.push(parseFloat(key));
+                }
+            }
+
+            // 若所有數字出現次數皆為 1（或是均等），判定為無特定眾數
+            if (maxFreq === 1 || modes.length === arr.length) {
+                return "無眾數";
+            }
+
+            return modes.join(', ');
+        }
+
+        // 清理字串左右多餘空白
+        function optTrim(str) {
+            return str.replace(/^\s+|\s+$/g, "");
+        }
+
+        // 格式化輸出小數（限制最大精度 4 位，並去除尾端無意義的 0）
+        function cleanDecimal(val) {
+            return parseFloat(val.toFixed(4));
+        }
+    </script>
+</body>
+</html>
