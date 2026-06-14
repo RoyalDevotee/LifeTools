@@ -93,7 +93,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: nowrap; /* 防止手機板強制斷行爆開 */
+            flex-wrap: nowrap; /* 橫向不強制換行破版 */
             gap: 15px;
         }
 
@@ -106,7 +106,7 @@
             align-items: center;
             gap: 8px;
             transition: transform var(--transition-speed) ease;
-            flex-shrink: 0; /* 防止Logo被擠壓變形 */
+            flex-shrink: 0; /* 禁止Logo在擠壓時變形 */
         }
 
         .nav-logo:hover {
@@ -159,7 +159,7 @@
             outline: none;
             color: var(--text-dark);
             font-size: 14px;
-            width: 100%; /* 使用 100% 配合外層 max-width 控寬 */
+            width: 100%;
             padding-right: 8px;
         }
 
@@ -220,7 +220,7 @@
             background-color: var(--white);
             border: 2px solid var(--primary-light);
             border-radius: 40px;
-            padding: 6px 6px 6px 24px;
+            padding: 6px 6px 6px 24px; /* 優化 Padding 確保舒適的間距 */
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
             transition: all var(--transition-speed) ease;
         }
@@ -232,13 +232,15 @@
         }
 
         .hero-search-input {
-            flex: 1;
+            flex: 1; /* 主動搶佔剩餘寬度 */
             border: none;
             background: transparent;
             outline: none;
             font-size: 16px;
             color: var(--text-dark);
             width: 100%;
+            min-width: 0; /* 關鍵：使 Flex 子元素能流暢縮小，完美防溢出疊加 */
+            padding-right: 12px; /* 與按鈕保持安全視覺距離 */
         }
 
         .hero-search-btn {
@@ -255,7 +257,7 @@
             justify-content: center;
             gap: 8px;
             transition: background-color var(--transition-speed) ease, transform var(--transition-speed) ease;
-            flex-shrink: 0;
+            flex-shrink: 0; /* 關鍵：強制鎖定按鈕寬度，避免被輸入框擠壓變形 */
         }
 
         .hero-search-btn:hover {
@@ -413,7 +415,7 @@
             }
             .nav-right {
                 gap: 10px;
-                max-width: 65%; /* 限制右側最大比例，留空間給標題 */
+                max-width: 65%;
             }
             .nav-link {
                 font-size: 14px;
@@ -432,13 +434,13 @@
                 font-size: 40px;
             }
             .hero-search-btn span {
-                display: none; /* 小螢幕隱藏文字 */
+                display: none; /* 手機板隱藏按鈕文字，轉成純 icon 按鈕 */
             }
             .hero-search-btn {
                 padding: 0;
-                width: 44px;
+                width: 44px;  /* 鎖定固定長寬，防拉伸變形 */
                 height: 44px;
-                border-radius: 50%; /* 完美正圓形按鈕 */
+                border-radius: 50%; /* 確保形成完美的正圓形按鈕 */
             }
         }
     </style>
