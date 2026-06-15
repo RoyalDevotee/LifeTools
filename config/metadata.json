@@ -16,5 +16,5 @@
   { "name": "萬能清單亂序洗牌器", "description": "名單與文字行隨機排序工具。輸入任意名單或項目，一鍵將其完全打亂順序，並支援即時字數行數統計與快速複製。", "path": "/pages/shuffler.html", "icon": "fa-solid fa-shuffle" },
   { "name": "現代感多功能計算機", "description": "具備豐富微動效與運算歷程紀錄的網頁計算機。支援四則運算、百分比餘數計算，並完美適應手機與電腦螢幕。", "path": "/pages/calculator.html", "icon": "fa-solid fa-calculator" },
   { "name": "現代感 BMI / BMR / TDEE 健康體態計算機", "description": "一鍵精準分析 BMI、基礎代謝率(BMR)與每日總消耗熱量(TDEE)。內建視覺化彩色狀態指標滑條，支援性別活動量多維度本地端安全運算。", "path": "/pages/bmi.html", "icon": "fa-solid fa-heart-pulse" },
-  { "name": "萬用即時匯率換算器", "description": "支援全球主流貨幣的線上匯率試算與雙向換算工具。內建直覺的現代感外幣面板，新功能正在全力開發中，敬請期待！", "path": "/pages/exchange-rate.html", "icon": "fa-solid fa-money-bill-transfer" }
+  { "name": "萬用即時匯率換算器", "description": "支援全球主流貨幣的線上匯率試算與雙向換算工具。內建直覺的現代感外幣面板！", "path": "/pages/exchange-rate.html", "icon": "fa-solid fa-money-bill-transfer" }
 ]
