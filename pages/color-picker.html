@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>現代感顏色代碼選取器 - Life Tools</title>
+    <meta name="description" content="專業的前端與設計師選色工具。支援 HEX, RGB, HSL 雙向即時轉換，內建多款流行漸層與質感調色盤，並提供一鍵複製色碼功能。">
+    <meta name="author" content="Royal Devotee (NeuralNexusLab X 0xseanlee)">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="/scripts/init.js"></script>
+
+    <style>
+        /* 全域基本樣式 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+
+        :root {
+            --primary-color: #FF8C00;
+            --primary-hover: #E07B00;
+            --primary-light: #FFF5EC;
+            --text-dark: #2C3E50;
+            --text-muted: #7F8C8D;
+            --bg-light: #FDFBF7;
+            --bg-card-section: #F5EFEB;
+            --white: #FFFFFF;
+            --border-color: #EAEAEA;
+            --transition-speed: 0.3s;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 頂部導覽列 */
+        .navbar {
+            background-color: var(--white);
+            border-bottom: 2px solid var(--primary-light);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: nowrap;
+            gap: 15px;
+        }
+
+        .nav-logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform var(--transition-speed) ease;
+            flex-shrink: 0;
+        }
+
+        .nav-logo:hover {
+            transform: scale(1.03);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: nowrap;
+            flex-grow: 1;
+            justify-content: flex-end;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background-color: var(--primary-light);
+            border: 1.5px solid transparent;
+            border-radius: 30px;
+            padding: 4px 4px 4px 16px;
+            transition: all var(--transition-speed) ease;
+            max-width: 300px;
+            width: 100%;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--primary-color);
+            background-color: var(--white);
+            box-shadow: 0 0 8px rgba(255, 140, 0, 0.15);
+        }
+
+        .search-input {
+            border: none;
+            background: transparent;
+            outline: none;
+            color: var(--text-dark);
+            font-size: 14px;
+            width: 100%;
+            padding-right: 8px;
+        }
+
+        .search-btn {
+            background-color: var(--primary-color);
+            border: none;
+            color: var(--white);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color var(--transition-speed) ease, transform var(--transition-speed) ease;
+            flex-shrink: 0;
+        }
+
+        /* 主內容區 */
+        .main-container {
+            background-color: var(--bg-card-section);
+            padding: 40px 20px;
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .picker-layout {
+            max-width: 1000px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* 兩側卡片共用樣式 */
+        .panel-card {
+            background-color: var(--white);
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(0, 0, 0, 0.02);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .section-heading {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .section-heading i {
+            color: var(--primary-color);
+        }
+
+        /* 左側：主選色區 */
+        .color-preview-box {
+            width: 100%;
+            height: 150px;
+            border-radius: 16px;
+            background-color: var(--primary-color);
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            cursor: pointer;
+            box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .color-preview-box:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        .color-preview-box::after {
+            content: '\f0d0';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 32px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .color-preview-box:hover::after {
+            opacity: 1;
+        }
+
+        /* 隱藏的原生 Color Picker */
+        #nativeColorPicker {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+            border: none;
+            padding: 0;
+        }
+
+        /* 代碼輸入與複製區塊 */
+        .code-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+            background-color: var(--bg-light);
+            border: 1.5px solid var(--border-color);
+            border-radius: 12px;
+            padding: 5px;
+            transition: border-color var(--transition-speed) ease;
+        }
+
+        .input-row:focus-within {
+            border-color: var(--primary-color);
+        }
+
+        .input-label {
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--text-muted);
+            width: 50px;
+            text-align: center;
+        }
+
+        .code-input {
+            flex-grow: 1;
+            border: none;
+            background: transparent;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 16px;
+            color: var(--text-dark);
+            outline: none;
+            padding: 8px;
+        }
+
+        .copy-btn {
+            background-color: var(--white);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .copy-btn:hover {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+            background-color: var(--primary-light);
+        }
+
+        /* 右側：設計師調色盤 */
+        .palette-group {
+            margin-bottom: 25px;
+        }
+
+        .palette-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .palette-swatches {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+        }
+
+        .swatch {
+            aspect-ratio: 1;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
+            transition: transform 0.2s ease;
+        }
+
+        .swatch:hover {
+            transform: scale(1.15) translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            z-index: 2;
+        }
+
+        /* Toast 提示 */
+        .toast-msg {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translate(-50%, 20px);
+            background-color: var(--text-dark);
+            color: var(--white);
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            z-index: 10000;
+            opacity: 0;
+            pointer-events: none;
+            transition: all var(--transition-speed) ease;
+        }
+        .toast-msg.show { opacity: 1; transform: translate(-50%, 0); }
+
+        /* 頁尾 */
+        .footer {
+            background-color: var(--white);
+            padding: 30px 20px;
+            text-align: center;
+            border-top: 1px solid var(--primary-light);
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* RWD 排版 */
+        @media (max-width: 850px) {
+            .picker-layout { grid-template-columns: 1fr; }
+            .color-preview-box { height: 120px; }
+            .palette-swatches { grid-template-columns: repeat(8, 1fr); }
+        }
+
+        @media (max-width: 600px) {
+            .navbar-container { padding: 10px 12px; gap: 8px; }
+            .search-box { padding: 3px 3px 3px 10px; }
+            .search-input { font-size: 13px; }
+            .search-btn { width: 28px; height: 28px; }
+            .panel-card { padding: 25px 20px; }
+            .palette-swatches { grid-template-columns: repeat(5, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar" aria-label="主要導覽列">
+        <div class="navbar-container">
+            <a href="/" class="nav-logo" aria-label="Life Tools 首頁">
+                <i class="fa-solid fa-toolbox" aria-hidden="true"></i> Life Tools
+            </a>
+            <div class="nav-right">
+                <div class="search-box" role="search">
+                    <input type="text" id="navSearchInput" class="search-input" placeholder="搜尋工具..." aria-label="搜尋框">
+                    <button id="navSearchBtn" class="search-btn" aria-label="確認搜尋">
+                        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-container">
+        <div class="picker-layout">
+            
+            <section class="panel-card" aria-label="顏色選取區">
+                <h2 class="section-heading"><i class="fa-solid fa-eye-dropper"></i> 自訂色彩</h2>
+                
+                <div class="color-preview-box" id="colorPreview" onclick="triggerNativePicker()" aria-label="點擊開啟調色盤">
+                    <input type="color" id="nativeColorPicker" value="#FF8C00">
+                </div>
+
+                <div class="code-group">
+                    <div class="input-row">
+                        <span class="input-label">HEX</span>
+                        <input type="text" id="hexInput" class="code-input" value="#FF8C00" maxlength="7">
+                        <button class="copy-btn" onclick="copyColorCode('hexInput')" title="複製 HEX"><i class="fa-regular fa-copy"></i></button>
+                    </div>
+
+                    <div class="input-row">
+                        <span class="input-label">RGB</span>
+                        <input type="text" id="rgbInput" class="code-input" value="255, 140, 0">
+                        <button class="copy-btn" onclick="copyColorCode('rgbInput')" title="複製 RGB"><i class="fa-regular fa-copy"></i></button>
+                    </div>
+
+                    <div class="input-row">
+                        <span class="input-label">HSL</span>
+                        <input type="text" id="hslInput" class="code-input" value="33, 100%, 50%">
+                        <button class="copy-btn" onclick="copyColorCode('hslInput')" title="複製 HSL"><i class="fa-regular fa-copy"></i></button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel-card" aria-label="靈感調色盤">
+                <h2 class="section-heading"><i class="fa-solid fa-swatchbook"></i> 靈感調色盤</h2>
+                
+                <div class="palette-group">
+                    <div class="palette-title">Life Tools 品牌色系</div>
+                    <div class="palette-swatches">
+                        <div class="swatch" style="background-color: #FF8C00;" onclick="applySwatchColor('#FF8C00')"></div>
+                        <div class="swatch" style="background-color: #E07B00;" onclick="applySwatchColor('#E07B00')"></div>
+                        <div class="swatch" style="background-color: #FFF5EC;" onclick="applySwatchColor('#FFF5EC')"></div>
+                        <div class="swatch" style="background-color: #2C3E50;" onclick="applySwatchColor('#2C3E50')"></div>
+                        <div class="swatch" style="background-color: #7F8C8D;" onclick="applySwatchColor('#7F8C8D')"></div>
+                        <div class="swatch" style="background-color: #FDFBF7;" onclick="applySwatchColor('#FDFBF7')"></div>
+                    </div>
+                </div>
+
+                <div class="palette-group">
+                    <div class="palette-title">質感莫蘭迪色 (Morandi)</div>
+                    <div class="palette-swatches">
+                        <div class="swatch" style="background-color: #A3A3A2;" onclick="applySwatchColor('#A3A3A2')"></div>
+                        <div class="swatch" style="background-color: #BDBBB6;" onclick="applySwatchColor('#BDBBB6')"></div>
+                        <div class="swatch" style="background-color: #C1C6C6;" onclick="applySwatchColor('#C1C6C6')"></div>
+                        <div class="swatch" style="background-color: #D3C9C3;" onclick="applySwatchColor('#D3C9C3')"></div>
+                        <div class="swatch" style="background-color: #DFD5C6;" onclick="applySwatchColor('#DFD5C6')"></div>
+                        <div class="swatch" style="background-color: #9C9B98;" onclick="applySwatchColor('#9C9B98')"></div>
+                    </div>
+                </div>
+
+                <div class="palette-group">
+                    <div class="palette-title">現代科技感 (Tech & Cyber)</div>
+                    <div class="palette-swatches">
+                        <div class="swatch" style="background-color: #00F0FF;" onclick="applySwatchColor('#00F0FF')"></div>
+                        <div class="swatch" style="background-color: #7000FF;" onclick="applySwatchColor('#7000FF')"></div>
+                        <div class="swatch" style="background-color: #FF0055;" onclick="applySwatchColor('#FF0055')"></div>
+                        <div class="swatch" style="background-color: #0B0E14;" onclick="applySwatchColor('#0B0E14')"></div>
+                        <div class="swatch" style="background-color: #1A1A24;" onclick="applySwatchColor('#1A1A24')"></div>
+                        <div class="swatch" style="background-color: #39FF14;" onclick="applySwatchColor('#39FF14')"></div>
+                    </div>
+                </div>
+
+            </section>
+
+        </div>
+    </main>
+
+    <div class="toast-msg" id="toastMsg">色碼已複製！</div>
+
+    <footer class="footer">
+        &copy; Royal Devotee (NeuralNexusLab X 0xseanlee), all rights reserved.
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            initSearchEvents();
+            setupColorListeners();
+            // 初始化同步顏色 (以防 HTML 預設值有更動)
+            syncColorsFromHex(document.getElementById('hexInput').value);
+        });
+
+        // 導覽列搜尋邏輯
+        function executeSearch(query) {
+            const trimmedQuery = query.trim();
+            if (trimmedQuery) {
+                window.location.href = `/pages/search.html?q=${encodeURIComponent(trimmedQuery)}`;
+            }
+        }
+
+        function initSearchEvents() {
+            const navInput = document.getElementById('navSearchInput');
+            const navBtn = document.getElementById('navSearchBtn');
+            navBtn.addEventListener('click', () => executeSearch(navInput.value));
+            navInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') executeSearch(navInput.value);
+            });
+        }
+
+        // 代理點擊：點擊大預覽框時，觸發隱藏的原生選色器
+        function triggerNativePicker() {
+            document.getElementById('nativeColorPicker').click();
+        }
+
+        // 監聽各輸入框的變動，達成雙向資料綁定
+        function setupColorListeners() {
+            const nativePicker = document.getElementById('nativeColorPicker');
+            const hexInput = document.getElementById('hexInput');
+            const rgbInput = document.getElementById('rgbInput');
+            const hslInput = document.getElementById('hslInput');
+
+            // 1. 原生選色器變動
+            nativePicker.addEventListener('input', (e) => {
+                syncColorsFromHex(e.target.value);
+            });
+
+            // 2. HEX 輸入框變動
+            hexInput.addEventListener('input', (e) => {
+                let val = e.target.value;
+                if (!val.startsWith('#')) val = '#' + val;
+                if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+                    syncColorsFromHex(val);
+                }
+            });
+
+            // 3. RGB 輸入框變動
+            rgbInput.addEventListener('input', (e) => {
+                const parts = e.target.value.match(/\d+/g);
+                if (parts && parts.length >= 3) {
+                    const r = Math.min(255, parseInt(parts[0]));
+                    const g = Math.min(255, parseInt(parts[1]));
+                    const b = Math.min(255, parseInt(parts[2]));
+                    const hex = rgbToHex(r, g, b);
+                    syncColorsFromHex(hex, 'rgb'); // 傳遞來源以防止游標跳動
+                }
+            });
+
+            // 4. HSL 輸入框變動
+            hslInput.addEventListener('input', (e) => {
+                const parts = e.target.value.match(/\d+/g);
+                if (parts && parts.length >= 3) {
+                    const h = Math.min(360, parseInt(parts[0]));
+                    const s = Math.min(100, parseInt(parts[1]));
+                    const l = Math.min(100, parseInt(parts[2]));
+                    const hex = hslToHex(h, s, l);
+                    syncColorsFromHex(hex, 'hsl');
+                }
+            });
+        }
+
+        // 套用點擊的調色盤色碼
+        function applySwatchColor(hexCode) {
+            syncColorsFromHex(hexCode);
+        }
+
+        // 核心同步邏輯：從 HEX 計算並更新所有 UI (可指定 source 避免覆寫正在輸入的框)
+        function syncColorsFromHex(hex, source = 'hex') {
+            const rgb = hexToRgb(hex);
+            if (!rgb) return;
+            const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+
+            // 更新視覺
+            document.getElementById('colorPreview').style.backgroundColor = hex;
+            document.getElementById('nativeColorPicker').value = hex;
+
+            // 更新輸入框
+            if (source !== 'hex') document.getElementById('hexInput').value = hex.toUpperCase();
+            if (source !== 'rgb') document.getElementById('rgbInput').value = `${rgb.r}, ${rgb.g}, ${rgb.b}`;
+            if (source !== 'hsl') document.getElementById('hslInput').value = `${hsl.h}, ${hsl.s}%, ${hsl.l}%`;
+        }
+
+        /* === 色彩轉換數學公式區 === */
+        
+        // HEX to RGB 物件
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
+        }
+
+        // RGB to HEX 字串
+        function rgbToHex(r, g, b) {
+            return "#" + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1).toUpperCase();
+        }
+
+        // RGB to HSL 物件
+        function rgbToHsl(r, g, b) {
+            r /= 255, g /= 255, b /= 255;
+            let max = Math.max(r, g, b), min = Math.min(r, g, b);
+            let h, s, l = (max + min) / 2;
+
+            if (max == min) {
+                h = s = 0; // achromatics
+            } else {
+                let d = max - min;
+                s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                switch (max) {
+                    case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                    case g: h = (b - r) / d + 2; break;
+                    case b: h = (r - g) / d + 4; break;
+                }
+                h /= 6;
+            }
+            return {
+                h: Math.round(h * 360),
+                s: Math.round(s * 100),
+                l: Math.round(l * 100)
+            };
+        }
+
+        // HSL to HEX 字串
+        function hslToHex(h, s, l) {
+            s /= 100;
+            l /= 100;
+            let c = (1 - Math.abs(2 * l - 1)) * s,
+                x = c * (1 - Math.abs((h / 60) % 2 - 1)),
+                m = l - c/2,
+                r = 0, g = 0, b = 0;
+
+            if (0 <= h && h < 60) { r = c; g = x; b = 0; }
+            else if (60 <= h && h < 120) { r = x; g = c; b = 0; }
+            else if (120 <= h && h < 180) { r = 0; g = c; b = x; }
+            else if (180 <= h && h < 240) { r = 0; g = x; b = c; }
+            else if (240 <= h && h < 300) { r = x; g = 0; b = c; }
+            else if (300 <= h && h < 360) { r = c; g = 0; b = x; }
+
+            r = Math.round((r + m) * 255);
+            g = Math.round((g + m) * 255);
+            b = Math.round((b + m) * 255);
+
+            return rgbToHex(r, g, b);
+        }
+
+        /* === 複製與提示機制 === */
+        
+        function copyColorCode(inputId) {
+            const inputEl = document.getElementById(inputId);
+            const textToCopy = inputEl.value;
+            
+            if (!textToCopy) return;
+
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                showToast(`已複製色碼：${textToCopy}`);
+            }).catch(err => {
+                console.error('複製失敗:', err);
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toastMsg');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+    </script>
+</body>
+</html>
