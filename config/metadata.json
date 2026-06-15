@@ -18,5 +18,6 @@
   { "name": "現代感 BMI / BMR / TDEE 健康體態計算機", "description": "一鍵精準分析 BMI、基礎代謝率(BMR)與每日總消耗熱量(TDEE)。內建視覺化彩色狀態指標滑條，支援性別活動量多維度本地端安全運算。", "path": "/pages/bmi.html", "icon": "fa-solid fa-heart-pulse" },
   { "name": "萬用即時匯率換算器", "description": "支援全球主流貨幣的線上匯率試算與雙向換算工具。內建直覺的現代感外幣面板！", "path": "/pages/exchange-rate.html", "icon": "fa-solid fa-money-bill-transfer" },
   { "name": "萬用字數與行數統計器", "description": "即時統計總字數、不含空白字數、中英文字元、數字與段落行數。內建主流社群與簡訊字數限制進度條提示，完全本地端流暢分析。", "path": "/pages/text-counter.html", "icon": "fa-solid fa-file-lines" },
-  { "name": "線上 HTTP 請求測試器", "description": "輕量免安裝的線上 API 請求測試工具。支援自訂方法、多組 Headers 與 Body 負載，並內建深色模式 JSON 美化解析與延遲偵測。", "path": "/pages/http-tester.html", "icon": "fa-solid fa-satellite-dish" }
+  { "name": "線上 HTTP 請求測試器", "description": "輕量免安裝的線上 API 請求測試工具。支援自訂方法、多組 Headers 與 Body 負載，並內建深色模式 JSON 美化解析與延遲偵測。", "path": "/pages/http-tester.html", "icon": "fa-solid fa-satellite-dish" },
+  { "name": "顏色代碼色彩選取器", "description": "專業的前端與設計師選色工具。支援 HEX, RGB, HSL 雙向即時轉換，內建多款流行漸層與質感調色盤，並提供一鍵複製色碼功能。", "path": "/pages/color-picker.html", "icon": "fa-solid fa-palette" }
 ]
