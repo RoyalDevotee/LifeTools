@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>找不到網頁！正在重新嚮導... - Life Tools</title>
+    <script src="/scripts/init.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans TC', sans-serif; }
+        :root {
+            --primary-color: #FF8C00;
+            --primary-hover: #E07B00;
+            --primary-light: #FFF5EC;
+            --text-dark: #2C3E50;
+            --text-muted: #7F8C8D;
+            --bg-light: #FDFBF7;
+            --white: #FFFFFF;
+        }
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+        }
+        .error-card {
+            max-width: 500px;
+            width: 100%;
+            background: var(--white);
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+            border: 1px solid rgba(0,0,0,0.02);
+            animation: fadeInUp 0.6s ease-out;
+        }
+        .error-code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 72px;
+            font-weight: 800;
+            color: var(--primary-color);
+            line-height: 1;
+            margin-bottom: 15px;
+        }
+        .error-title { font-size: 22px; font-weight: 700; margin-bottom: 12px; }
+        .error-desc { font-size: 15px; color: var(--text-muted); margin-bottom: 30px; line-height: 1.6; }
+        
+        /* 倒數計時圓圈進度 */
+        .countdown-wrapper {
+            font-size: 14px;
+            color: var(--primary-color);
+            background-color: var(--primary-light);
+            padding: 10px 20px;
+            border-radius: 30px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+        .countdown-num { font-family: 'JetBrains Mono', monospace; font-size: 16px; }
+
+        .home-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background-color: var(--primary-color);
+            color: var(--white);
+            text-decoration: none;
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(255,140,0,0.2);
+            transition: all 0.3s ease;
+        }
+        .home-btn:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(255,140,0,0.3);
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <article class="error-card">
+        <div class="error-code">404</div>
+        <h1 class="error-title">喔噢！發現迷路的未知網頁</h1>
+        <p class="error-desc">
+            抱歉，雖然你輸入的網址很有創意，但這個工具或頁面目前並不存在。
+        </p>
+
+        <div class="countdown-wrapper">
+            <i class="fa-solid fa-compass fa-spin"></i>
+            <span>別擔心，將在 <span class="countdown-num" id="countdownLabel">3</span> 秒後自動帶您安全回家</span>
+        </div>
+
+        <a href="/" class="home-btn">
+            <i class="fa-solid fa-house"></i> 立即返回首頁
+        </a>
+    </article>
+
+    <script>
+        // 宣告全域秒數控制變數
+        let secondsLeft = 3;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // 啟動毫秒級定時器進行安全倒數
+            startRedirectCountdown();
+        });
+
+        // 倒數計時與重定向處理邏輯
+        function startRedirectCountdown() {
+            const label = document.getElementById('countdownLabel');
+            
+            const timerInterval = setInterval(() => {
+                secondsLeft--;
+                label.textContent = secondsLeft;
+
+                // 倒數終了時，強制安全重定向回歸主網域首頁
+                if (secondsLeft <= 0) {
+                    clearInterval(timerInterval);
+                    window.location.href = '/'; // 帶回根目錄首頁
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
