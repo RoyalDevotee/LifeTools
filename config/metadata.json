@@ -10,7 +10,6 @@
   { "name": "萬能唬爛產生器", "description": "經典的廢話文章生成工具。輸入任意主題與指定字數下限，即可在彈指之間為您編織出篇幅宏大、用詞高深卻毫無實質內容的華麗文章。", "path": "/pages/bullshit.html", "icon": "fa-solid fa-pen-nib" },
   { "name": "英文單字接龍遊戲", "description": "具備現代化 UI 的英語單字字尾接龍遊戲。內建 API 即時字典校驗，自動防範重複單字與非法拼字，是學習與挑戰字彙量的好幫手。", "path": "/pages/shiritori.html", "icon": "fa-solid fa-font" },
   { "name": "統計數據分析器", "description": "專業的數據統計分析工具。輸入一組數值，即時算出平均數、中位數、眾數、標準差、變異數及四分位數等關鍵描述性統計指標。", "path": "/pages/statistics.html", "icon": "fa-solid fa-chart-simple" },
-  { "name": "3D 擲硬幣與隨機骰子", "description": "決策障礙救星。內建純 CSS 3D 物理翻轉硬幣、多顆骰子隨機滾動，並搭配 Web Audio 合成敲擊聲效，讓您的生活決策更有儀式感。", "path": "/pages/coin-dice.html", "icon": "fa-solid fa-dice" },
   { "name": "萬能清單亂序洗牌器", "description": "名單與文字行隨機排序工具。輸入任意名單或項目，一鍵將其完全打亂順序，並支援即時字數行數統計與快速複製。", "path": "/pages/shuffler.html", "icon": "fa-solid fa-shuffle" },
   { "name": "現代感多功能計算機", "description": "具備豐富微動效與運算歷程紀錄的網頁計算機。支援四則運算、百分比餘數計算，並完美適應手機與電腦螢幕。", "path": "/pages/calculator.html", "icon": "fa-solid fa-calculator" },
   { "name": "現代感 BMI / BMR / TDEE 健康體態計算機", "description": "一鍵精準分析 BMI、基礎代謝率(BMR)與每日總消耗熱量(TDEE)。內建視覺化彩色狀態指標滑條，支援性別活動量多維度本地端安全運算。", "path": "/pages/bmi.html", "icon": "fa-solid fa-heart-pulse" },
