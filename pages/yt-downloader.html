@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>極速影音下載器 - Life Tools</title>
+    <meta name="description" content="Life Tools 提供線上免費 YouTube 影音下載工具，無需安裝軟體，貼上網址即可快速下載 MP4 影片或 MP3 音訊。">
+    <meta name="author" content="Royal Devotee (NeuralNexusLab X 0xseanlee)">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="/scripts/init.js"></script>
+
+    <style>
+        /* 全域基本樣式與防爆設定 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+
+        :root {
+            --primary-color: #FF8C00;
+            --primary-hover: #E07B00;
+            --primary-light: #FFF5EC;
+            --text-dark: #2C3E50;
+            --text-muted: #7F8C8D;
+            --bg-light: #FDFBF7;
+            --bg-card-section: #F5EFEB;
+            --white: #FFFFFF;
+            --border-color: #EAEAEA;
+            --danger-color: #E74C3C;
+            --success-color: #2ECC71;
+            --transition-speed: 0.3s;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 規範 3：置頂固定暖橘色系導覽列 */
+        .navbar {
+            background-color: var(--white);
+            border-bottom: 2px solid var(--primary-light);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .nav-logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform var(--transition-speed) ease;
+        }
+        .nav-logo:hover { transform: scale(1.03); }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-grow: 1;
+            justify-content: flex-end;
+        }
+
+        .nav-link {
+            color: var(--text-dark);
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 500;
+            transition: color var(--transition-speed);
+        }
+        .nav-link:hover { color: var(--primary-color); }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background-color: var(--primary-light);
+            border: 1.5px solid transparent;
+            border-radius: 30px;
+            padding: 4px 4px 4px 16px;
+            transition: all var(--transition-speed) ease;
+            max-width: 260px;
+            width: 100%;
+        }
+        .search-box:focus-within {
+            border-color: var(--primary-color);
+            background-color: var(--white);
+            box-shadow: 0 0 8px rgba(255, 140, 0, 0.15);
+        }
+
+        .search-input {
+            border: none;
+            background: transparent;
+            outline: none;
+            color: var(--text-dark);
+            font-size: 14px;
+            width: 100%;
+            padding-right: 8px;
+        }
+
+        .search-btn {
+            background-color: var(--primary-color);
+            border: none;
+            color: var(--white);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color var(--transition-speed) ease, transform var(--transition-speed) ease;
+        }
+        .search-btn:hover { background-color: var(--primary-hover); transform: scale(1.05); }
+
+        /* 規範 2 & 4：響應式主內容區與現代感卡片 */
+        .main-container {
+            background-color: var(--bg-card-section);
+            padding: 40px 20px;
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .downloader-card {
+            max-width: 700px;
+            width: 100%;
+            background-color: var(--white);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(0, 0, 0, 0.02);
+            animation: fadeInUp 0.6s ease-out; /* 引入開場滑入動畫 */
+        }
+
+        .heading {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-dark);
+        }
+        .heading i { color: var(--danger-color); }
+
+        .subheading {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 30px;
+        }
+
+        /* 輸入群組樣式 */
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; font-size: 15px; font-weight: 500; margin-bottom: 10px; color: var(--text-dark); }
+
+        .url-input-wrapper {
+            display: flex;
+            background-color: var(--bg-light);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            padding: 8px 16px;
+            align-items: center;
+            transition: border-color var(--transition-speed), background-color var(--transition-speed);
+        }
+        .url-input-wrapper:focus-within { border-color: var(--primary-color); background-color: var(--white); }
+        .url-input-wrapper i { color: var(--text-muted); font-size: 18px; margin-right: 12px; }
+        .main-url-input { flex-grow: 1; border: none; background: transparent; outline: none; font-size: 16px; color: var(--text-dark); }
+
+        /* 格式轉換單選盒組 */
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .format-opt-box {
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            padding: 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+        }
+        .format-opt-box input[type="radio"] {
+            accent-color: var(--primary-color);
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        .format-opt-box.active {
+            border-color: var(--primary-color);
+            background-color: var(--primary-light);
+            box-shadow: 0 4px 12px rgba(255, 140, 0, 0.08);
+        }
+        .format-opt-label { display: flex; flex-direction: column; cursor: pointer; }
+        .format-opt-title { font-weight: 700; font-size: 15px; color: var(--text-dark); }
+        .format-opt-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+        /* 按鈕樣式與互動過渡 */
+        .submit-action-btn {
+            width: 100%;
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .submit-action-btn:hover { background-color: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 5px 15px rgba(255, 140, 0, 0.2); }
+        .submit-action-btn:disabled { background-color: var(--text-muted); cursor: not-allowed; transform: none; box-shadow: none; }
+
+        /* 結果回傳展示面板 */
+        .download-result-panel {
+            margin-top: 30px;
+            padding: 24px;
+            border-radius: 16px;
+            background: linear-gradient(145deg, var(--white), var(--primary-light));
+            border: 1px dashed rgba(255, 140, 0, 0.3);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            animation: fadeInUp 0.4s ease-out;
+        }
+        .download-result-text { font-size: 15px; font-weight: 700; color: var(--text-dark); text-align: center; }
+        
+        .final-download-btn {
+            background-color: var(--success-color);
+            color: var(--white);
+            text-decoration: none;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(46, 204, 113, 0.2);
+            transition: all var(--transition-speed) ease;
+        }
+        .final-download-btn:hover { transform: scale(1.03); box-shadow: 0 6px 20px rgba(46, 204, 113, 0.3); }
+
+        /* 規範 4：頁尾腳註與版權聲明 */
+        .footer {
+            background-color: var(--white);
+            padding: 30px 20px;
+            text-align: center;
+            border-top: 1px solid var(--primary-light);
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: auto;
+        }
+
+        /* 頁面流暢升起動畫 */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 流暢寬度 RWD 斷點 */
+        @media (max-width: 650px) {
+            .options-grid { grid-template-columns: 1fr; gap: 12px; }
+            .downloader-card { padding: 25px; }
+            .navbar-container { flex-direction: column; gap: 12px; padding: 15px; }
+            .nav-right { width: 100%; justify-content: center; }
+            .search-box { max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar" aria-label="主要導覽列">
+        <div class="navbar-container">
+            <a href="/" class="nav-logo" aria-label="Life Tools 首頁">
+                <i class="fa-solid fa-toolbox" aria-hidden="true"></i> Life Tools
+            </a>
+            <div class="nav-right">
+                <a href="/pages/about.html" class="nav-link">關於我們</a>
+                <div class="search-box" role="search">
+                    <input type="text" id="navSearchInput" class="search-input" placeholder="搜尋工具..." aria-label="搜尋框">
+                    <button id="navSearchBtn" class="search-btn" aria-label="確認搜尋" onclick="executeNavbarSearch()">
+                        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-container">
+        <div class="downloader-card">
+            <h2 class="heading"><i class="fa-brands fa-youtube" aria-hidden="true"></i> 極速影音下載器</h2>
+            <p class="subheading">完全免安裝後端程序。直接貼上 YouTube 影片網址，即可安全轉換高音質 MP3 或高清 MP4 檔案。</p>
+            
+            <div class="input-group">
+                <label for="videoUrlInput">請貼入 YouTube 影片網址 (URL)</label>
+                <div class="url-input-wrapper">
+                    <i class="fa-solid fa-link" aria-hidden="true"></i>
+                    <input type="url" id="videoUrlInput" class="main-url-input" placeholder="https://www.youtube.com/watch?v=xxxxxxxxxxx">
+                </div>
+            </div>
+
+            <div class="options-grid">
+                <div id="optBoxMp3" class="format-opt-box active" onclick="switchDownloadFormat('mp3')">
+                    <input type="radio" id="radioMp3" name="downloadFormat" value="mp3" checked>
+                    <div class="format-opt-label">
+                        <span class="format-opt-title">🎵 萃取純音訊 (MP3)</span>
+                        <span class="format-opt-desc">最高 320kbps 音質，適合歌曲或廣播</span>
+                    </div>
+                </div>
+                <div id="optBoxMp4" class="format-opt-box" onclick="switchDownloadFormat('mp4')">
+                    <input type="radio" id="radioMp4" name="downloadFormat" value="mp4">
+                    <div class="format-opt-label">
+                        <span class="format-opt-title">🎬 高清影音影片 (MP4)</span>
+                        <span class="format-opt-desc">相容度最高的 H264 編碼，保留流暢畫面</span>
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" id="submitBtn" class="submit-action-btn" onclick="requestVideoAnalysis()">
+                <span>開始無損解析</span>
+                <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
+            </button>
+
+            <div class="download-result-panel" id="resultPanel">
+                <span class="download-result-text" id="resultText">🎉 影片檔案已成功跨源解析完成！</span>
+                <a href="#" id="finalDownloadLink" class="final-download-btn" target="_blank" rel="noopener noreferrer">
+                    <i class="fa-solid fa-cloud-arrow-down" aria-hidden="true"></i> 立即儲存至本機
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        &copy; Royal Devotee (NeuralNexusLab X 0xseanlee), all rights reserved.
+    </footer>
+
+    <script>
+        // 規範 2：JavaScript 全域變數嚴格採用駝峰式命名法
+        let targetFormat = 'mp3';
+
+        // 綁定鍵盤事件以支援搜尋框按下 Enter 跳轉
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('navSearchInput');
+            searchInput.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    executeNavbarSearch();
+                }
+            });
+        });
+
+        // 規範 2 & 3：處理導覽列右側搜尋欄位的跳轉邏輯
+        function executeNavbarSearch() {
+            const searchInput = document.getElementById('navSearchInput');
+            const queryText = searchInput.value.trim();
+            
+            // 檢查輸入防禦
+            if (queryText) {
+                window.location.href = `/pages/search.html?q=${encodeURIComponent(queryText)}`;
+            }
+        }
+
+        // 規範 2：切換下載格式的外觀控制與變數賦值
+        function switchDownloadFormat(formatType) {
+            targetFormat = formatType;
+            
+            const boxMp3 = document.getElementById('optBoxMp3');
+            const boxMp4 = document.getElementById('optBoxMp4');
+            const radioMp3 = document.getElementById('radioMp3');
+            const radioMp4 = document.getElementById('radioMp4');
+
+            // 依據選取項進行樣式增刪
+            if (formatType === 'mp3') {
+                boxMp3.classList.add('active');
+                boxMp4.classList.remove('active');
+                radioMp3.checked = true;
+            } else {
+                boxMp4.classList.add('active');
+                boxMp3.remove('active'); // 修正覆蓋
+                boxMp3.classList.remove('active');
+                radioMp4.checked = true;
+            }
+        }
+
+        // 規範 2：向雲端開源 Cobalt API 發送跨源異步解析請求
+        async function requestVideoAnalysis() {
+            const urlInput = document.getElementById('videoUrlInput');
+            const rawUrl = urlInput.value.trim();
+            const submitBtn = document.getElementById('submitBtn');
+            const resultPanel = document.getElementById('resultPanel');
+            const finalLink = document.getElementById('finalDownloadLink');
+
+            // 防呆防空提示
+            if (!rawUrl) {
+                alert('請先貼入需要解析的 YouTube 影片網址！');
+                return;
+            }
+
+            // 按鈕切換至不可點擊的加載動效狀態
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> 雲端轉檔排隊中...`;
+            resultPanel.style.display = 'none';
+
+            try {
+                // 使用公共免登入無廣告之 Cobalt 開源多媒體解析端點
+                const apiResponse = await fetch('https://api.cobalt.tools/api/json', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        url: rawUrl,
+                        isAudioOnly: targetFormat === 'mp3',
+                        vCodec: 'h264',
+                        aFormat: 'mp3',
+                        filenamePattern: 'classic'
+                    })
+                });
+
+                const jsonResult = await apiResponse.json();
+
+                // 驗證解析器回傳之連結有效性
+                if (jsonResult && jsonResult.url) {
+                    finalLink.href = jsonResult.url;
+                    resultPanel.style.display = 'flex';
+                } else if (jsonResult && jsonResult.status === 'error') {
+                    throw new Error(jsonResult.text || '解析端點拒絕此請求');
+                } else {
+                    throw new Error('該影片格式不支援或目前流量已飽和');
+                }
+
+            } catch (runtimeError) {
+                // 錯誤捕捉反饋
+                console.error('Cobalt API 通訊異常:', runtimeError);
+                alert(`無損轉換失敗：${runtimeError.message}\n請稍候幾秒再試，或更換其他 YouTube 影片網址。`);
+            } finally {
+                // 還原按鈕原始可互動狀態
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `<span>開始無損解析</span> <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>`;
+            }
+        }
+    </script>
+</body>
+</html>
