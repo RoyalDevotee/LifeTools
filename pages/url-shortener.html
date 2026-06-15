@@ -401,7 +401,7 @@
 
             try {
                 // 發送請求到樹莓派本地端輕量 API 埠 (8080)
-                const response = await fetch('http://192.168.68.63:8080/api/shorten', {
+                const response = await fetch('https://dander-demeaning-saint.ngrok-free.dev/api/shorten', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ url: longUrl })
