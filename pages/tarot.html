@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 塔羅牌心靈占卜 - Life Tools</title>
+    <!-- 載入規定的初始化腳本 -->
+    <script src="/scripts/init.js"></script>
+    <!-- 匯入 LifeAPI 後端專用 SDK -->
+    <script src="https://lifeapi.zone.id"></script>
+    <!-- 引入 Google Fonts 與 Font Awesome 圖標庫 -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* 全域基本樣式 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+
+        :root {
+            --primary-color: #FF8C00;
+            --primary-hover: #E07B00;
+            --primary-light: #FFF5EC;
+            --text-dark: #2C3E50;
+            --text-muted: #7F8C8D;
+            --bg-light: #FDFBF7;
+            --bg-card-section: #F5EFEB;
+            --white: #FFFFFF;
+            --mystic-purple: #4A154B;
+            --mystic-pink: #FF4D79;
+            --transition-speed: 0.3s;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 頂部導覽列 */
+        .navbar {
+            background-color: var(--white);
+            border-bottom: 2px solid var(--primary-light);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .nav-logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform var(--transition-speed) ease;
+        }
+
+        .nav-logo:hover {
+            transform: scale(1.03);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            color: var(--text-dark);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 16px;
+            transition: color var(--transition-speed) ease;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color);
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background-color: var(--primary-light);
+            border: 1.5px solid transparent;
+            border-radius: 30px;
+            padding: 4px 6px 4px 16px;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--primary-color);
+            background-color: var(--white);
+            box-shadow: 0 0 8px rgba(255, 140, 0, 0.15);
+        }
+
+        .search-input {
+            border: none;
+            background: transparent;
+            outline: none;
+            color: var(--text-dark);
+            font-size: 14px;
+            width: 160px;
+            transition: width var(--transition-speed) ease;
+        }
+
+        .search-input:focus {
+            width: 200px;
+        }
+
+        .search-btn {
+            background-color: var(--primary-color);
+            border: none;
+            color: var(--white);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color var(--transition-speed) ease, transform var(--transition-speed) ease;
+        }
+
+        .search-btn:hover {
+            background-color: var(--primary-hover);
+            transform: scale(1.05);
+        }
+
+        /* 工具主內容區 */
+        .main-content {
+            flex-grow: 1;
+            padding: 40px 20px;
+            background-color: var(--bg-card-section);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tool-container {
+            background-color: var(--white);
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            max-width: 950px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 140, 0, 0.1);
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .tool-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 30px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .tool-title i {
+            color: #9B59B6;
+            animation: pulseBeat 1.5s infinite alternate;
+        }
+
+        /* 3D 牌組挑選區 */
+        .tarot-deck-section {
+            margin-bottom: 40px;
+        }
+
+        .deck-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* 牌陣網格 */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 15px;
+            justify-content: center;
+        }
+
+        /* 3D 卡牌容器 */
+        .tarot-card-container {
+            perspective: 600px;
+            aspect-ratio: 2 / 3.5;
+            cursor: pointer;
+        }
+
+        .tarot-card-3d {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.15);
+        }
+
+        /* Hover 時微幅浮起 */
+        .tarot-card-container:hover .tarot-card-3d:not(.flipped) {
+            transform: translateY(-8px) rotateY(10deg);
+        }
+
+        /* 點選翻牌狀態 */
+        .tarot-card-3d.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .tarot-card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 12px;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid #E2E8F0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        }
+
+        /* 卡牌背面樣式（神祕紫色背飾） */
+        .tarot-card-back {
+            background: linear-gradient(135deg, #2C1654 0%, #1A0B36 100%);
+            border-color: #DAA520; /* 黃金滾邊 */
+            color: #DAA520;
+        }
+
+        .tarot-card-back i {
+            font-size: 28px;
+            animation: breathe 2s infinite alternate;
+        }
+
+        /* 卡牌正面樣式 */
+        .tarot-card-front {
+            background-color: var(--white);
+            color: var(--text-dark);
+            transform: rotateY(180deg);
+            padding: 10px;
+            text-align: center;
+            border-color: #DAA520;
+        }
+
+        .card-number {
+            font-family: 'Cinzel', serif;
+            font-size: 12px;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .card-face-icon {
+            font-size: 24px;
+            color: #8E44AD;
+            margin: 10px 0;
+        }
+
+        .card-name {
+            font-weight: 700;
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+
+        .card-direction {
+            font-size: 11px;
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            padding: 1px 8px;
+            border-radius: 10px;
+            font-weight: 700;
+        }
+
+        .card-direction.reversed {
+            background-color: #FEE2E2;
+            color: #EF4444;
+            transform: rotate(180deg); /* 逆位時，文字翻轉 */
+        }
+
+        /* 被選取的抽卡指示燈 */
+        .tarot-card-container.selected-past .tarot-card-front { border-color: #3498DB; }
+        .tarot-card-container.selected-present .tarot-card-front { border-color: #E74C3C; }
+        .tarot-card-container.selected-future .tarot-card-front { border-color: #2ECC71; }
+
+        /* 輸入問題與操作區 */
+        .divination-control-panel {
+            background-color: var(--bg-light);
+            border-radius: 20px;
+            border: 1.5px solid var(--primary-light);
+            padding: 30px 24px;
+            margin-bottom: 35px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        .input-label {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .textarea-field {
+            width: 100%;
+            height: 90px;
+            border: 2px solid var(--primary-light);
+            border-radius: 12px;
+            padding: 15px;
+            font-size: 15px;
+            outline: none;
+            resize: none;
+            transition: border-color var(--transition-speed) ease;
+        }
+
+        .textarea-field:focus {
+            border-color: var(--primary-color);
+            background-color: var(--white);
+        }
+
+        /* 占卜大按鈕 */
+        .mystic-btn {
+            background: linear-gradient(135deg, #8E44AD 0%, #3498DB 100%);
+            color: var(--white);
+            border: none;
+            border-radius: 30px;
+            padding: 14px 45px;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(142, 68, 173, 0.25);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .mystic-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(142, 68, 173, 0.35);
+        }
+
+        .mystic-btn:disabled {
+            background: var(--text-muted);
+            box-shadow: none;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        /* 正在連線與解析的神祕載入狀態 */
+        .mystic-loader {
+            display: none;
+            padding: 40px 0;
+            text-align: center;
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .constellation-spinner {
+            font-size: 48px;
+            color: #8E44AD;
+            margin-bottom: 15px;
+            animation: pulseBeat 1.5s infinite alternate;
+        }
+
+        /* 解占結果面板 */
+        .result-panel {
+            display: none;
+            border-top: 2px dashed var(--primary-light);
+            padding-top: 40px;
+            animation: fadeInUp 0.8s ease-out;
+            text-align: left;
+        }
+
+        .result-card {
+            background-color: #FCFAFF;
+            border: 1.5px solid rgba(142, 68, 173, 0.15);
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: 0 10px 30px rgba(142, 68, 173, 0.03);
+        }
+
+        .result-header {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 35px;
+            text-align: center;
+        }
+
+        .mini-badge-card {
+            background-color: var(--white);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            border-radius: 12px;
+            padding: 15px 10px;
+        }
+
+        .mini-badge-role {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+            font-weight: 700;
+        }
+
+        .mini-badge-name {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .result-essay {
+            font-size: 15px;
+            line-height: 1.9;
+            color: #3B324E;
+            white-space: pre-wrap; /* 支援 AI 換行排版 */
+            text-align: justify;
+        }
+
+        /* 頁尾 */
+        .footer {
+            background-color: var(--white);
+            padding: 30px 20px;
+            text-align: center;
+            border-top: 1px solid var(--primary-light);
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* 動畫宣告 */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulseBeat {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.15); }
+        }
+
+        @keyframes breathe {
+            0% { transform: scale(0.95); opacity: 0.6; }
+            100% { transform: scale(1.05); opacity: 1; }
+        }
+
+        /* RWD 響應式配置 */
+        @media (max-width: 650px) {
+            .navbar-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .nav-right {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+            .search-box {
+                width: 100%;
+            }
+            .search-input {
+                width: 100%;
+            }
+            .search-input:focus {
+                width: 100%;
+            }
+            .cards-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            .result-header {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 頂部導覽列 -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="nav-logo">
+                <i class="fa-solid fa-toolbox"></i> Life Tools
+            </a>
+            <div class="nav-right">
+                <a href="/pages/about.html" class="nav-link">關於我們</a>
+                <div class="search-box">
+                    <input type="text" id="navSearchInput" class="search-input" placeholder="搜尋工具...">
+                    <button id="navSearchBtn" class="search-btn">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 工具主內容區 -->
+    <main class="main-content">
+        <div class="tool-container">
+            <h1 class="tool-title"><i class="fa-solid fa-wand-sparkles"></i> AI 塔羅牌心靈占卜</h1>
+            
+            <!-- 3D 牌組區 -->
+            <section class="tarot-deck-section">
+                <div class="deck-title" id="deckStatusLabel">請在下方神聖牌組中，憑直覺點選抽取「三張牌」（0 / 3）</div>
+                
+                <div class="cards-grid" id="cardsGrid">
+                    <!-- 由 JS 繪製 12 張蓋牌 -->
+                </div>
+            </section>
+
+            <!-- 操作與輸入面版 -->
+            <section class="divination-control-panel">
+                <div class="input-group">
+                    <label class="input-label" for="divinationQuestion">您誠心詢問的問題 (例如：我下個月能找到理想的工作嗎？)</label>
+                    <textarea id="divinationQuestion" class="textarea-field" placeholder="請將內心所想的迷惘、事業或感情狀況寫下來，並誠心專注於此問題..."></textarea>
+                </div>
+
+                <button class="mystic-btn" id="divinateBtn" onclick="startDivination()" disabled>
+                    <i class="fa-solid fa-star-and-crescent"></i> 展開神聖心靈解讀
+                </button>
+            </section>
+
+            <!-- 神祕載入動畫 -->
+            <div class="mystic-loader" id="mysticLoader">
+                <div class="constellation-spinner"><i class="fa-solid fa-ring fa-spin"></i></div>
+                <p style="font-weight: 500; color: #8E44AD;" id="loaderStatusText">正在與星塵能量產生共鳴...</p>
+            </div>
+
+            <!-- 解占成果展示 -->
+            <section class="result-panel" id="resultPanel">
+                <div class="result-card">
+                    <!-- 卡牌配位快照 -->
+                    <div class="result-header" id="resultCardsHeader">
+                        <!-- 動態寫入三張抽中卡牌細節 -->
+                    </div>
+                    <!-- AI 靈魂解答區 -->
+                    <div class="result-essay" id="aiInterpretation">
+                        正在連線精神象界...
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- 頁尾 -->
+    <footer class="footer">
+        &copy; Royal Devotee (NeuralNexusLab X 0xseanlee), all rights reserved.
+    </footer>
+
+    <script>
+        // 22張大阿卡納塔羅牌基本設定庫
+        const tarotMajorArcana = [
+            { num: "0", name: "愚者 (The Fool)", icon: "fa-solid fa-compass" },
+            { num: "I", name: "魔術師 (The Magician)", icon: "fa-solid fa-wand-magic" },
+            { num: "II", name: "女祭司 (The High Priestess)", icon: "fa-solid fa-book-open" },
+            { num: "III", name: "皇后 (The Empress)", icon: "fa-solid fa-crown" },
+            { num: "IV", name: "皇帝 (The Emperor)", icon: "fa-solid fa-chess-king" },
+            { num: "V", name: "教皇 (The Hierophant)", icon: "fa-solid fa-scroll" },
+            { num: "VI", name: "戀人 (The Lovers)", icon: "fa-solid fa-heart" },
+            { num: "VII", name: "戰車 (The Chariot)", icon: "fa-solid fa-shield-halved" },
+            { num: "VIII", name: "力量 (Strength)", icon: "fa-solid fa-fire" },
+            { num: "IX", name: "隱士 (The Hermit)", icon: "fa-solid fa-eye" },
+            { num: "X", name: "命運之輪 (Wheel of Fortune)", icon: "fa-solid fa-dharmachakra" },
+            { num: "XI", name: "正義 (Justice)", icon: "fa-solid fa-scale-balanced" },
+            { num: "XII", name: "倒吊人 (The Hanged Man)", icon: "fa-solid fa-hourglass-empty" },
+            { num: "XIII", name: "死神 (Death)", icon: "fa-solid fa-skull" },
+            { num: "XIV", name: "節制 (Temperance)", icon: "fa-solid fa-droplet" },
+            { num: "XV", name: "惡魔 (The Devil)", icon: "fa-solid fa-ghost" },
+            { num: "XVI", name: "高塔 (The Tower)", icon: "fa-solid fa-cloud-bolt" },
+            { num: "XVII", name: "星星 (The Star)", icon: "fa-solid fa-star" },
+            { num: "XVIII", name: "月亮 (The Moon)", icon: "fa-solid fa-moon" },
+            { num: "XIX", name: "太陽 (The Sun)", icon: "fa-solid fa-sun" },
+            { num: "XX", name: "審判 (Judgement)", icon: "fa-solid fa-bell" },
+            { num: "XXI", name: "世界 (The World)", icon: "fa-solid fa-earth-asia" }
+        ];
+
+        let selectedCards = []; // 儲存已點選卡牌之索引
+        let isReading = false; // 紀錄 AI 占卜中狀態
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始化導覽列搜尋
+            initNavbarSearch();
+            // 建立洗牌後的 12 張可抽取卡牌
+            buildTarotDeck();
+        });
+
+        // 導覽列搜尋重導向
+        function initNavbarSearch() {
+            const navInput = document.getElementById('navSearchInput');
+            const navBtn = document.getElementById('navSearchBtn');
+
+            const triggerSearch = () => {
+                const query = navInput.value.trim();
+                if (query) {
+                    window.location.href = `/pages/search.html?q=${encodeURIComponent(query)}`;
+                }
+            };
+
+            navBtn.addEventListener('click', triggerSearch);
+            navInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') triggerSearch();
+            });
+        }
+
+        // 動態洗牌並繪製 12 張牌背朝上的 3D 卡牌
+        function buildTarotDeck() {
+            const cardsGrid = document.getElementById("cardsGrid");
+            cardsGrid.innerHTML = "";
+
+            // 抽選 12 張不重複的大阿卡納卡牌建立神祕牌堆
+            const shuffledIndexes = Array.from({ length: 22 }, (_, i) => i).sort(() => Math.random() - 0.5).slice(0, 12);
+
+            shuffledIndexes.forEach((deckIndex, gridIndex) => {
+                const cardContainer = document.createElement("div");
+                cardContainer.className = "tarot-card-container";
+                cardContainer.id = `cardContainer-${gridIndex}`;
+                
+                // 3D 卡體
+                cardContainer.innerHTML = `
+                    <div class="tarot-card-3d" id="card3d-${gridIndex}" onclick="drawCard(${gridIndex}, ${deckIndex})">
+                        <!-- 背面 -->
+                        <div class="tarot-card-face tarot-card-back">
+                            <i class="fa-solid fa-star-and-crescent"></i>
+                        </div>
+                        <!-- 正面 -->
+                        <div class="tarot-card-face tarot-card-front" id="cardFront-${gridIndex}">
+                            <!-- 正面內容動態填充 -->
+                        </div>
+                    </div>
+                `;
+
+                cardsGrid.appendChild(cardContainer);
+            });
+        }
+
+        // 抽卡核心方法：處理翻轉與定位 (過去/現在/未來)
+        function drawCard(gridIndex, deckIndex) {
+            if (isReading) return;
+
+            const card3d = document.getElementById(`card3d-${gridIndex}`);
+            const cardContainer = document.getElementById(`cardContainer-${gridIndex}`);
+            const cardFront = document.getElementById(`cardFront-${gridIndex}`);
+            
+            // 防呆：不能重複點擊已抽取的卡牌
+            if (card3d.classList.contains("flipped")) return;
+
+            // 超過 3 張時停止抽取
+            if (selectedCards.length >= 3) return;
+
+            const positionRoles = ["過去", "現在", "未來"];
+            const currentRoleIndex = selectedCards.length;
+            const roleName = positionRoles[currentRoleIndex];
+
+            // 1. 隨機產生正逆位 (50% 機率)
+            const isReversed = Math.random() < 0.5;
+
+            // 2. 獲取牌面屬性
+            const cardInfo = tarotMajorArcana[deckIndex];
+
+            // 3. 渲染牌面資訊
+            cardFront.innerHTML = `
+                <div class="card-number">${cardInfo.num}</div>
+                <div class="card-name">${cardInfo.name.split(" ")[0]}</div>
+                <div class="card-face-icon"><i class="${cardInfo.icon}"></i></div>
+                <div class="card-direction ${isReversed ? 'reversed' : ''}">${isReversed ? '逆位' : '正位'}</div>
+            `;
+
+            // 4. 套用 CSS 3D 翻牌動畫
+            card3d.classList.add("flipped");
+
+            // 5. 加上被抽取定位邊框色彩
+            const selectedClasses = ["selected-past", "selected-present", "selected-future"];
+            cardContainer.classList.add(selectedClasses[currentRoleIndex]);
+
+            // 6. 紀錄選取陣列中
+            selectedCards.push({
+                role: roleName,
+                name: cardInfo.name,
+                direction: isReversed ? "逆位" : "正位"
+            });
+
+            // 7. 更新狀態提示
+            document.getElementById("deckStatusLabel").textContent = `請在下方神聖牌組中，憑直覺點選抽取「三張牌」（${selectedCards.length} / 3）`;
+
+            // 8. 抽滿三張開啟占卜按鈕
+            if (selectedCards.length === 3) {
+                document.getElementById("divinateBtn").disabled = false;
+            }
+        }
+
+        // 串接 LifeAPI 執行大語言占卜
+        function startDivination() {
+            if (isReading) return;
+
+            const questionText = document.getElementById("divinationQuestion").value.trim() || "我近期的綜合運勢與人生啟示如何？";
+            const loader = document.getElementById("mysticLoader");
+            const resultPanel = document.getElementById("resultPanel");
+            const divinationBtn = document.getElementById("divinateBtn");
+            const loaderText = document.getElementById("loaderStatusText");
+
+            isReading = true;
+            divinationBtn.disabled = true;
+            resultPanel.style.display = "none";
+            loader.style.display = "block";
+
+            // 1. 動態寫入加載效果標語
+            loaderText.textContent = "正在向精神象界發送祈願並對齊星象軌跡...";
+
+            // 2. 組裝 3張卡牌資訊之 API Prompt 範本
+            const card1 = selectedCards[0];
+            const card2 = selectedCards[1];
+            const card3 = selectedCards[2];
+
+            const builtPrompt = `我的問題：${questionText}。\n我抽中了三張塔羅牌，分別是：\n1. 【過去】：${card1.name}（${card1.direction}）\n2. 【現在】：${card2.name}（${card2.direction}）\n3. 【未來】：${card3.name}（${card3.direction}）。\n請你扮演一位資深且具有溫度的塔羅占卜大師，針對我提出的問題以及抽中卡牌的時序，提供深度的綜合分析與對應每一張牌特質的具體指引。請使用繁體中文、排版優美且字數適中的段落回覆。`;
+
+            // 3. 連接 LifeAPI 後端伺服器並發送 Post /ai 請求
+            connect()
+                .then(() => {
+                    loaderText.textContent = "星塵能量共鳴成功，AI大師正在解譯星圖...";
+                    
+                    // 發送 POST 請求
+                    return fetch("https://lifeapi.zone.id/ai", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({ prompt: builtPrompt })
+                    });
+                })
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error("占卜伺服器通訊中斷");
+                    }
+                    return response.text();
+                })
+                .then((aiAnswer) => {
+                    // 4. 成功獲取解答，渲染結果
+                    renderDivinationResult(aiAnswer);
+                })
+                .catch((error) => {
+                    console.error("AI Divination failed:", error);
+                    alert("與神祕能量連線失敗！請重試或重新點擊占卜。");
+                })
+                .finally(() => {
+                    isReading = false;
+                    divinationBtn.disabled = false;
+                    loader.style.display = "none";
+                });
+        }
+
+        // 渲染獲取的 AI 精妙解牌
+        function renderDivinationResult(aiText) {
+            const resultCardsHeader = document.getElementById("resultCardsHeader");
+            const aiLabel = document.getElementById("aiInterpretation");
+            const resultPanel = document.getElementById("resultPanel");
+
+            // 1. 先產生三張卡牌在結果頂端的快照卡片
+            resultCardsHeader.innerHTML = "";
+            selectedCards.forEach((card, index) => {
+                const borderColors = ["#3498DB", "#E74C3C", "#2ECC71"];
+                const badge = document.createElement("div");
+                badge.className = "mini-badge-card";
+                badge.style.borderColor = borderColors[index];
+                badge.innerHTML = `
+                    <div class="mini-badge-role">${card.role}</div>
+                    <div class="mini-badge-name">${card.name.split(" ")[0]} (${card.direction})</div>
+                `;
+                resultCardsHeader.appendChild(badge);
+            });
+
+            // 2. 注入 AI 回覆的文字排版
+            aiLabel.textContent = aiText.trim();
+
+            // 3. 展開結果面板
+            resultPanel.style.display = "block";
+            
+            // 4. 平滑捲動至解牌畫面，優化移動端體驗
+            resultPanel.scrollIntoView({ behavior: "smooth" });
+        }
+    </script>
+</body>
+</html>
