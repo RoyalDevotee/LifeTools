@@ -421,54 +421,47 @@
 
         // 規範 2：向雲端開源 Cobalt API 發送跨源異步解析請求
         // 向免登入的雲端公開多媒體關口發送高效解析請求
-        async function requestVideoAnalysis() {
+// 使用表單模擬跳轉，完美避開 CORS 阻擋
+        function requestVideoAnalysis() {
             const urlInput = document.getElementById('videoUrlInput');
             const rawUrl = urlInput.value.trim();
-            const submitBtn = document.getElementById('submitBtn');
-            const resultPanel = document.getElementById('resultPanel');
-            const finalLink = document.getElementById('finalDownloadLink');
-        
-            // 輸入防禦：檢查使用者是否未貼入網址
+            
+            // 檢查網址是否為空
             if (!rawUrl) {
-                alert('請先貼入需要解析的 YouTube 影片網址！');
+                alert('請先輸入有效的 YouTube 連結！');
                 return;
             }
         
-            // 介面鎖定：切換按鈕為載入動效並隱藏上一次的結果面板
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> 雲端無損轉檔中...`;
-            resultPanel.style.display = 'none';
+            // 準備跳轉的參數 (使用 Cobalt 的官方公開解析 URL)
+            const baseUrl = 'https://cobalt.tools/api/json';
+            
+            // 建立一個隱形的表單，模擬 POST 行為
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = baseUrl;
+            form.target = '_blank'; // 開啟新頁面進行解析，避免被 CORS 擋住後台連線
         
-            try {
-                // 核心修正：改用 GET 協議搭配對前端放行的公開高相容下載站台
-                const targetApiUrl = `https://cors-anywhere.herokuapp.com/https://api.cobalt.tools/api/json`; 
-                
-                // 使用更直覺、免除複雜 POST 驗證的公開網址直接格式化下載技術
-                const downloadServiceUrl = `https://cobalt.tools/api/stream?url=${encodeURIComponent(rawUrl)}&format=${targetFormat}`;
+            // 塞入參數
+            const fields = {
+                url: rawUrl,
+                vCodec: 'h264',
+                aFormat: 'mp3',
+                isAudioOnly: (targetFormat === 'mp3')
+            };
         
-                // 純前端驗證：測試該影音資源在關口是否能正常串流存取
-                const checkStatus = await fetch(downloadServiceUrl, { method: 'HEAD' });
-        
-                // 判定串流節點是否就緒
-                if (checkStatus.ok || checkStatus.status === 405) {
-                    // 直接將安全解密後的雲端串流連結指派給下載按鈕
-                    finalLink.href = downloadServiceUrl;
-                    
-                    // 完美展現：以 flex 佈局平滑呈現成功的下載面板
-                    resultPanel.style.display = 'flex';
-                } else {
-                    throw new Error('雲端解析節點目前忙碌中或該影片受地域限制');
-                }
-        
-            } catch (runtimeError) {
-                // 異常捕捉：將詳細錯誤回報給使用者並提供防呆提示
-                console.error('Cobalt API 通訊異常:', runtimeError);
-                alert(`轉換錯誤：${runtimeError.message}\n提示：公共解析接口有時會阻擋特定敏感影片，可以嘗試換一首歌曲或影片網址再試一次唷！`);
-            } finally {
-                // 狀態還原：無論成功或失敗皆恢復按鈕的可互動外觀
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = `<span>開始無損解析</span> <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>`;
+            // 將參數轉為隱藏欄位加入表單
+            for (const key in fields) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = fields[key];
+                form.appendChild(input);
             }
+        
+            // 將表單丟入頁面並自動送出
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form); // 送出後移除表單
         }
     </script>
 </body>
