@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 心靈陪伴心理師 - Life Tools</title>
+    <!-- 載入規定的初始化腳本 -->
+    <script src="/scripts/init.js"></script>
+    <!-- 匯入 LifeAPI 後端專用 SDK -->
+    <script src="https://lifeapi.zone.id"></script>
+    <!-- 引入 Google Fonts 與 Font Awesome 圖標庫 -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* 全域基本樣式 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+
+        :root {
+            --primary-color: #FF8C00;
+            --primary-hover: #E07B00;
+            --primary-light: #FFF5EC;
+            --text-dark: #2C3E50;
+            --text-muted: #7F8C8D;
+            --bg-light: #FDFBF7;
+            --bg-card-section: #F5EFEB;
+            --white: #FFFFFF;
+            --heal-blue: #5C8374; /* 療癒系森林綠 */
+            --heal-blue-light: #ECEFF1;
+            --transition-speed: 0.3s;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 頂部導覽列 */
+        .navbar {
+            background-color: var(--white);
+            border-bottom: 2px solid var(--primary-light);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .nav-logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform var(--transition-speed) ease;
+        }
+
+        .nav-logo:hover {
+            transform: scale(1.03);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            color: var(--text-dark);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 16px;
+            transition: color var(--transition-speed) ease;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color);
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background-color: var(--primary-light);
+            border: 1.5px solid transparent;
+            border-radius: 30px;
+            padding: 4px 6px 4px 16px;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--primary-color);
+            background-color: var(--white);
+            box-shadow: 0 0 8px rgba(255, 140, 0, 0.15);
+        }
+
+        .search-input {
+            border: none;
+            background: transparent;
+            outline: none;
+            color: var(--text-dark);
+            font-size: 14px;
+            width: 160px;
+            transition: width var(--transition-speed) ease;
+        }
+
+        .search-input:focus {
+            width: 200px;
+        }
+
+        .search-btn {
+            background-color: var(--primary-color);
+            border: none;
+            color: var(--white);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color var(--transition-speed) ease, transform var(--transition-speed) ease;
+        }
+
+        .search-btn:hover {
+            background-color: var(--primary-hover);
+            transform: scale(1.05);
+        }
+
+        /* 工具主內容區 */
+        .main-content {
+            flex-grow: 1;
+            padding: 40px 20px;
+            background-color: var(--bg-card-section);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tool-container {
+            background-color: var(--white);
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            max-width: 850px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 140, 0, 0.1);
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .tool-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 30px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .tool-title i {
+            color: var(--heal-blue);
+            animation: pulseBeat 1.8s infinite alternate;
+        }
+
+        /* 溫柔諮詢設定面板 */
+        .consult-form {
+            background-color: var(--bg-light);
+            border: 1.5px solid var(--primary-light);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 35px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        .input-label {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .input-label i {
+            color: var(--heal-blue);
+        }
+
+        /* 情緒多選標籤區 */
+        .emotions-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .emotion-tag {
+            background-color: var(--white);
+            border: 1.5px solid #E2E8F0;
+            color: var(--text-muted);
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            user-select: none;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .emotion-tag:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .emotion-tag.active {
+            background-color: var(--primary-light);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            font-weight: 700;
+            box-shadow: 0 4px 10px rgba(255, 140, 0, 0.08);
+        }
+
+        .select-field {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 12px;
+            border: 1.5px solid #CBD5E1;
+            outline: none;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            background-color: var(--white);
+            transition: border-color var(--transition-speed) ease;
+        }
+
+        .select-field:focus {
+            border-color: var(--primary-color);
+        }
+
+        .textarea-field {
+            width: 100%;
+            height: 120px;
+            border: 1.5px solid #CBD5E1;
+            border-radius: 12px;
+            padding: 15px;
+            font-size: 15px;
+            outline: none;
+            resize: none;
+            transition: border-color var(--transition-speed) ease;
+        }
+
+        .textarea-field:focus {
+            border-color: var(--primary-color);
+            background-color: var(--white);
+        }
+
+        /* 療癒按鈕 */
+        .heal-btn {
+            background: linear-gradient(135deg, var(--heal-blue) 0%, #7DA091 100%);
+            color: var(--white);
+            border: none;
+            border-radius: 30px;
+            padding: 14px 45px;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            max-width: 320px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 6px 20px rgba(92, 131, 116, 0.25);
+            transition: all var(--transition-speed) ease;
+        }
+
+        .heal-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(92, 131, 116, 0.35);
+        }
+
+        .heal-btn:disabled {
+            background: var(--text-muted);
+            box-shadow: none;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        /* 心靈載入動畫（溫和正念深呼吸引導） */
+        .heal-loader {
+            display: none;
+            padding: 40px 0;
+            text-align: center;
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .breath-bubble {
+            width: 70px;
+            height: 70px;
+            background-color: rgba(92, 131, 116, 0.15);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px auto;
+            animation: breathe 3s infinite ease-in-out;
+        }
+
+        .breath-bubble i {
+            font-size: 28px;
+            color: var(--heal-blue);
+        }
+
+        .loader-status {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--heal-blue);
+        }
+
+        /* 心靈回信展示區 */
+        .reply-panel {
+            display: none;
+            border-top: 2px dashed rgba(92, 131, 116, 0.15);
+            padding-top: 40px;
+            animation: fadeInUp 0.8s ease-out;
+            text-align: left;
+        }
+
+        .reply-letter {
+            background-color: #FAF9F5; /* 溫暖的紙張米色 */
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+            position: relative;
+        }
+
+        /* 信紙頂部郵戳圖裝飾 */
+        .reply-stamp {
+            position: absolute;
+            top: 25px;
+            right: 35px;
+            font-size: 48px;
+            color: rgba(92, 131, 116, 0.06);
+            transform: rotate(15deg);
+        }
+
+        .letter-content {
+            font-size: 16px;
+            line-height: 2;
+            color: #3E3B33;
+            white-space: pre-wrap;
+            text-align: justify;
+        }
+
+        /* 頁尾 */
+        .footer {
+            background-color: var(--white);
+            padding: 30px 20px;
+            text-align: center;
+            border-top: 1px solid var(--primary-light);
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* 動畫宣告 */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulseBeat {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.15); }
+        }
+
+        @keyframes breathe {
+            0%, 100% { transform: scale(0.9); opacity: 0.5; background-color: rgba(92, 131, 116, 0.15); }
+            50% { transform: scale(1.3); opacity: 1; background-color: rgba(92, 131, 116, 0.3); }
+        }
+
+        /* RWD 響應式配置 */
+        @media (max-width: 600px) {
+            .navbar-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .nav-right {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+            .search-box {
+                width: 100%;
+            }
+            .search-input {
+                width: 100%;
+            }
+            .search-input:focus {
+                width: 100%;
+            }
+            .reply-letter {
+                padding: 25px 20px;
+            }
+            .letter-content {
+                font-size: 15px;
+            }
+            .reply-stamp {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 頂部導覽列 -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="nav-logo">
+                <i class="fa-solid fa-toolbox"></i> Life Tools
+            </a>
+            <div class="nav-right">
+                <a href="/pages/about.html" class="nav-link">關於我們</a>
+                <div class="search-box">
+                    <input type="text" id="navSearchInput" class="search-input" placeholder="搜尋工具...">
+                    <button id="navSearchBtn" class="search-btn">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 工具主內容區 -->
+    <main class="main-content">
+        <div class="tool-container">
+            <h1 class="tool-title"><i class="fa-solid fa-hand-holding-heart"></i> AI 心靈陪伴心理師</h1>
+            
+            <!-- 諮詢表單設定面版 -->
+            <section class="consult-form">
+                <!-- 困境分類選擇 -->
+                <div class="input-group">
+                    <label class="input-label" for="issueCategory"><i class="fa-solid fa-circle-question"></i> 我目前面臨的生命課題</label>
+                    <select id="issueCategory" class="select-field">
+                        <option value="自我懷疑與信心重建">自我懷疑、迷惘與信心重建</option>
+                        <option value="職涯倦怠與課業壓力過載">課業壓力、工作倦怠與過載 (Burnout)</option>
+                        <option value="親密關係或人際疏離痛苦">人際關係、情感疏離或分手傷痛</option>
+                        <option value="孤獨寂寞感與存在焦慮">夜深人靜時的強烈孤單與存在焦慮</option>
+                        <option value="悲傷失落與告別哀悼">悲傷失落、遺憾與無法釋懷的告別</option>
+                    </select>
+                </div>
+
+                <!-- 情緒多重標籤 -->
+                <div class="input-group">
+                    <label class="input-label"><i class="fa-solid fa-face-sad-tear"></i> 我現在內心的情緒感受 (可複選)</label>
+                    <div class="emotions-grid" id="emotionsGrid">
+                        <div class="emotion-tag" onclick="toggleEmotionTag(this)">焦慮焦躁</div>
+                        <div class="emotion-tag" onclick="toggleEmotionTag(this)">心力交瘁</div>
+                        <div class="emotion-tag" onclick="toggleEmotionTag(this)">孤單寂寞</div>
+                        <div class="emotion-tag" onclick="toggleEmotionTag(this)">自責內疚</div>
+                        <div class="emotion-tag" onclick="toggleEmotionTag(this)">麻木無助</div>
+                        <div class="emotion-tag" onclick="toggleEmotionTag(this)">委屈受傷</div>
+                    </div>
+                </div>
+
+                <!-- 心聲詳述文字框 -->
+                <div class="input-group">
+                    <label class="input-label" for="userThoughts"><i class="fa-solid fa-pen-nib"></i> 傾訴我的故事與心聲 (選填)</label>
+                    <textarea id="userThoughts" class="textarea-field" placeholder="深呼吸，這裡是一個絕對安全且保密的空間。如果可以，請寫下此時此刻在您腦海中盤旋的痛苦或想法..."></textarea>
+                </div>
+
+                <!-- 送出按鈕 -->
+                <button class="heal-btn" id="healBtn" onclick="requestHealLetter()">
+                    <i class="fa-solid fa-envelope-open-text"></i> 向心靈導師傾訴
+                </button>
+            </section>
+
+            <!-- 溫柔呼吸載入動畫 -->
+            <div class="heal-loader" id="healLoader">
+                <div class="breath-bubble"><i class="fa-solid fa-heart"></i></div>
+                <div class="loader-status" id="loaderStatusText">呼氣...吸氣...正在溫柔傾聽您的心聲...</div>
+            </div>
+
+            <!-- AI 心靈回信展示區 -->
+            <section class="result-panel" id="replyPanel">
+                <div class="reply-letter">
+                    <!-- 信封裝飾戳印 -->
+                    <div class="reply-stamp"><i class="fa-solid fa-envelope"></i></div>
+                    
+                    <!-- 溫暖信紙內容 -->
+                    <article class="letter-content" id="letterContentText">
+                        正在展開心靈信箋...
+                    </article>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- 頁尾 -->
+    <footer class="footer">
+        &copy; Royal Devotee (NeuralNexusLab X 0xseanlee), all rights reserved.
+    </footer>
+
+    <script>
+        let isHealing = false; // 紀錄 AI 療癒演算狀態
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始化導覽列搜尋
+            initNavbarSearch();
+        });
+
+        // 導覽列搜尋重導向
+        function initNavbarSearch() {
+            const navInput = document.getElementById('navSearchInput');
+            const navBtn = document.getElementById('navSearchBtn');
+
+            const triggerSearch = () => {
+                const query = navInput.value.trim();
+                if (query) {
+                    window.location.href = `/pages/search.html?q=${encodeURIComponent(query)}`;
+                }
+            };
+
+            navBtn.addEventListener('click', triggerSearch);
+            navInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') triggerSearch();
+            });
+        }
+
+        // 切換情緒標籤啟用/停用
+        function toggleEmotionTag(tagElement) {
+            if (isHealing) return;
+            tagElement.classList.toggle("active");
+        }
+
+        // 取得當前所有選取的情緒文字
+        function getSelectedEmotions() {
+            const activeTags = document.querySelectorAll(".emotion-tag.active");
+            return Array.from(activeTags).map(tag => tag.textContent);
+        }
+
+        // 串接 LifeAPI /ai 發送高同理心諮商 Prompt
+        function requestHealLetter() {
+            if (isHealing) return;
+
+            const category = document.getElementById("issueCategory").value;
+            const thoughts = document.getElementById("userThoughts").value.trim() || "我感覺目前陷入了生活的泥淖，心裡悶悶的，找不到出口。";
+            const emotions = getSelectedEmotions();
+            
+            const loader = document.getElementById("healLoader");
+            const replyPanel = document.getElementById("replyPanel");
+            const healBtn = document.getElementById("healBtn");
+            const loaderText = document.getElementById("loaderStatusText");
+
+            isHealing = true;
+            healBtn.disabled = true;
+            replyPanel.style.display = "none";
+            loader.style.display = "block";
+
+            // 1. 動態更新引導詞（正念呼吸暗示，舒緩使用者等待的焦慮）
+            loaderText.textContent = "深呼吸...請試著吐氣與吸氣，AI心理師正在靜靜感受您的情緒...";
+            
+            setTimeout(() => {
+                if (isHealing) {
+                    loaderText.textContent = "請放鬆肩膀與眉心...正在為您執筆撰寫心靈信箋...";
+                }
+            }, 3000);
+
+            // 2. 建構溫柔諮商 prompt 範本
+            const emotionsStr = emotions.length > 0 ? emotions.join("、") : "說不上來的沈重與無奈";
+            const builtPrompt = `
+                請扮演一位極具同理心、溫柔、溫暖且專業的心理諮商師。我目前正處於人生的低谷，遇到了這項困擾：【${category}】。
+                此時此刻，我的心聲是：【${thoughts}】。
+                我現在內心的情緒感受主要包含：【${emotionsStr}】。
+                
+                請靜靜傾聽我的痛苦，並以溫柔、不說教、充滿療癒感且具備正念引導與接納口吻的語氣，為我寫一封溫柔的回信。信中請嚴格包含以下架構：
+                1. 溫柔且溫暖的稱呼開頭，接納與無條件同理我的情緒，讓我感受到我的痛苦是被聽見、被允許且被在乎的。
+                2. 提供 2 個當下可以在房間或日常中輕鬆實踐的、微小且不具壓力的調適行動（例如：5分鐘的正念呼吸引導、洗一個熱水澡、或靜靜喝一杯溫水，強調極簡與微小）。
+                3. 用一句發自內心、充滿詩意與溫柔的溫馨話語作為結尾。
+                
+                請使用繁體中文，分成舒適、適當留白的好讀段落進行回覆。不要有任何冷冰冰的條列式代碼標籤。
+            `;
+
+            // 3. 連接 LifeAPI 發送請求
+            connect()
+                .then(() => {
+                    return fetch("https://lifeapi.zone.id/ai", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({ prompt: builtPrompt })
+                    });
+                })
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error("心靈伺服器通訊中斷");
+                    }
+                    return response.text();
+                })
+                .then((aiLetterText) => {
+                    // 4. 成功獲取信件，進行渲染
+                    renderHealLetter(aiLetterText);
+                })
+                .catch((error) => {
+                    console.error("AI Healing failed:", error);
+                    alert("連線中斷了。請試著深呼吸，並重新點擊向心靈導師傾訴。");
+                })
+                .finally(() => {
+                    isHealing = false;
+                    healBtn.disabled = false;
+                    loader.style.display = "none";
+                });
+        }
+
+        // 渲染心靈信箋
+        function renderHealLetter(letterText) {
+            const letterContent = document.getElementById("letterContentText");
+            const replyPanel = document.getElementById("replyPanel");
+
+            // 1. 寫入 AI 信紙內文
+            letterContent.textContent = letterText.trim();
+
+            // 2. 顯現信紙面板
+            replyPanel.style.display = "block";
+
+            // 3. 平滑滾動至信紙，優化手機觀看體驗
+            replyPanel.scrollIntoView({ behavior: "smooth" });
+        }
+    </script>
+</body>
+</html>
