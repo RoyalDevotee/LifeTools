@@ -1,7 +1,7 @@
 [
   { "name": "時鐘", "description": "這個工具是個線上時鐘，會顯示現在時間。", "path": "/pages/time.html", "icon": "fa-regular fa-clock" },
-  {"name": "AI 塔羅牌心靈占卜","description": "融合純前端 3D 翻牌動效與 LifeAPI 智慧大模型。隨機抽取三張牌，為您的愛情、事業或人生迷惘進行深度的神祕學心靈解讀與指引。","path": "/pages/tarot.html","icon": "fa-solid fa-wand-magic-sparkles"},
   {"name": "IP位址查詢","description": "串接安全 LifeAPI 後端，即時偵測並顯示您當前的公網 IP 位址，具備連線狀態監控與一鍵複製功能。","path": "/pages/ip.html","icon": "fa-solid fa-network-wired"},
+  {"name": "AI 塔羅牌心靈占卜","description": "融合純前端 3D 翻牌動效與 LifeAPI 智慧大模型。隨機抽取三張牌，為您的愛情、事業或人生迷惘進行深度的神祕學心靈解讀與指引。","path": "/pages/tarot.html","icon": "fa-solid fa-wand-magic-sparkles"},
   { "name": "隨機抽籤輪盤", "description": "客製化名單的線上幸運大輪盤，支援即時編輯與擬真轉動音效，決定午餐或抽獎的最佳助手。", "path": "/pages/wheel.html", "icon": "fa-solid fa-dharmachakra" },
   { "name": "隨機座位抽籤", "description": "支援自訂教室行列大小，可隨意剔除空位，具備三秒隨機跳號動畫的現代感座位安排系統。", "path": "/pages/seat.html", "icon": "fa-solid fa-chair" },
 { "name": "情侶星座匹配度分析", "description": "運用占星學星象共鳴演算法，即時算出男女雙方星座的契合度分數，並提供深度的愛情解析與相處指南。", "path": "/pages/zodiac.html", "icon": "fa-solid fa-heart" },
