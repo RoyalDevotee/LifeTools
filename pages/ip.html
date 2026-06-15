@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的 IP 位址查詢 - Life Tools</title>
+    <!-- 載入規定的初始化腳本 -->
+    <script src="/scripts/init.js"></script>
+    <!-- 匯入 LifeAPI 後端專用 SDK -->
+    <script src="https://lifeapi.zone.id"></script>
+    <!-- 引入 Google Fonts 與 Font Awesome 圖標庫 -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* 全域基本樣式 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+
+        :root {
+            --primary-color: #FF8C00;
+            --primary-hover: #E07B00;
+            --primary-light: #FFF5EC;
+            --text-dark: #2C3E50;
+            --text-muted: #7F8C8D;
+            --bg-light: #FDFBF7;
+            --bg-card-section: #F5EFEB;
+            --white: #FFFFFF;
+            --error-color: #E74C3C;
+            --success-color: #2ECC71;
+            --transition-speed: 0.3s;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 頂部導覽列 */
+        .navbar {
+            background-color: var(--white);
+            border-bottom: 2px solid var(--primary-light);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .nav-logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform var(--transition-speed) ease;
+        }
+
+        .nav-logo:hover {
+            transform: scale(1.03);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            color: var(--text-dark);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 16px;
+            transition: color var(--transition-speed) ease;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color);
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background-color: var(--primary-light);
+            border: 1.5px solid transparent;
+            border-radius: 30px;
+            padding: 4px 6px 4px 16px;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--primary-color);
+            background-color: var(--white);
+            box-shadow: 0 0 8px rgba(255, 140, 0, 0.15);
+        }
+
+        .search-input {
+            border: none;
+            background: transparent;
+            outline: none;
+            color: var(--text-dark);
+            font-size: 14px;
+            width: 160px;
+            transition: width var(--transition-speed) ease;
+        }
+
+        .search-input:focus {
+            width: 200px;
+        }
+
+        .search-btn {
+            background-color: var(--primary-color);
+            border: none;
+            color: var(--white);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color var(--transition-speed) ease, transform var(--transition-speed) ease;
+        }
+
+        .search-btn:hover {
+            background-color: var(--primary-hover);
+            transform: scale(1.05);
+        }
+
+        /* 工具主內容區 */
+        .main-content {
+            flex-grow: 1;
+            padding: 40px 20px;
+            background-color: var(--bg-card-section);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tool-container {
+            background-color: var(--white);
+            border-radius: 24px;
+            padding: 45px 35px;
+            width: 100%;
+            max-width: 650px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 140, 0, 0.1);
+            text-align: center;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .tool-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .tool-title i {
+            color: var(--primary-color);
+        }
+
+        /* 連線狀態與倒數計時容器 */
+        .status-box {
+            background-color: var(--bg-light);
+            border: 1.5px solid var(--primary-light);
+            border-radius: 20px;
+            padding: 40px 20px;
+            margin-bottom: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .radar-spinner {
+            font-size: 48px;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .status-text {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .countdown-timer {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            color: var(--text-muted);
+            background-color: var(--primary-light);
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-weight: 700;
+        }
+
+        /* 成功獲取 IP 面板 (預設隱藏) */
+        .ip-panel {
+            display: none;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.25);
+        }
+
+        .ip-display-box {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 38px;
+            font-weight: 700;
+            color: var(--primary-color);
+            background-color: var(--primary-light);
+            border: 2px solid var(--primary-color);
+            padding: 24px;
+            border-radius: 16px;
+            margin-bottom: 25px;
+            word-break: break-all;
+            box-shadow: inset 0 2px 8px rgba(255, 140, 0, 0.05);
+        }
+
+        /* 連線失敗面板 (預設隱藏) */
+        .error-panel {
+            display: none;
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .error-box {
+            border: 2px solid var(--error-color);
+            background-color: #FFF5F5;
+            color: var(--error-color);
+            padding: 24px;
+            border-radius: 16px;
+            margin-bottom: 25px;
+            font-weight: 700;
+        }
+
+        .error-icon {
+            font-size: 38px;
+            margin-bottom: 10px;
+        }
+
+        /* 重新連線與複製按鈕 */
+        .action-btn {
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            border-radius: 30px;
+            padding: 14px 40px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 140, 0, 0.2);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .action-btn:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 140, 0, 0.3);
+        }
+
+        .btn-secondary {
+            background-color: var(--text-dark);
+            box-shadow: 0 4px 15px rgba(44, 62, 80, 0.15);
+        }
+
+        .btn-secondary:hover {
+            background-color: #1a252f;
+        }
+
+        /* 微互動 Toast 提示 */
+        .toast-message {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background-color: var(--text-dark);
+            color: var(--white);
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            opacity: 0;
+            z-index: 2000;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toast-message.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* 頁尾 */
+        .footer {
+            background-color: var(--white);
+            padding: 30px 20px;
+            text-align: center;
+            border-top: 1px solid var(--primary-light);
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* 動畫宣告 */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.6); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* RWD 響應式配置 */
+        @media (max-width: 600px) {
+            .navbar-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .nav-right {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+            .search-box {
+                width: 100%;
+            }
+            .search-input {
+                width: 100%;
+            }
+            .search-input:focus {
+                width: 100%;
+            }
+            .ip-display-box {
+                font-size: 24px;
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 頂部導覽列 -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="nav-logo">
+                <i class="fa-solid fa-toolbox"></i> Life Tools
+            </a>
+            <div class="nav-right">
+                <a href="/pages/about.html" class="nav-link">關於我們</a>
+                <div class="search-box">
+                    <input type="text" id="navSearchInput" class="search-input" placeholder="搜尋工具...">
+                    <button id="navSearchBtn" class="search-btn">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 工具主內容區 -->
+    <main class="main-content">
+        <div class="tool-container">
+            <h1 class="tool-title"><i class="fa-solid fa-network-wired"></i> 我的 IP 位址查詢</h1>
+            
+            <!-- A. 連線載入中面板 -->
+            <section class="status-box" id="connectionStatusBox">
+                <div class="radar-spinner" id="radarIcon"><i class="fa-solid fa-satellite-dish fa-spin"></i></div>
+                <div class="status-text" id="statusText">API server 連接中...</div>
+                <div class="countdown-timer" id="countdownLabel">剩餘時間: 15s</div>
+            </section>
+
+            <!-- B. 連線成功：IP 顯示面板 -->
+            <section class="ip-panel" id="ipSuccessPanel">
+                <div class="ip-display-box" id="ipAddressLabel">0.0.0.0</div>
+                <button class="action-btn btn-secondary" onclick="copyIpToClipboard()">
+                    <i class="fa-regular fa-copy"></i> 複製 IP 位址
+                </button>
+            </section>
+
+            <!-- C. 連線失敗面板 -->
+            <section class="error-panel" id="ipErrorPanel">
+                <div class="error-box">
+                    <div class="error-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                    <div>伺服器連接失敗！請檢查您的網頁連線並重新嘗試。</div>
+                </div>
+                <button class="action-btn" onclick="retryConnection()">
+                    <i class="fa-solid fa-arrow-rotate-left"></i> 重新連接伺服器
+                </button>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- 複製成功 Toast 提示 -->
+    <div class="toast-message" id="toastMsg">
+        <i class="fa-solid fa-circle-check" style="color: #4CD964;"></i> 成功複製 IP 位址至剪貼簿！
+    </div>
+
+    <!-- 頁尾 -->
+    <footer class="footer">
+        &copy; Royal Devotee (NeuralNexusLab X 0xseanlee), all rights reserved.
+    </footer>
+
+    <script>
+        let connectionTimer = null; // 倒數計時器
+        let secondsLeft = 15; // 預設 15 秒連線時限
+        let hasExtended = false; // 紀錄是否已經觸發過「延長10秒」機制
+        let isConnected = false; // 紀錄是否已成功對接 API
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始化導覽列搜尋
+            initNavbarSearch();
+            // 開始向 LifeAPI 發起連線與時間監控
+            startApiConnection();
+        });
+
+        // 導覽列搜尋
+        function initNavbarSearch() {
+            const navInput = document.getElementById('navSearchInput');
+            const navBtn = document.getElementById('navSearchBtn');
+
+            const triggerSearch = () => {
+                const query = navInput.value.trim();
+                if (query) {
+                    window.location.href = `/pages/search.html?q=${encodeURIComponent(query)}`;
+                }
+            };
+
+            navBtn.addEventListener('click', triggerSearch);
+            navInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') triggerSearch();
+            });
+        }
+
+        // 開始連接 LifeAPI 伺服器並同步執行 15 秒倒數
+        function startApiConnection() {
+            console.log("API server連接中...");
+            
+            // 啟動 1 秒定時倒數
+            connectionTimer = setInterval(() => {
+                secondsLeft--;
+                document.getElementById("countdownLabel").textContent = `剩餘時間: ${secondsLeft}s`;
+
+                // 檢查倒數截止臨界點
+                if (secondsLeft === 0) {
+                    if (!hasExtended) {
+                        // 若為第一次倒數至 0 秒，延長 10 秒
+                        secondsLeft = 10;
+                        hasExtended = true;
+                        document.getElementById("statusText").textContent = "網路可能較擁擠，延長連接中...";
+                        document.getElementById("countdownLabel").textContent = `剩餘時間: ${secondsLeft}s`;
+                    } else {
+                        // 累積超過 25 秒仍未連上，執行逾時判定
+                        clearInterval(connectionTimer);
+                        triggerConnectionFailure();
+                    }
+                }
+            }, 1000);
+
+            // 串接 LifeAPI SDK connect() 方法
+            connect()
+                .then(() => {
+                    // API 連線對接成功
+                    handleConnectionSuccess();
+                })
+                .catch((error) => {
+                    // 異常拋出
+                    console.error("API connection error:", error);
+                    clearInterval(connectionTimer);
+                    triggerConnectionFailure();
+                });
+        }
+
+        // API 伺服器連接成功後之回呼常式 (exfunc)
+        function handleConnectionSuccess() {
+            isConnected = true;
+            clearInterval(connectionTimer); // 終止倒數
+
+            console.log("API server連接成功!");
+            
+            // 開始發送 GET /ip 請求取得使用者 IP
+            fetchUserIpAddress();
+        }
+
+        // 發送 HTTP 請求向 LifeAPI 取得真實 IP 位址
+        async function fetchUserIpAddress() {
+            const statusBox = document.getElementById("connectionStatusBox");
+            const successPanel = document.getElementById("ipSuccessPanel");
+            const ipLabel = document.getElementById("ipAddressLabel");
+
+            try {
+                const response = await fetch("https://lifeapi.zone.id/ip");
+                if (!response.ok) {
+                    throw new Error("無法獲取 IP 位址資訊");
+                }
+                const ipText = await response.text();
+
+                // 隱藏載入框，顯現 IP 成果卡片
+                statusBox.style.display = "none";
+                ipLabel.textContent = ipText.trim();
+                successPanel.style.display = "block";
+
+            } catch (error) {
+                console.error("Fetch IP error:", error);
+                triggerConnectionFailure();
+            }
+        }
+
+        // 連線逾時或通訊異常判定失敗常式
+        function triggerConnectionFailure() {
+            const statusBox = document.getElementById("connectionStatusBox");
+            const errorPanel = document.getElementById("ipErrorPanel");
+
+            // 隱藏載入盒，顯現紅框連線失敗警告面板
+            statusBox.style.display = "none";
+            errorPanel.style.display = "block";
+        }
+
+        // 一鍵複製 IP 至剪貼簿
+        function copyIpToClipboard() {
+            const ipText = document.getElementById("ipAddressLabel").textContent;
+            
+            navigator.clipboard.writeText(ipText).then(() => {
+                showToastNotification();
+            }).catch(error => {
+                console.error("Copy failed: ", error);
+            });
+        }
+
+        // 顯示複製成功 Toast
+        function showToastNotification() {
+            const toast = document.getElementById("toastMsg");
+            toast.classList.add("show");
+            
+            setTimeout(() => {
+                toast.classList.remove("show");
+            }, 2500);
+        }
+
+        // 重新執行連線
+        function retryConnection() {
+            secondsLeft = 15;
+            hasExtended = false;
+            isConnected = false;
+
+            // 還原顯示狀態
+            document.getElementById("connectionStatusBox").style.display = "flex";
+            document.getElementById("ipSuccessPanel").style.display = "none";
+            document.getElementById("ipErrorPanel").style.display = "none";
+            document.getElementById("statusText").textContent = "API server 連接中...";
+            document.getElementById("countdownLabel").textContent = "剩餘時間: 15s";
+
+            // 再次發起連接
+            startApiConnection();
+        }
+    </script>
+</body>
+</html>
