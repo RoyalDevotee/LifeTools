@@ -403,19 +403,18 @@
             targetFormat = formatType;
             
             const boxMp3 = document.getElementById('optBoxMp3');
-            const boxMp4 = document.getElementById('optBoxMp4');
+            const boxMob = document.getElementById('optBoxMp4'); // 修正變數名稱對齊
             const radioMp3 = document.getElementById('radioMp3');
             const radioMp4 = document.getElementById('radioMp4');
-
-            // 依據選取項進行樣式增刪
+        
+            // 依據選取項目進行樣式類別的切換與單選鈕勾選
             if (formatType === 'mp3') {
                 boxMp3.classList.add('active');
-                boxMp4.classList.remove('active');
+                boxMob.classList.remove('active');
                 radioMp3.checked = true;
             } else {
-                boxMp4.classList.add('active');
-                boxMp3.remove('active'); // 修正覆蓋
-                boxMp3.classList.remove('active');
+                boxMob.classList.add('active');
+                boxMp3.classList.remove('active'); // 修正原本誤寫成 remove 的 Bug
                 radioMp4.checked = true;
             }
         }
