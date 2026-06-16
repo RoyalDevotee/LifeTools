@@ -2,6 +2,7 @@
   { "name": "時鐘", "description": "這個工具是個線上時鐘，會顯示現在時間。", "path": "/pages/time.html", "icon": "fa-regular fa-clock" },
   { "name": "IP位址查詢","description": "串接安全 LifeAPI 後端，即時偵測並顯示您當前的公網 IP 位址，具備連線狀態監控與一鍵複製功能。","path": "/pages/ip.html","icon": "fa-solid fa-network-wired" },
   { "name": "AI 塔羅牌心靈占卜","description": "融合純前端 3D 翻牌動效與 LifeAPI 智慧大模型。隨機抽取三張牌，為您的愛情、事業或人生迷惘進行深度的神祕學心靈解讀與指引。","path": "/pages/tarot.html","icon": "fa-solid fa-wand-magic-sparkles" },
+  {"name": "短網址產生器", "description": "串接安全 LifeAPI 後端與 PicSee 服務，為您的一般網址快速生成極簡短網址，便於社群分享並支援一鍵複製與 QR Code 下載。","path": "/pages/shorturl.html","icon": "fa-solid fa-link"},
   { "name": "AI 心靈陪伴心理師","description": "當您身處人生低谷或感到迷惘時的心靈港灣。結合情緒標籤與深度心聲傾聽，提供溫柔、非評價且具備正念調適建議的智慧心靈回信。","path": "/pages/psychologist.html","icon": "fa-solid fa-hand-holding-heart" },
   { "name": "隨機抽籤輪盤", "description": "客製化名單的線上幸運大輪盤，支援即時編輯與擬真轉動音效，決定午餐或抽獎的最佳助手。", "path": "/pages/wheel.html", "icon": "fa-solid fa-dharmachakra" },
   { "name": "隨機座位抽籤", "description": "支援自訂教室行列大小，可隨意剔除空位，具備三秒隨機跳號動畫的現代感座位安排系統。", "path": "/pages/seat.html", "icon": "fa-solid fa-chair" },
@@ -19,6 +20,5 @@
   { "name": "萬用即時匯率換算器", "description": "支援全球主流貨幣的線上匯率試算與雙向換算工具。內建直覺的現代感外幣面板！", "path": "/pages/exchange-rate.html", "icon": "fa-solid fa-money-bill-transfer" },
   { "name": "萬用字數與行數統計器", "description": "即時統計總字數、不含空白字數、中英文字元、數字與段落行數。內建主流社群與簡訊字數限制進度條提示，完全本地端流暢分析。", "path": "/pages/text-counter.html", "icon": "fa-solid fa-file-lines" },
   { "name": "線上 HTTP 請求測試器", "description": "輕量免安裝的線上 API 請求測試工具。支援自訂方法、多組 Headers 與 Body 負載，並內建深色模式 JSON 美化解析與延遲偵測。", "path": "/pages/http-tester.html", "icon": "fa-solid fa-satellite-dish" },
-  { "name": "顏色代碼色彩選取器", "description": "專業的前端與設計師選色工具。支援 HEX, RGB, HSL 雙向即時轉換，內建多款流行漸層與質感調色盤，並提供一鍵複製色碼功能。", "path": "/pages/color-picker.html", "icon": "fa-solid fa-palette" },
-  { "name": "極速影音下載器", "description": "線上免費 YouTube 影音下載工具，無需安裝軟體，貼上網址即可快速下載無損 MP4 影片或高音質 MP3 音訊。", "path": "/pages/yt-downloader.html", "icon": "fa-brands fa-youtube" }
+  { "name": "顏色代碼色彩選取器", "description": "專業的前端與設計師選色工具。支援 HEX, RGB, HSL 雙向即時轉換，內建多款流行漸層與質感調色盤，並提供一鍵複製色碼功能。", "path": "/pages/color-picker.html", "icon": "fa-solid fa-palette" }
 ]
