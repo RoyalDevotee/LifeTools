@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>短網址產生器 - Life Tools</title>
-    <!-- 載入規定的初始化腳本 -->
+    <!-- 載入規規定位之初始化腳本 -->
     <script src="/scripts/init.js"></script>
     <!-- 匯入 LifeAPI 後端專用 SDK -->
     <script src="https://lifeapi.zone.id"></script>
-    <!-- 引入開源標準 qrcode.js 函式庫，便於直接在縮網址後產出二維碼 -->
+    <!-- 引入開源標準 qrcode.js 函式庫 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <!-- 引入 Google Fonts 與 Font Awesome 圖標庫 -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
@@ -335,6 +335,83 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
 
+        /* ================= 自訂彈窗樣式 (Modal) ================= */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity var(--transition-speed) ease;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-card {
+            background-color: var(--white);
+            border-radius: 20px;
+            padding: 35px 30px;
+            width: 90%;
+            max-width: 420px;
+            text-align: center;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            border: 1.5px solid var(--primary-light);
+            transform: scale(0.85);
+            transition: transform var(--transition-speed) cubic-bezier(0.175, 0.885, 0.32, 1.25);
+        }
+
+        .modal-overlay.show .modal-card {
+            transform: scale(1);
+        }
+
+        .modal-icon {
+            font-size: 54px;
+            color: var(--error-color);
+            margin-bottom: 15px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 12px;
+        }
+
+        .modal-body {
+            font-size: 15px;
+            color: var(--text-muted);
+            margin-bottom: 25px;
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        .modal-close-btn {
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            border-radius: 30px;
+            padding: 10px 35px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(255, 140, 0, 0.15);
+            transition: background-color var(--transition-speed) ease;
+        }
+
+        .modal-close-btn:hover {
+            background-color: var(--primary-hover);
+        }
+
         /* 頁尾 */
         .footer {
             background-color: var(--white);
@@ -359,7 +436,7 @@
             font-weight: 500;
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
             opacity: 0;
-            z-index: 2000;
+            z-index: 1000;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             display: flex;
             align-items: center;
@@ -465,6 +542,16 @@
         </div>
     </main>
 
+    <!-- ================= 自訂警告彈窗 Modal ================= -->
+    <div class="modal-overlay" id="errorModal">
+        <div class="modal-card">
+            <div class="modal-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <div class="modal-title">抱歉，發生了錯誤</div>
+            <div class="modal-body" id="errorModalBody">錯誤原因</div>
+            <button class="modal-close-btn" onclick="closeErrorModal()">確認關閉</button>
+        </div>
+    </div>
+
     <!-- 複製成功 Toast 提示 -->
     <div class="toast-message" id="toastMsg">
         <i class="fa-solid fa-circle-check" style="color: #4CD964;"></i> 成功複製短網址至剪貼簿！
@@ -512,6 +599,20 @@
             }
         }
 
+        // 自訂警告彈窗：開啟
+        function openErrorModal(message) {
+            const modal = document.getElementById("errorModal");
+            const modalBody = document.getElementById("errorModalBody");
+            modalBody.textContent = message;
+            modal.classList.add("show");
+        }
+
+        // 自訂警告彈窗：關閉
+        function closeErrorModal() {
+            const modal = document.getElementById("errorModal");
+            modal.classList.remove("show");
+        }
+
         // 向 LifeAPI 後端發起短網址請求
         function requestShortUrl() {
             if (isGenerating) return;
@@ -522,12 +623,12 @@
 
             // 1. 前端基本 URL 防呆校驗
             if (!longUrl) {
-                alert("請先輸入您需要縮短的長網址！");
+                openErrorModal("請先輸入您需要縮短的長網址！");
                 return;
             }
 
             if (!isValidUrl(longUrl)) {
-                alert("請輸入格式正確的完整網址，必須包含 http:// 或 https://！");
+                openErrorModal("請輸入格式正確的完整網址，必須包含 http:// 或 https://！");
                 return;
             }
 
@@ -553,7 +654,9 @@
                 .then((response) => {
                     // 4. 驗證響應狀態
                     if (!response.ok) {
-                        throw new Error("伺服器縮短網址作業失敗");
+                        return response.text().then(errText => {
+                            throw new Error(errText);
+                        });
                     }
                     return response.text();
                 })
@@ -563,7 +666,8 @@
                 })
                 .catch((error) => {
                     console.error("ShortUrl generate failed:", error);
-                    alert("短網址產生失敗！請檢查伺服器連線或稍後再試。");
+                    // 呼叫自訂的 Modal 彈窗呈現翻譯後的中文錯誤
+                    openErrorModal(error.message || "短網址產生失敗！請檢查伺服器連線或稍後再試。");
                 })
                 .finally(() => {
                     isGenerating = false;
