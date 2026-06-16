@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>短網址產生器 - Life Tools</title>
+    <!-- 載入規定的初始化腳本 -->
+    <script src="/scripts/init.js"></script>
+    <!-- 匯入 LifeAPI 後端專用 SDK -->
+    <script src="https://lifeapi.zone.id"></script>
+    <!-- 引入開源標準 qrcode.js 函式庫，便於直接在縮網址後產出二維碼 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- 引入 Google Fonts 與 Font Awesome 圖標庫 -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* 全域基本樣式 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+
+        :root {
+            --primary-color: #FF8C00;
+            --primary-hover: #E07B00;
+            --primary-light: #FFF5EC;
+            --text-dark: #2C3E50;
+            --text-muted: #7F8C8D;
+            --bg-light: #FDFBF7;
+            --bg-card-section: #F5EFEB;
+            --white: #FFFFFF;
+            --success-color: #2ECC71;
+            --error-color: #E74C3C;
+            --transition-speed: 0.3s;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 頂部導覽列 */
+        .navbar {
+            background-color: var(--white);
+            border-bottom: 2px solid var(--primary-light);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .nav-logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform var(--transition-speed) ease;
+        }
+
+        .nav-logo:hover {
+            transform: scale(1.03);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            color: var(--text-dark);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 16px;
+            transition: color var(--transition-speed) ease;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color);
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background-color: var(--primary-light);
+            border: 1.5px solid transparent;
+            border-radius: 30px;
+            padding: 4px 6px 4px 16px;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--primary-color);
+            background-color: var(--white);
+            box-shadow: 0 0 8px rgba(255, 140, 0, 0.15);
+        }
+
+        .search-input {
+            border: none;
+            background: transparent;
+            outline: none;
+            color: var(--text-dark);
+            font-size: 14px;
+            width: 160px;
+            transition: width var(--transition-speed) ease;
+        }
+
+        .search-input:focus {
+            width: 200px;
+        }
+
+        .search-btn {
+            background-color: var(--primary-color);
+            border: none;
+            color: var(--white);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color var(--transition-speed) ease, transform var(--transition-speed) ease;
+        }
+
+        .search-btn:hover {
+            background-color: var(--primary-hover);
+            transform: scale(1.05);
+        }
+
+        /* 工具主內容區 */
+        .main-content {
+            flex-grow: 1;
+            padding: 40px 20px;
+            background-color: var(--bg-card-section);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tool-container {
+            background-color: var(--white);
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            max-width: 800px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 140, 0, 0.1);
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .tool-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tool-title i {
+            color: var(--primary-color);
+        }
+
+        /* 網址輸入配置面板 */
+        .input-card {
+            background-color: var(--bg-light);
+            border: 1.5px solid var(--primary-light);
+            border-radius: 20px;
+            padding: 30px 24px;
+            margin-bottom: 35px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-label {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .text-field {
+            width: 100%;
+            padding: 14px 18px;
+            border-radius: 12px;
+            border: 1.5px solid #CBD5E1;
+            outline: none;
+            font-size: 16px;
+            font-weight: 500;
+            background-color: var(--white);
+            transition: border-color var(--transition-speed) ease;
+        }
+
+        .text-field:focus {
+            border-color: var(--primary-color);
+        }
+
+        /* 產生按鈕 */
+        .action-btn {
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            border-radius: 30px;
+            padding: 14px 40px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(255, 140, 0, 0.2);
+            transition: all var(--transition-speed) ease;
+        }
+
+        .action-btn:hover:not(:disabled) {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 140, 0, 0.3);
+        }
+
+        .action-btn:disabled {
+            background-color: var(--text-muted);
+            box-shadow: none;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        /* 成果面板 (預設隱藏) */
+        .result-panel {
+            display: none;
+            border-top: 2px dashed var(--primary-light);
+            padding-top: 35px;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* 雙欄排版：左短網址，右 QR Code */
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        .output-card {
+            background-color: var(--bg-light);
+            border: 1.5px solid var(--primary-light);
+            border-radius: 16px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            text-align: left;
+        }
+
+        .output-label {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        .shorturl-display {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--primary-color);
+            background-color: var(--white);
+            border: 1.5px solid var(--primary-light);
+            padding: 12px 16px;
+            border-radius: 12px;
+            word-break: break-all;
+            user-select: all;
+        }
+
+        .btn-secondary {
+            background-color: var(--text-dark);
+            box-shadow: 0 4px 15px rgba(44, 62, 80, 0.15);
+            padding: 10px 24px;
+            font-size: 15px;
+        }
+
+        .btn-secondary:hover {
+            background-color: #1a252f;
+        }
+
+        /* 二維碼預覽區 */
+        .qr-card {
+            background-color: var(--white);
+            border: 1.5px solid var(--primary-light);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+        }
+
+        .qrcode-box {
+            padding: 8px;
+            background-color: var(--white);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        /* 頁尾 */
+        .footer {
+            background-color: var(--white);
+            padding: 30px 20px;
+            text-align: center;
+            border-top: 1px solid var(--primary-light);
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* 微互動 Toast 提示 */
+        .toast-message {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background-color: var(--text-dark);
+            color: var(--white);
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            opacity: 0;
+            z-index: 2000;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toast-message.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* 動畫宣告 */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* RWD 響應式配置 */
+        @media (max-width: 768px) {
+            .navbar-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .nav-right {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+            .search-box {
+                width: 100%;
+            }
+            .search-input {
+                width: 100%;
+            }
+            .search-input:focus {
+                width: 100%;
+            }
+            .result-grid {
+                grid-template-columns: 1fr;
+                gap: 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 頂部導覽列 -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="nav-logo">
+                <i class="fa-solid fa-toolbox"></i> Life Tools
+            </a>
+            <div class="nav-right">
+                <a href="/pages/about.html" class="nav-link">關於我們</a>
+                <div class="search-box">
+                    <input type="text" id="navSearchInput" class="search-input" placeholder="搜尋工具...">
+                    <button id="navSearchBtn" class="search-btn">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 工具主內容區 -->
+    <main class="main-content">
+        <div class="tool-container">
+            <h1 class="tool-title"><i class="fa-solid fa-link"></i> 短網址產生器</h1>
+            
+            <!-- 輸入設定區 -->
+            <section class="input-card">
+                <div class="input-group">
+                    <label class="input-label" for="longUrlInput">請輸入原始長網址 (網址必須包含 http:// 或 https://)</label>
+                    <input type="url" id="longUrlInput" class="text-field" placeholder="https://example.com/very/long/path/to/page" autocomplete="off">
+                </div>
+
+                <button class="action-btn" id="generateBtn" onclick="requestShortUrl()">
+                    <i class="fa-solid fa-bolt"></i> 產生極簡短網址
+                </button>
+            </section>
+
+            <!-- 結果卡片區 -->
+            <section class="result-panel" id="resultPanel">
+                <div class="result-grid">
+                    <!-- 左欄：短網址文字展示與複製 -->
+                    <div class="output-card">
+                        <span class="output-label"><i class="fa-solid fa-circle-check" style="color: var(--success-color);"></i> 縮小後的短網址：</span>
+                        <div class="shorturl-display" id="shortUrlLabel">https://nxlab.pse.is/xxxxx</div>
+                        <button class="action-btn btn-secondary" onclick="copyShortUrl()">
+                            <i class="fa-regular fa-copy"></i> 複製短網址
+                        </button>
+                    </div>
+
+                    <!-- 右欄：二維碼 -->
+                    <div class="qr-card">
+                        <span class="output-label"><i class="fa-solid fa-qrcode"></i> 同步產生 QR Code</span>
+                        <div class="qrcode-box" id="qrcodeBox"></div>
+                        <span style="font-size: 12px; color: var(--text-muted);">手機掃描直接前往</span>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- 複製成功 Toast 提示 -->
+    <div class="toast-message" id="toastMsg">
+        <i class="fa-solid fa-circle-check" style="color: #4CD964;"></i> 成功複製短網址至剪貼簿！
+    </div>
+
+    <!-- 頁尾 -->
+    <footer class="footer">
+        &copy; Royal Devotee (NeuralNexusLab X 0xseanlee), all rights reserved.
+    </footer>
+
+    <script>
+        let isGenerating = false; // 紀錄目前是否正在執行縮網址
+        let qrCodeInstance = null; // 紀錄 qrcodejs 的繪製實例
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始化導覽列搜尋
+            initNavbarSearch();
+        });
+
+        // 導覽列搜尋
+        function initNavbarSearch() {
+            const navInput = document.getElementById('navSearchInput');
+            const navBtn = document.getElementById('navSearchBtn');
+
+            const triggerSearch = () => {
+                const query = navInput.value.trim();
+                if (query) {
+                    window.location.href = `/pages/search.html?q=${encodeURIComponent(query)}`;
+                }
+            };
+
+            navBtn.addEventListener('click', triggerSearch);
+            navInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') triggerSearch();
+            });
+        }
+
+        // 正規表達式驗證 URL 合法性
+        function isValidUrl(string) {
+            try {
+                const url = new URL(string);
+                return url.protocol === "http:" || url.protocol === "https:";
+            } catch (_) {
+                return false;
+            }
+        }
+
+        // 向 LifeAPI 後端發起短網址請求
+        function requestShortUrl() {
+            if (isGenerating) return;
+
+            const longUrl = document.getElementById("longUrlInput").value.trim();
+            const generateBtn = document.getElementById("generateBtn");
+            const resultPanel = document.getElementById("resultPanel");
+
+            // 1. 前端基本 URL 防呆校驗
+            if (!longUrl) {
+                alert("請先輸入您需要縮短的長網址！");
+                return;
+            }
+
+            if (!isValidUrl(longUrl)) {
+                alert("請輸入格式正確的完整網址，必須包含 http:// 或 https://！");
+                return;
+            }
+
+            isGenerating = true;
+            generateBtn.disabled = true;
+            resultPanel.style.display = "none";
+            generateBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 正在連線安全伺服器...`;
+
+            // 2. 進行 LifeAPI 伺服器 connect
+            connect()
+                .then(() => {
+                    generateBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 正在與 PicSee 進行縮短轉換...`;
+                    
+                    // 3. 發送 POST /shorturl 請求
+                    return fetch("https://lifeapi.zone.id/shorturl", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({ url: longUrl })
+                    });
+                })
+                .then((response) => {
+                    // 4. 驗證響應狀態
+                    if (!response.ok) {
+                        throw new Error("伺服器縮短網址作業失敗");
+                    }
+                    return response.text();
+                })
+                .then((shortUrl) => {
+                    // 5. 成功獲取短網址，進行渲染
+                    renderResult(shortUrl.trim());
+                })
+                .catch((error) => {
+                    console.error("ShortUrl generate failed:", error);
+                    alert("短網址產生失敗！請檢查伺服器連線或稍後再試。");
+                })
+                .finally(() => {
+                    isGenerating = false;
+                    generateBtn.disabled = false;
+                    generateBtn.innerHTML = `<i class="fa-solid fa-bolt"></i> 產生極簡短網址`;
+                });
+        }
+
+        // 渲染短網址結果與即時 QR Code
+        function renderResult(shortUrl) {
+            const shortUrlLabel = document.getElementById("shortUrlLabel");
+            const qrcodeBox = document.getElementById("qrcodeBox");
+            const resultPanel = document.getElementById("resultPanel");
+
+            // 1. 寫入短網址內容
+            shortUrlLabel.textContent = shortUrl;
+
+            // 2. 清空舊的 QR Code 容器並產生新的二維碼
+            qrcodeBox.innerHTML = "";
+            qrCodeInstance = new QRCode(qrcodeBox, {
+                text: shortUrl,
+                width: 120,
+                height: 120,
+                colorDark: "#2C3E50",
+                colorLight: "#FFFFFF",
+                correctLevel: QRCode.CorrectLevel.M
+            });
+
+            // 3. 展開結果面板
+            resultPanel.style.display = "block";
+            
+            // 4. 平滑滾動至結果卡片
+            resultPanel.scrollIntoView({ behavior: "smooth" });
+        }
+
+        // 複製短網址至剪貼簿
+        function copyShortUrl() {
+            const shortUrl = document.getElementById("shortUrlLabel").textContent;
+            
+            navigator.clipboard.writeText(shortUrl).then(() => {
+                showToastNotification();
+            }).catch(error => {
+                console.error("Copy failed: ", error);
+            });
+        }
+
+        // 顯示複製成功 Toast 提示
+        function showToastNotification() {
+            const toast = document.getElementById("toastMsg");
+            toast.classList.add("show");
+            
+            setTimeout(() => {
+                toast.classList.remove("show");
+            }, 2500);
+        }
+    </script>
+</body>
+</html>
