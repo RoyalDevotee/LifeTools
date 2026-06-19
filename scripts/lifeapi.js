@@ -3,7 +3,7 @@ function connect(interval = 1000, timeout = 30000) {
         const startTime = Date.now();
 
         const connection = setInterval(() => {
-            fetch("https://lifeapi.zone.id")
+            fetch("https://lifeapi.zone.id/connect")
                 .then(res => {
                     if (!res.ok) {
                         throw new Error(`HTTP ${res.status}`);
