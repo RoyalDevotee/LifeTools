@@ -13,7 +13,7 @@
     
     <!-- Open Graph 標籤 -->
     <meta property="og:title" content="AI 賽博網頁圖卡生成器 - LifeTools">
-    <meta property="og:description" content="用 HTML/CSS 代替昂貴生圖！一鍵生成自適應、高顏值的網頁向量圖卡與海報。">
+    <meta property="og:description" content="用 HTML/CSS 代替昂規生圖！一鍵生成自適應、高顏值的網頁向量圖卡與海報。">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://lifetools.nett.to/pages/html-graphic.html">
     
@@ -436,16 +436,16 @@
             transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             
             /* CSS object-fit 同等縮放機制 */
-            width: auto;
-            height: auto;
             max-width: 100%;
             max-height: 100%;
+            flex-shrink: 0; /* 🛠️ 修正：防止 Flexbox 自動擠壓與橫向偏移 */
         }
 
-        .ratio-1-1 { aspect-ratio: 1 / 1; }
-        .ratio-16-9 { aspect-ratio: 16 / 9; }
-        .ratio-9-16 { aspect-ratio: 9 / 16; }
-        .ratio-4-3 { aspect-ratio: 4 / 3; }
+        /* 🛠️ 修正：橫式鎖定寬度100%、直式/等比鎖定高度100%，配合 flex-shrink 實現完美安全置中 */
+        .ratio-1-1 { aspect-ratio: 1 / 1; width: auto; height: 100%; }
+        .ratio-16-9 { aspect-ratio: 16 / 9; width: 100%; height: auto; }
+        .ratio-9-16 { aspect-ratio: 9 / 16; width: auto; height: 100%; }
+        .ratio-4-3 { aspect-ratio: 4 / 3; width: auto; height: 100%; }
 
         /* Loader 動態效果 */
         .loader-mask {
@@ -940,7 +940,7 @@
                 4. 設計方向必須高雅現代、拒絕過時的平面粗糙排版，充分利用 CSS Gradients（漸層色）、Flexbox、圓角與微發光陰影。
                 `;
 
-                // 發送 POST 請求至 Type C API
+                // 🛠️ 修正：將 API Endpoint 修改為使用者指定的 https://lifeapi.zone.id/api/html [INDEX: 1]
                 const response = await fetch('https://lifeapi.zone.id/api/html', {
                     method: 'POST',
                     headers: {
