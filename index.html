@@ -63,6 +63,8 @@
             --bg-light: #FDFBF7;
             --bg-card-section: #F5EFEB;
             --white: #FFFFFF;
+            --gold-color: #FFD700;
+            --surprise-bg: #FFFDF4; /* 暖色驚喜感淡黃背景 */
             --transition-speed: 0.3s;
         }
 
@@ -265,6 +267,84 @@
             transform: scale(1.03);
         }
 
+        /* 每日小驚喜專區（非常顯眼之特製佈局） */
+        .surprise-section {
+            max-width: 1200px;
+            margin: 0 auto 30px auto;
+            padding: 0 20px;
+            animation: fadeInUp 0.9s ease-out;
+        }
+
+        .surprise-container {
+            background: linear-gradient(135deg, var(--surprise-bg) 0%, var(--primary-light) 100%);
+            border: 2px solid #FFE0B2;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(255, 140, 0, 0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 閃爍邊飾點綴 */
+        .surprise-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .surprise-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .surprise-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary-hover);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .surprise-title i {
+            animation: bounceWand 1.5s infinite alternate;
+        }
+
+        .refresh-btn {
+            background-color: var(--white);
+            border: 1.5px solid #FFD180;
+            color: var(--primary-color);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 10px rgba(255, 140, 0, 0.05);
+            transition: all var(--transition-speed) ease;
+        }
+
+        .refresh-btn:hover {
+            border-color: var(--primary-color);
+            background-color: var(--primary-light);
+            transform: translateY(-1px);
+        }
+
+        .refresh-btn i.spinning {
+            animation: spinRefresh 0.6s linear;
+        }
+
         /* 工具卡片高對比區塊 */
         .tools-section {
             background-color: var(--bg-card-section);
@@ -352,6 +432,28 @@
             transform: translateX(3px);
         }
 
+        /* Pro 皇冠徽章樣式 */
+        .pro-badge {
+            background-color: #FFF3CD;
+            border: 1px solid #FFEBAA;
+            color: #856404;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-left: 8px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 5px rgba(255, 215, 0, 0.15);
+        }
+
+        .pro-badge i {
+            color: var(--gold-color);
+            font-size: 10px;
+        }
+
         .tool-desc {
             font-size: 14px;
             color: var(--text-muted);
@@ -402,6 +504,16 @@
                 opacity: 1;
                 transform: translateY(0);
             }
+        }
+
+        @keyframes bounceWand {
+            0% { transform: translateY(0) rotate(0deg); }
+            100% { transform: translateY(-4px) rotate(15deg); }
+        }
+
+        @keyframes spinRefresh {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         /* 響應式微調 */
@@ -478,6 +590,26 @@
         </div>
     </header>
 
+    <!-- 每日小驚喜專區（顯眼黃金流光卡片佈局） -->
+    <section class="surprise-section">
+        <div class="surprise-container">
+            <div class="surprise-header">
+                <h3 class="surprise-title">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> 每日小驚喜
+                </h3>
+                <button class="refresh-btn" id="refreshSurpriseBtn" onclick="refreshDailySurprises()">
+                    <i class="fa-solid fa-arrows-rotate" id="refreshIcon"></i> 換一批小驚喜
+                </button>
+            </div>
+            <div class="tools-grid" id="surpriseGrid">
+                <div class="status-message" style="grid-column: 1/-1; padding: 20px 0;">
+                    <i class="fa-solid fa-circle-notch fa-spin"></i>
+                    <p>正在挑選驚喜工具...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <main class="tools-section">
         <article class="tools-container-wrapper">
             <h2 class="section-title">工具清單</h2>
@@ -495,6 +627,9 @@
     </footer>
 
     <script>
+        // 全域陣列，儲存從伺服器端載入的所有工具清單
+        let allToolsList = [];
+
         document.addEventListener('DOMContentLoaded', () => {
             // 初始化搜尋功能與綁定事件
             initSearchEvents();
@@ -543,7 +678,75 @@
             });
         }
 
-        // 從 metadata.json 動態獲取並渲染工具卡片
+        // 隨機選取不重複之項目
+        function getRandomTools(toolsArray, count) {
+            const shuffled = [...toolsArray].sort(() => Math.random() - 0.5);
+            return shuffled.slice(0, count);
+        }
+
+        // 封裝獨立的 HTML 生成模組，支援 Pro 徽章判斷
+        function createToolCardHtml(tool) {
+            // 檢查 JSON 中是否有設定 icon，若無則給予預設圖標 fa-toolbox
+            const iconClass = tool.icon ? tool.icon : 'fa-solid fa-toolbox';
+            
+            // 檢查是否具有 Pro 屬性，若有則生成 Pro 金色徽章 HTML，若無則為空字串
+            const proBadgeHtml = tool.pro === true 
+                ? `<span class="pro-badge"><i class="fa-solid fa-crown"></i>PRO</span>` 
+                : '';
+
+            return `
+                <a href="${tool.path}" class="tool-card" aria-label="開啟 ${tool.name} 工具">
+                    <div class="tool-info">
+                        <h3 class="tool-name">
+                            <span style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                                <i class="${iconClass}" style="color: var(--primary-color); width: 24px; text-align: center; font-size: 18px;"></i>
+                                ${escapeHtml(tool.name)}
+                                ${proBadgeHtml}
+                            </span>
+                            <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                        </h3>
+                        <p class="tool-desc" style="margin-left: 34px;">${escapeHtml(tool.description)}</p>
+                    </div>
+                    <div class="tool-footer" style="margin-left: 34px;">
+                        <span>立即使用</span>
+                    </div>
+                </a>
+            `;
+        }
+
+        // 渲染每日小驚喜區塊
+        function renderDailySurprises() {
+            const surpriseGrid = document.getElementById("surpriseGrid");
+            
+            if (allToolsList.length === 0) return;
+
+            // 隨機抽選 3 個工具
+            const surprises = getRandomTools(allToolsList, 3);
+            surpriseGrid.innerHTML = "";
+
+            // 將抽中的小工具加入驚喜面板
+            surprises.forEach(tool => {
+                surpriseGrid.innerHTML += createToolCardHtml(tool);
+            });
+        }
+
+        // 觸發重新抽取小驚喜與按鈕旋轉動畫
+        function refreshDailySurprises() {
+            const refreshIcon = document.getElementById("refreshIcon");
+            
+            // 加入旋轉動畫 CSS class
+            refreshIcon.classList.add("spinning");
+            
+            // 重新抽選並渲染
+            renderDailySurprises();
+
+            // 0.6 秒動畫完成後移除旋轉 class，方便下次再度觸發
+            setTimeout(() => {
+                refreshIcon.classList.remove("spinning");
+            }, 600);
+        }
+
+        // 從 metadata.json 動態獲取並渲染所有卡片
         async function fetchToolsData() {
             const toolsGrid = document.getElementById('toolsGrid');
             const statusMessage = document.getElementById('statusMessage');
@@ -556,14 +759,14 @@
                     throw new Error('無法取得工具清單資料');
                 }
 
-                const toolsList = await response.json();
+                allToolsList = await response.json();
                 
                 // 移除載入狀態訊息
                 if (statusMessage) {
                     statusMessage.remove();
                 }
 
-                if (toolsList.length === 0) {
+                if (allToolsList.length === 0) {
                     toolsGrid.innerHTML = `
                         <div class="status-message">
                             <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
@@ -573,32 +776,12 @@
                     return;
                 }
 
-                // 產生卡片並渲染至畫面
-                toolsList.forEach((tool) => {
-                    const card = document.createElement('a');
-                    card.href = tool.path;
-                    card.className = 'tool-card';
-                    card.setAttribute('aria-label', `開啟 ${tool.name} 工具`);
-                    
-                    // 檢查 JSON 中是否有設定 icon，若無則給予預設圖標 fa-toolbox
-                    const iconClass = tool.icon ? tool.icon : 'fa-solid fa-toolbox';
-                    
-                    card.innerHTML = `
-                        <div class="tool-info">
-                            <h3 class="tool-name">
-                                <span style="display: flex; align-items: center; gap: 10px;">
-                                    <i class="${iconClass}" style="color: var(--primary-color); width: 24px; text-align: center; font-size: 18px;"></i>
-                                    ${escapeHtml(tool.name)}
-                                </span>
-                                <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
-                            </h3>
-                            <p class="tool-desc" style="margin-left: 34px;">${escapeHtml(tool.description)}</p>
-                        </div>
-                        <div class="tool-footer" style="margin-left: 34px;">
-                            <span>立即使用</span>
-                        </div>
-                    `;
-                    toolsGrid.appendChild(card);
+                // 首次加載時，同步渲染「每日小驚喜」面板
+                renderDailySurprises();
+
+                // 渲染常規完整工具清單
+                allToolsList.forEach((tool) => {
+                    toolsGrid.innerHTML += createToolCardHtml(tool);
                 });
 
             } catch (error) {
