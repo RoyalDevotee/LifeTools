@@ -833,7 +833,7 @@
 
         // 檢查 Pro 認證狀態並視情況彈窗
         function checkProAuthorization() {
-            const proKey = localStorage.getItem("lifeToolsProKey");
+            const proKey = localStorage.getItem("proKey");
             if (!proKey) {
                 openProModal();
             }
@@ -841,7 +841,7 @@
 
         // 動態偵測 localStorage 狀態，為大標題附上 Pro 皇冠徽章，並控制登出按鈕顯示狀態
         function updateTitleProBadge() {
-            const proKey = localStorage.getItem("lifeToolsProKey");
+            const proKey = localStorage.getItem("proKey");
             const toolTitle = document.getElementById("toolTitle");
             const existingBadge = toolTitle.querySelector(".pro-badge");
             const logoutBtn = document.getElementById("logoutBtn");
@@ -878,7 +878,7 @@
             }
 
             // 儲存至 localStorage 中
-            localStorage.setItem("lifeToolsProKey", keyValue);
+            localStorage.setItem("proKey", keyValue);
             
             // 關閉 Pro 彈窗
             const proModalEl = document.getElementById("proModal");
@@ -893,7 +893,7 @@
 
         // 一鍵清空 localStorage 儲存之 Pro 金鑰
         function clearProKey() {
-            const proKey = localStorage.getItem("lifeToolsProKey");
+            const proKey = localStorage.getItem("proKey");
 
             if (!proKey) {
                 alert("本機目前無儲存之 Pro 密鑰，無需清除！");
@@ -943,7 +943,7 @@
             const resultPanel = document.getElementById("resultPanel");
             
             // 取得已儲存的 Pro 密鑰
-            const proKey = localStorage.getItem("lifeToolsProKey") || "";
+            const proKey = localStorage.getItem("proKey") || "";
 
             // 1. 前端基本 URL 防呆校驗
             if (!longUrl) {
@@ -985,7 +985,7 @@
                             // 若伺服器回傳 403 狀態碼，代表密鑰無效或被封禁
                             if (response.status === 403) {
                                 // 密鑰不正確，清除無效的 localStorage 快取，以便重新彈出 Pro 啟用框
-                                localStorage.removeItem("lifeToolsProKey");
+                                localStorage.removeItem("proKey");
                                 document.getElementById("proKeyInput").value = "";
                                 updateTitleProBadge(); // 移除徽章
                                 setTimeout(openProModal, 1500); // 延遲開啟 Pro 啟用彈窗讓使用者看清出錯原因
