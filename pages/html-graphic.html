@@ -926,7 +926,7 @@
                 
                 規格與限制要求：
                 1. 長寬比（Aspect Ratio）必須是： ${selectedRatio.replace('-', ':')}。請務必在外層 container 進行合理配置以適配此比例（使用 flexbox、絕對定位、格線布局、漸層背景、陰影、流暢美觀的 SVG 元素與 Google Fonts 字體等）。
-                2. ⚠️ 嚴防安全漏洞：代碼中禁止包含任何 JavaScript 指令（如 <script> 標籤、HTML 內聯事件屬性如 onclick 等）、不引入外部非安全腳本。
+                2. ⚠️ 嚴防安全漏洞：代碼中禁止包含任何 JavaScript 指令（如 <script> 貼籤、HTML 內聯事件屬性如 onclick 等）、不引入外部非安全腳本。
                 3. 你產出的內容，必須完全包覆在 ${tripleTicks}html 和 ${tripleTicks} 包裹標記之間，
                    嚴格格式如下（注意：不含有 <html>、<head> 等無關雜訊，只需包含最乾淨的 <style> 與排版容器）：
                    ${tripleTicks}html
@@ -1060,4 +1060,225 @@
             // 啟用控制與轉譯按鈕
             document.getElementById('copyCodeBtn').disabled = false;
             document.getElementById('openTabBtn').disabled = false;
-            document.getElement
+            document.getElementById('savePngBtn').disabled = false; // 啟用 PNG 下載
+
+            showToastNotification('AI 網頁圖卡渲染完成！');
+        }
+
+        // 複製生成的原始碼
+        function copyGeneratedHTML() {
+            if (!currentGeneratedCode) return;
+            navigator.clipboard.writeText(currentGeneratedCode)
+                .then(() => {
+                    showToastNotification('代碼已複製到剪貼簿');
+                })
+                .catch(() => {
+                    showCustomAlert('提示', '複製失敗，請手動複製下方原始碼。');
+                });
+        }
+
+        // 使用 html2canvas 將沙盒 Iframe 的 Body 像素化並儲存為 PNG
+        async function exportToPng() {
+            if (!currentGeneratedCode) return;
+
+            const iframe = document.getElementById('sandboxIframe');
+            // 透過同源沙盒存取 iframe 內部的 document.body
+            const iframeBody = iframe.contentDocument ? iframe.contentDocument.body : null;
+
+            if (!iframeBody) {
+                showCustomAlert('轉換失敗', '無法取得沙盒預覽區域，請重試。');
+                return;
+            }
+
+            try {
+                toggleLoader(true, '正在將網頁代碼轉譯為 PNG 圖片...');
+
+                // 調用 html2canvas 進行 Canvas 圖像像素轉譯
+                const canvas = await html2canvas(iframeBody, {
+                    useCORS: true,       // 啟用跨域設定，優化 Google Fonts 載入
+                    backgroundColor: null, // 保持透明背景（若 AI 本身無宣告 body 色）
+                    scale: 2,            // 縮放設定為 2，生成高清 (Retina) 圖片
+                    logging: false       // 關閉控制台除錯日誌
+                });
+
+                // 將 Canvas 轉換為 PNG 資料串
+                const imgData = canvas.toDataURL('image/png');
+
+                // 建立虛擬下載錨點進行圖像下載
+                const downloadLink = document.createElement('a');
+                downloadLink.href = imgData;
+                downloadLink.download = `cyber-graphic-${selectedRatio}-${Date.now()}.png`;
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+
+                showToastNotification('PNG 圖片下載成功！');
+            } catch (error) {
+                console.error('html2canvas error:', error);
+                showCustomAlert('轉譯失敗', '無法順利將網頁渲染成圖片，請檢查您的網頁圖卡是否有引用未授權的外部資源。');
+            } finally {
+                toggleLoader(false);
+            }
+        }
+
+        // 在新分頁完整開啟預覽
+        function openInNewTab() {
+            if (!currentGeneratedCode) return;
+            const newWindow = window.open();
+            if (newWindow) {
+                newWindow.document.write(`
+                    <!DOCTYPE html>
+                    <html lang="zh-TW">
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>預覽 - AI 賽博圖卡</title>
+                        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+                        <style>
+                            body, html {
+                                margin: 0;
+                                padding: 0;
+                                width: 100%;
+                                height: 100%;
+                                display: flex;
+                                justify-content: center;
+                                align-items: center;
+                                background-color: #FAFAFA;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        ${currentGeneratedCode}
+                    </body>
+                    </html>
+                `);
+                newWindow.document.close();
+            } else {
+                showCustomAlert('防非預期阻擋', '瀏覽器阻止了新視窗彈出，請授權彈窗權限。');
+            }
+        }
+
+        // 載入效果切換
+        function toggleLoader(show, text = '運算中...') {
+            const mask = document.getElementById('loaderMask');
+            const textNode = document.getElementById('loaderText');
+            if (show) {
+                textNode.innerText = text;
+                mask.style.display = 'flex';
+            } else {
+                mask.style.display = 'none';
+            }
+        }
+
+        // 優雅降級：本機模擬 AI 生成美麗 CSS/HTML 卡片
+        function triggerSafeFallback(userPrompt) {
+            showToastNotification('聯網通道受限，已切換至本機備用圖卡繪製引擎');
+            
+            setTimeout(() => {
+                // 依據用戶的提示詞，在本機快速組建高品質幾何圖形卡片
+                const mockHtml = `
+<style>
+    .mock-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #FF8C00 0%, #D43F00 100%);
+        color: #FFFFFF;
+        padding: 2.5rem;
+        box-sizing: border-box;
+        border-radius: 8px;
+        position: relative;
+        overflow: hidden;
+    }
+    .mock-container::after {
+        content: '';
+        position: absolute;
+        width: 150%;
+        height: 150%;
+        top: -50%;
+        left: -50%;
+        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
+        pointer-events: none;
+    }
+    .badge {
+        background-color: rgba(255, 255, 255, 0.25);
+        padding: 0.3rem 0.8rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+        font-weight: 700;
+        align-self: flex-start;
+        backdrop-filter: blur(5px);
+        text-transform: uppercase;
+    }
+    .title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-top: auto;
+        margin-bottom: 0.5rem;
+        line-height: 1.3;
+        text-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+    .subtitle {
+        font-size: 0.9rem;
+        opacity: 0.85;
+        font-weight: 400;
+        margin-bottom: 2rem;
+    }
+    .footer-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px solid rgba(255,255,255,0.2);
+        padding-top: 1.25rem;
+    }
+    .creator {
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    .icon {
+        font-size: 1.5rem;
+    }
+</style>
+<div class="mock-container">
+    <div class="badge">PROMPT DESIGN CARD</div>
+    <div>
+        <h2 class="title">${userPrompt}</h2>
+        <p class="subtitle">由「LifeTools 賽博網頁圖卡生成器」本機預置引擎為您極速渲染而成。</p>
+    </div>
+    <div class="footer-section">
+        <span class="creator"><i class="fa-solid fa-wand-magic-sparkles"></i> LOCAL AI GRAPHIC</span>
+        <span class="icon"><i class="fa-solid fa-compass-drafting"></i></span>
+    </div>
+</div>
+                `;
+                renderToSandbox(mockHtml);
+            }, 1500);
+        }
+
+        // 自訂一般警示提示彈窗
+        function showCustomAlert(title, message) {
+            document.getElementById('alertTitle').innerText = title;
+            document.getElementById('alertMessage').innerText = message;
+            document.getElementById('alertModal').style.display = 'flex';
+        }
+
+        // 關閉警示提示彈窗
+        function closeAlertModal() {
+            document.getElementById('alertModal').style.display = 'none';
+        }
+
+        // 吐司通知顯示 (2.5 秒)
+        function showToastNotification(message) {
+            const toast = document.getElementById('toastContainer');
+            const toastText = document.getElementById('toastText');
+            toastText.innerText = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2500);
+        }
+    </script>
+</body>
+</html>
