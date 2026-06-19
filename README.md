@@ -90,6 +90,7 @@
   - 若本機已有密鑰，初始化時自動在 `<h1>` 標題右側渲染金色 PRO 皇冠徽章（`<span class="pro-badge"><i class="fa-solid fa-crown"></i>PRO</span>`）。
   - 在主畫面的輸入框/操作按鈕下方，顯現「登出並清除 Pro 密鑰」的按鈕（`#logoutBtn`，預設為 `display: none;`）。點擊時觸發 `clearProKey()`。
   - 若 API 回應 `403`，必須在 catch 中自動清除無效 `localStorage` 密鑰、清空輸入、拔除 Pro 徽章，並於 1.5 秒後自動彈出 `proModal` 供重新輸入。
+  - 存在localStorage的密鑰統一使用"proKey"作為鍵對值的鍵 (可以使用localStorage.getItem("proKey"))
 
 ---
 
