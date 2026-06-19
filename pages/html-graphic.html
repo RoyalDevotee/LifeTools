@@ -411,7 +411,7 @@
             gap: 0.4rem;
         }
 
-        /* 預覽區框架高度與排版約束 */
+        /* 🛠️ 修正 1：預覽區外框不寫死高度，設為 max-height 與自適應高度，並置中內容 */
         .graphic-viewport-wrapper {
             background: radial-gradient(circle, #EDF2F7 0%, #E2E8F0 100%);
             border-radius: 12px;
@@ -419,42 +419,41 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 1.5rem;
+            padding: 2rem;
             overflow: hidden;
-            height: 520px;
+            min-height: 380px;
+            max-height: 600px; /* 限制最大高度，防止畫面過大 */
+            height: auto;
             position: relative;
         }
 
-        /* 🛠️ 修正：完美置中比例約束盒，確保 Iframe 比例計算與 Flexbox 絕不衝突，永不向右偏移破版 */
+        /* 🛠️ 修正 2：比例中介盒 (ratio-container) 高度隨比例自動變化，徹底貼合圖片大小 */
         .ratio-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            max-width: 100%;
-            max-height: 100%;
+            display: block;
             width: 100%;
-            height: 100%;
-            flex-shrink: 0; /* 強制防止彈性盒擠壓 */
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        /* 預覽框架比例自我約束 */
-        .graphic-sandbox-frame {
-            background: #FFFFFF;
+            max-width: 500px; /* 限制最大寬度，確保不會撐破外層 */
+            height: auto;
+            flex-shrink: 0;
             box-shadow: var(--shadow-lg);
             border-radius: 8px;
             overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* 預覽框架尺寸鎖定，寬高皆拉滿，由外層 ratio-container 決定物理尺寸 */
+        .graphic-sandbox-frame {
+            background: #FFFFFF;
             border: none;
             width: 100%;
             height: 100%;
             display: block;
         }
 
-        /* 🛠️ 修正：橫式鎖定寬度自適應高度、直式/等比鎖定高度自適應寬度，配合雙向 max-width/max-height 實現無縫安全置中 */
-        .ratio-1-1 { aspect-ratio: 1 / 1; width: auto; height: 100%; }
-        .ratio-16-9 { aspect-ratio: 16 / 9; width: 100%; height: auto; }
-        .ratio-9-16 { aspect-ratio: 9 / 16; width: auto; height: 100%; }
-        .ratio-4-3 { aspect-ratio: 4 / 3; width: auto; height: 100%; }
+        /* 🛠️ 修正 3：依照長寬比，嚴格由 aspect-ratio 控制高度比例，使其「圖片多大，框框就多大」 */
+        .ratio-1-1 { aspect-ratio: 1 / 1; }
+        .ratio-16-9 { aspect-ratio: 16 / 9; }
+        .ratio-9-16 { aspect-ratio: 9 / 16; max-width: 320px; } /* 針對直式限動寬度微調收縮，避免垂直超出 wrapper */
+        .ratio-4-3 { aspect-ratio: 4 / 3; }
 
         /* Loader 動態效果 */
         .loader-mask {
@@ -656,7 +655,7 @@
             <h1 class="tool-title" id="mainTitle">
                 AI 圖片生成器
             </h1>
-            <p class="tool-desc">高性價比的生圖替代方案！讓 AI 自由發揮創意，以純 HTML/CSS 代碼即時構築自適應向量視覺與比例畫幅。</p>
+            <p class="tool-desc">高性價比的生圖替代方案！讓 AI 直接撰寫純 HTML/CSS 代碼，在安全沙盒架構下生成精美的向量海報、質感卡片或數位名片。</p>
         </div>
 
         <div class="main-grid">
@@ -670,7 +669,7 @@
                 <!-- 提示詞輸入 -->
                 <div class="form-group">
                     <label class="form-label" for="promptInput">設計主題描述</label>
-                    <textarea id="promptInput" placeholder="例如：極簡高階科技感的風格，深黑色調，帶有霓虹漸層線條與微光陰影..."></textarea>
+                    <textarea id="promptInput" placeholder="例如：極簡高階科技感的電子名片，深黑色調，帶有霓虹漸層線條與微光陰影..."></textarea>
                 </div>
 
                 <!-- 畫幅比例設定 -->
@@ -745,7 +744,7 @@
                     <!-- 🛠️ 修正：套用獨立的中介比例約束盒 (ratio-container) 封裝 iframe，阻斷 flexbox 橫向位移 Bug -->
                     <div class="ratio-container ratio-1-1" id="ratioWrapper" style="display: none;">
                         <!-- 核心 Iframe，啟用沙盒且完全拔除 allow-scripts，實體級阻斷 XSS 運行 -->
-                        <iframe class="graphic-sandbox-frame" id="sandboxIframe" sandbox="allow-same-origin"></iframe>
+                        <iframe class="graphic-sandbox-frame" id="sandboxIframe" sandbox="allow-same-origin" style="width: 100%; height: 100%;"></iframe>
                     </div>
                 </div>
 
@@ -937,7 +936,7 @@
                 
                 規格與限制要求：
                 1. 幾比幾長寬比（Aspect Ratio）必須是： ${selectedRatio.replace('-', ':')}。請務必在外層進行合理配置以適配此比例（使用 flexbox、絕對定位、格線布局、漸層背景、陰影、流暢美觀的 SVG 元素與 Google Fonts 字體等）。
-                2. ⚠️ 嚴防安全漏洞：代碼中禁止包含任何 JavaScript 指令（如 <script> 貼籤、HTML 內聯事件屬性如 onclick 等）、不引入外部非安全腳本。
+                2. ⚠️ 嚴防安全漏洞：代碼中禁止包含 any JavaScript 指令（如 <script> 貼籤、HTML 內聯事件屬性如 onclick 等）、不引入外部非安全腳本。
                 3. 你產出的內容，必須完全包覆在 ${tripleTicks}html 和 ${tripleTicks} 包裹標記之間，
                    嚴格格式如下（注意：不含有 <html>、<head> 等無關雜訊，只需包含最乾淨的 <style> 與排版容器）：
                    ${tripleTicks}html
@@ -951,7 +950,7 @@
                 4. 設計方向必須高雅現代、拒絕過時的平面粗糙排版，充分利用 CSS Gradients（漸層色）、Flexbox、圓角與微發光陰影。
                 `;
 
-                // 🛠️ 修正：將 API Endpoint 修改為 https://lifeapi.zone.id/api/html [INDEX: 1]
+                // 🛠️ 修正：將 API Endpoint 修改為使用者指定的 https://lifeapi.zone.id/api/html [INDEX: 1]
                 const response = await fetch('https://lifeapi.zone.id/api/html', {
                     method: 'POST',
                     headers: {
@@ -1034,7 +1033,7 @@
 
             // 隱藏預設提示，顯現約束盒
             emptyState.style.display = 'none';
-            ratioWrapper.style.display = 'flex';
+            ratioWrapper.style.display = 'block'; // 🛠️ 修正：此處由 flex 改為 block，避免 flexbox 干擾寬高比
 
             // 透過 srcdoc 屬性實體載入。
             // 修正：在 Iframe 全域強制進行 CSS 預設邊距初始化與 box-sizing 重設，防止 AI 代碼外距塌陷或溢出。
