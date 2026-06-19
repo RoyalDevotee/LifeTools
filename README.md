@@ -78,5 +78,6 @@ Pro工具定義以及要求:
 ### 1. Pro工具要做的比其他工具還更具方便性，創意性和難度
 ### 2. Pro工具的核心在後端 因為前端毫無隱私可言 (例如LLM API服務)
 ### 3. Pro工具的許可證(一組passkey)是要由Royal Devotee(開發者)發送密鑰給使用者 並且在使用者打開Pro工具時要輸入才能使用該工具的功能
+### 4. Pro工具的metadata.json要多一個key:value 就是要多"pro": true
 
 LifeAPI PRO API介紹: [PRO.md](https://github.com/RoyalDevotee/LifeAPI/blob/main/PRO.md)
