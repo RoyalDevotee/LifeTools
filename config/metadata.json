@@ -1,8 +1,8 @@
 [
+  {"name": "短網址產生器","description": "串接安全 LifeAPI 後端與 PicSee 服務，為您的一般網址快速生成極簡短網址，便於社群分享並支援一鍵複製與 QR Code 下載。","path": "/pages/shorturl.html","icon": "fa-solid fa-link","pro": true},
   { "name": "時鐘", "description": "這個工具是個線上時鐘，會顯示現在時間。", "path": "/pages/time.html", "icon": "fa-regular fa-clock" },
   { "name": "IP位址查詢","description": "串接安全 LifeAPI 後端，即時偵測並顯示您當前的公網 IP 位址，具備連線狀態監控與一鍵複製功能。","path": "/pages/ip.html","icon": "fa-solid fa-network-wired" },
   { "name": "AI 塔羅牌心靈占卜","description": "融合純前端 3D 翻牌動效與 LifeAPI 智慧大模型。隨機抽取三張牌，為您的愛情、事業或人生迷惘進行深度的神祕學心靈解讀與指引。","path": "/pages/tarot.html","icon": "fa-solid fa-wand-magic-sparkles" },
-  {"name": "短網址產生器", "description": "串接安全 LifeAPI 後端與 PicSee 服務，為您的一般網址快速生成極簡短網址，便於社群分享並支援一鍵複製與 QR Code 下載。","path": "/pages/shorturl.html","icon": "fa-solid fa-link"},
   { "name": "AI 心靈陪伴心理師","description": "當您身處人生低谷或感到迷惘時的心靈港灣。結合情緒標籤與深度心聲傾聽，提供溫柔、非評價且具備正念調適建議的智慧心靈回信。","path": "/pages/psychologist.html","icon": "fa-solid fa-hand-holding-heart" },
   { "name": "隨機抽籤輪盤", "description": "客製化名單的線上幸運大輪盤，支援即時編輯與擬真轉動音效，決定午餐或抽獎的最佳助手。", "path": "/pages/wheel.html", "icon": "fa-solid fa-dharmachakra" },
   { "name": "隨機座位抽籤", "description": "支援自訂教室行列大小，可隨意剔除空位，具備三秒隨機跳號動畫的現代感座位安排系統。", "path": "/pages/seat.html", "icon": "fa-solid fa-chair" },
