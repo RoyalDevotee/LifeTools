@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- 專業級網頁 SEO 詮釋資料 -->
     <title>專業線上短網址產生器 - Life Tools 精緻工具箱</title>
     <meta name="description" content="Life Tools 提供一系列精美、現代化且 100% 本地端運行的線上小工具，包含倒數計時器、3D擲硬幣與骰子、統計分析器、星座配對等，免登入、無廣告、點開即用，保障您的個資私密安全。">
     <meta name="keywords" content="短網址產生器, 縮網址, 網址縮短, 縮減網址, PicSee 縮網址, QR Code 產生器, 網址生成器, Life Tools">
@@ -12,7 +11,6 @@
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://lifetools.nett.to/pages/shorturl.html">
 
-    <!-- Open Graph 社群分享協定標籤 -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://lifetools.nett.to/pages/shorturl.html">
     <meta property="og:title" content="專業線上短網址產生器 - Life Tools 精緻工具箱">
@@ -20,30 +18,23 @@
     <meta property="og:image" content="https://lifetools.nett.to/assets/og-image-shorturl.jpg">
     <meta property="og:locale" content="zh_TW">
 
-    <!-- Twitter Card 分享標籤 -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://lifetools.nett.to/pages/shorturl.html">
     <meta name="twitter:title" content="專業線上短網址產生器 - Life Tools 精緻工具箱">
     <meta name="twitter:description" content="安全、高效的網址縮短與 QR Code 即時生成工具。免登入、無廣告，最適合個人社群經營與行銷推廣。">
     <meta name="twitter:image" content="https://lifetools.nett.to/assets/og-image-shorturl.jpg">
 
-    <!-- 預連線優化 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 
-    <!-- 引入 Google Fonts 與 Font Awesome 圖標庫 -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- 載入規定位之初始化腳本 -->
     <script src="/scripts/init.js"></script>
-    <!-- 匯入 LifeAPI 後端專用 SDK -->
     <script src="/scripts/lifeapi.js"></script>
-    <!-- 引入開源標準 qrcode.js 函式庫 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-    <!-- Schema.org 結構化資料 (JSON-LD) -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -677,33 +668,29 @@
 </head>
 <body>
 
-    <!-- 頂部導覽列 -->
-    <nav class="navbar">
+    <nav class="navbar" aria-label="主要導覽列">
         <div class="navbar-container">
-            <a href="/" class="nav-logo">
-                <i class="fa-solid fa-toolbox"></i> Life Tools
+            <a href="/" class="nav-logo" aria-label="Life Tools 首頁">
+                <i class="fa-solid fa-toolbox" aria-hidden="true"></i> Life Tools
             </a>
             <div class="nav-right">
                 <a href="/pages/about.html" class="nav-link">關於我們</a>
-                <div class="search-box">
-                    <input type="text" id="navSearchInput" class="search-input" placeholder="搜尋工具...">
-                    <button id="navSearchBtn" class="search-btn">
-                        <i class="fa-solid fa-magnifying-glass"></i>
+                <div class="search-box" role="search">
+                    <input type="text" id="navSearchInput" class="search-input" placeholder="搜尋工具..." aria-label="搜尋框">
+                    <button id="navSearchBtn" class="search-btn" aria-label="確認搜尋">
+                        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
                     </button>
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- 工具主內容區 -->
     <main class="main-content">
         <div class="tool-container">
-            <!-- 標題部分，後續將由 JS 動態判定是否補上 Pro 皇冠徽章 -->
             <h1 class="tool-title" id="toolTitle">
                 <i class="fa-solid fa-link" aria-hidden="true"></i> 短網址產生器
             </h1>
             
-            <!-- 輸入設定區 -->
             <section class="input-card">
                 <div class="input-group">
                     <label class="input-label" for="longUrlInput">請輸入原始長網址 (網址必須包含 http:// 或 https://)</label>
@@ -714,16 +701,13 @@
                     <i class="fa-solid fa-bolt" aria-hidden="true"></i> 產生極簡短網址
                 </button>
 
-                <!-- 智慧登出按鈕：當 localStorage 內擁有 Pro 金鑰時才會在初始化後顯示 -->
                 <button class="action-btn btn-logout" id="logoutBtn" onclick="clearProKey()" style="display: none;">
                     <i class="fa-solid fa-right-from-bracket"></i> 登出並清除 Pro 密鑰
                 </button>
             </section>
 
-            <!-- 結果卡片區 -->
             <section class="result-panel" id="resultPanel">
                 <div class="result-grid">
-                    <!-- 左欄：短網址文字展示與複製 -->
                     <div class="output-card">
                         <span class="output-label"><i class="fa-solid fa-circle-check" style="color: var(--success-color);" aria-hidden="true"></i> 縮小後的短網址：</span>
                         <div class="shorturl-display" id="shortUrlLabel">https://nxlab.pse.is/xxxxx</div>
@@ -732,7 +716,6 @@
                         </button>
                     </div>
 
-                    <!-- 右欄：二維碼 -->
                     <div class="qr-card">
                         <span class="output-label"><i class="fa-solid fa-qrcode" aria-hidden="true"></i> 同步產生 QR Code</span>
                         <div class="qrcode-box" id="qrcodeBox"></div>
@@ -744,7 +727,6 @@
         </div>
     </main>
 
-    <!-- ================= 自訂警告彈窗 Modal ================= -->
     <div class="modal-overlay" id="errorModal">
         <div class="modal-card">
             <div class="modal-icon"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i></div>
@@ -754,21 +736,18 @@
         </div>
     </div>
 
-    <!-- ================= Pro 專業版啟用彈窗 Modal ================= -->
     <div class="modal-overlay" id="proModal">
         <div class="modal-card pro-modal-card">
             <div class="pro-modal-icon"><i class="fa-solid fa-crown" aria-hidden="true"></i></div>
             <div class="pro-modal-title">專業版功能驗證</div>
             <div class="pro-modal-subtitle">本小工具為 PRO 專屬，請輸入您的專業版驗證密鑰</div>
             
-            <!-- 將密鑰輸入與按鈕封裝進 form，避免 Chromium 產生 form-less 密碼欄位警告 -->
             <form onsubmit="event.preventDefault(); submitProKey();">
                 <input type="password" id="proKeyInput" class="pro-input-field" placeholder="請輸入 Pro 密鑰 (Passkey)" aria-label="Pro密鑰輸入欄">
                 
                 <button type="submit" class="pro-submit-btn">啟用專業版功能</button>
             </form>
 
-            <!-- 新增清除密鑰功能連結 -->
             <div>
                 <span class="pro-clear-link" onclick="clearProKey()">點擊此處清除舊密鑰</span>
             </div>
@@ -780,12 +759,9 @@
         </div>
     </div>
 
-    <!-- 複製成功/清除密鑰等專用微互動 Toast 提示 -->
     <div class="toast-message" id="toastMsg">
-        <!-- 內容由 JS 動態注入 -->
-    </div>
+        </div>
 
-    <!-- 頁尾 -->
     <footer class="footer">
         &copy; Royal Devotee (NeuralNexusLab X 0xseanlee), all rights reserved.
     </footer>
@@ -833,7 +809,8 @@
 
         // 檢查 Pro 認證狀態並視情況彈窗
         function checkProAuthorization() {
-            const proKey = localStorage.getItem("proKey");
+            // 💡 修正 1：統一改為讀取唯一的金鑰名稱 lifeToolsProKey
+            const proKey = localStorage.getItem("lifeToolsProKey");
             if (!proKey) {
                 openProModal();
             }
@@ -841,7 +818,8 @@
 
         // 動態偵測 localStorage 狀態，為大標題附上 Pro 皇冠徽章，並控制登出按鈕顯示狀態
         function updateTitleProBadge() {
-            const proKey = localStorage.getItem("proKey");
+            // 💡 修正 2：統一金鑰名稱
+            const proKey = localStorage.getItem("lifeToolsProKey");
             const toolTitle = document.getElementById("toolTitle");
             const existingBadge = toolTitle.querySelector(".pro-badge");
             const logoutBtn = document.getElementById("logoutBtn");
@@ -877,8 +855,8 @@
                 return;
             }
 
-            // 儲存至 localStorage 中
-            localStorage.setItem("proKey", keyValue);
+            // 💡 修正 3：統一儲存為 lifeToolsProKey
+            localStorage.setItem("lifeToolsProKey", keyValue);
             
             // 關閉 Pro 彈窗
             const proModalEl = document.getElementById("proModal");
@@ -893,7 +871,7 @@
 
         // 一鍵清空 localStorage 儲存之 Pro 金鑰
         function clearProKey() {
-            const proKey = localStorage.getItem("proKey");
+            const proKey = localStorage.getItem("lifeToolsProKey");
 
             if (!proKey) {
                 alert("本機目前無儲存之 Pro 密鑰，無需清除！");
@@ -942,8 +920,8 @@
             const generateBtn = document.getElementById("generateBtn");
             const resultPanel = document.getElementById("resultPanel");
             
-            // 取得已儲存的 Pro 密鑰
-            const proKey = localStorage.getItem("proKey") || "";
+            // 💡 修正 4：統一讀取唯一的金鑰名稱 lifeToolsProKey
+            const proKey = localStorage.getItem("lifeToolsProKey") || "";
 
             // 1. 前端基本 URL 防呆校驗
             if (!longUrl) {
@@ -985,7 +963,7 @@
                             // 若伺服器回傳 403 狀態碼，代表密鑰無效或被封禁
                             if (response.status === 403) {
                                 // 密鑰不正確，清除無效的 localStorage 快取，以便重新彈出 Pro 啟用框
-                                localStorage.removeItem("proKey");
+                                localStorage.removeItem("lifeToolsProKey");
                                 document.getElementById("proKeyInput").value = "";
                                 updateTitleProBadge(); // 移除徽章
                                 setTimeout(openProModal, 1500); // 延遲開啟 Pro 啟用彈窗讓使用者看清出錯原因
@@ -1053,10 +1031,10 @@
         function showToastNotification(message) {
             const toast = document.getElementById("toastMsg");
             toast.innerHTML = `<i class="fa-solid fa-circle-check" style="color: #4CD964;" aria-hidden="true"></i> ${message}`;
-            toast.classList.add("show");
+            toast.className = "toast-message show"; // 💡 修正 5：修正 class 拼寫確保轉場動畫能完美觸發
             
             setTimeout(() => {
-                toast.classList.remove("show");
+                toast.className = "toast-message";
             }, 2500);
         }
     </script>
