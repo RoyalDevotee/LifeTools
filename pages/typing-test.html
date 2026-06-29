@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>極速打字比賽 - Life Tools 精緻工具箱</title>
+    <meta name="description" content="測試你的一分鐘中文字打字速度 (WPM)！內建 60 秒限時倒數、即時精準度與錯字分析，完全本地端運行。">
+    <meta name="author" content="Royal Devotee (NeuralNexusLab X 0xseanlee)">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="/scripts/init.js"></script>
+
+    <style>
+        /* 全域基本樣式 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+
+        :root {
+            --primary-color: #FF8C00;
+            --primary-hover: #E07B00;
+            --primary-light: #FFF5EC;
+            --text-dark: #2C3E50;
+            --text-muted: #7F8C8D;
+            --bg-light: #FDFBF7;
+            --bg-card-section: #F5EFEB;
+            --white: #FFFFFF;
+            --success-color: #2ECC71;
+            --error-color: #E74C3C;
+            --transition-speed: 0.3s;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 頂部導覽列 */
+        .navbar {
+            background-color: var(--white);
+            border-bottom: 2px solid var(--primary-light);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .nav-logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform var(--transition-speed) ease;
+        }
+
+        .nav-logo:hover {
+            transform: scale(1.03);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            color: var(--text-dark);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 16px;
+            transition: color var(--transition-speed) ease;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color);
+        }
+
+        /* 工具主內容區 */
+        .main-content {
+            flex-grow: 1;
+            padding: 40px 20px;
+            background-color: var(--bg-card-section);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tool-container {
+            background-color: var(--white);
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            max-width: 800px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 140, 0, 0.1);
+        }
+
+        .tool-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .tool-title i {
+            color: var(--primary-color);
+        }
+
+        /* 儀表板與狀態數據區 */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background-color: var(--bg-light);
+            border: 1.5px solid var(--primary-light);
+            padding: 15px;
+            border-radius: 16px;
+            text-align: center;
+        }
+
+        .stat-val {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .stat-lbl {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 700;
+            margin-top: 4px;
+        }
+
+        /* 題目顯示字元區 */
+        .text-preview-box {
+            background-color: var(--bg-light);
+            border: 2px solid var(--primary-light);
+            border-radius: 16px;
+            padding: 25px;
+            font-size: 22px;
+            line-height: 1.8;
+            letter-spacing: 2px;
+            text-align: left;
+            margin-bottom: 25px;
+            min-height: 120px;
+            user-select: none;
+        }
+
+        /* 字元狀態渲染 */
+        .char-current {
+            background-color: rgba(255, 140, 0, 0.2);
+            border-bottom: 3px solid var(--primary-color);
+        }
+
+        .char-correct {
+            color: var(--success-color);
+        }
+
+        .char-incorrect {
+            color: var(--error-color);
+            background-color: rgba(231, 76, 60, 0.12);
+            border-radius: 4px;
+        }
+
+        /* 輸入區塊與按鈕 */
+        .input-card {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .text-field {
+            width: 100%;
+            padding: 16px 20px;
+            border-radius: 14px;
+            border: 2px solid #CBD5E1;
+            outline: none;
+            font-size: 18px;
+            background-color: var(--white);
+            transition: border-color var(--transition-speed);
+        }
+
+        .text-field:focus {
+            border-color: var(--primary-color);
+        }
+
+        .action-btn {
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            border-radius: 30px;
+            padding: 14px 40px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all var(--transition-speed);
+        }
+
+        .action-btn:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        /* 頁尾 */
+        .footer {
+            background-color: var(--white);
+            padding: 30px 20px;
+            text-align: center;
+            border-top: 1px solid var(--primary-light);
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="nav-logo">
+                <i class="fa-solid fa-toolbox"></i> Life Tools
+            </a>
+            <div class="nav-right">
+                <a href="/pages/about.html" class="nav-link">關於我們</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="tool-container">
+            <h1 class="tool-title"><i class="fa-solid fa-keyboard"></i> 60秒極速打字比賽</h1>
+            
+            <div class="dashboard-grid">
+                <div class="stat-card">
+                    <div class="stat-val" id="timerLabel">60</div>
+                    <div class="stat-lbl">剩餘時間 (秒)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-val" id="wpmLabel">0</div>
+                    <div class="stat-lbl">目前速度 (WPM)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-val" id="accuracyLabel">100%</div>
+                    <div class="stat-lbl">即時精準度</div>
+                </div>
+            </div>
+
+            <div class="text-preview-box" id="textPreview">載入題庫中...</div>
+
+            <div class="input-card">
+                <input type="text" id="typingInput" class="text-field" placeholder="點擊下方按鈕或直接在此輸入開始挑戰..." autocomplete="off" disabled>
+                <button class="action-btn" id="ctrlBtn" onclick="startTypingMatch()">
+                    <i class="fa-solid fa-play"></i> 開始挑戰
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        &copy; Royal Devotee (NeuralNexusLab X 0xseanlee), all rights reserved.
+    </footer>
+
+    <script>
+        // 精選多元趣味中文字型題庫
+        const questionPool = [
+            "如果你想走得快，一個人走；如果你想走得遠，一群人走。",
+            "寫程式就像在黑夜裡摸索一條路，雖然常常碰壁，但找到出口時的快樂是無可比擬的。",
+            "生命的意義不在於你拿到一副好牌，而在於你如何把手上的爛牌打得精彩萬分。",
+            "失敗並不可怕，可怕的是你因為害怕失敗，而失去了再次站起來嘗試的勇氣。",
+            "昨天的歷史已經過去，明天的未來尚未可知，只有今天才是當下最珍貴的禮物。"
+        ];
+
+        let targetText = ""; // 本次挑戰的字串目標
+        let matchTimer = null; // 計時器排程變數
+        let timeLeft = 60; // 挑戰剩餘秒數
+        let isMatchActive = false; // 是否正處於比賽中狀態
+
+        const textPreview = document.getElementById("textPreview");
+        const typingInput = document.getElementById("typingInput");
+        const timerLabel = document.getElementById("timerLabel");
+        const wpmLabel = document.getElementById("wpmLabel");
+        const accuracyLabel = document.getElementById("accuracyLabel");
+        const ctrlBtn = document.getElementById("ctrlBtn");
+
+        document.addEventListener("DOMContentLoaded", () => {
+            // 初始化準備：隨機抽一題展示
+            prepareNextQuestion();
+            
+            // 監聽鍵盤輸入事件進行即時核對
+            typingInput.addEventListener("input", checkTypingProgress);
+        });
+
+        // 隨機抽選新題目並重繪前端字元節點
+        function prepareNextQuestion() {
+            const randomIndex = Math.floor(Math.random() * questionPool.length);
+            targetText = questionPool[randomIndex];
+            renderPreviewText("");
+        }
+
+        // 以 span 節點陣列渲染字元防護效果
+        function renderPreviewText(currentInput) {
+            let renderedHtml = "";
+            for (let i = 0; i < targetText.length; i++) {
+                let charClass = "";
+                if (i < currentInput.length) {
+                    // 已輸入部分的對錯判定
+                    charClass = currentInput[i] === targetText[i] ? "char-correct" : "char-incorrect";
+                } else if (i === currentInput.length && isMatchActive) {
+                    // 目前游標聚焦處
+                    charClass = "char-current";
+                }
+                renderedHtml += `<span class="${charClass}">${targetText[i]}</span>`;
+            }
+            textPreview.innerHTML = renderedHtml;
+        }
+
+        // 開始打字挑戰主要調度控制
+        function startTypingMatch() {
+            if (isMatchActive) return;
+
+            // 初始化各項控制數據
+            isMatchActive = true;
+            timeLeft = 60;
+            wpmLabel.textContent = "0";
+            accuracyLabel.textContent = "100%";
+            typingInput.value = "";
+            typingInput.disabled = false;
+            typingInput.focus();
+
+            // 更新控制鈕外觀
+            ctrlBtn.disabled = true;
+            ctrlBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 挑戰火熱進行中`;
+
+            prepareNextQuestion();
+            renderPreviewText("");
+
+            // 開啟秒級倒數回圈
+            matchTimer = setInterval(() => {
+                timeLeft--;
+                timerLabel.textContent = timeLeft;
+
+                if (timeLeft <= 0) {
+                    endTypingMatch();
+                }
+            }, 1000);
+        }
+
+        // 輸入內容比對與數據模型分析
+        function checkTypingProgress() {
+            if (!isMatchActive) return;
+
+            const userInput = typingInput.value;
+            let correctChars = 0;
+
+            // 同步渲染色塊
+            renderPreviewText(userInput);
+
+            // 計算正確輸入的總字數
+            for (let i = 0; i < userInput.length; i++) {
+                if (userInput[i] === targetText[i]) {
+                    correctChars++;
+                }
+            }
+
+            // 標準 WPM 演算法公式：(總正確輸入字元 / 5) / 已消耗時間
+            const timeElapsed = (60 - timeLeft) / 60; 
+            if (timeElapsed > 0 && userInput.length > 0) {
+                const currentWpm = Math.round((correctChars / 5) / timeElapsed);
+                wpmLabel.textContent = currentWpm;
+            }
+
+            // 計算即時正確率
+            if (userInput.length > 0) {
+                const currentAccuracy = Math.round((correctChars / userInput.length) * 100);
+                accuracyLabel.textContent = currentAccuracy + "%";
+            }
+
+            // 防禦性判定：全對且提早結束時，自動切換下一題
+            if (userInput === targetText) {
+                typingInput.value = "";
+                prepareNextQuestion();
+            }
+        }
+
+        // 比賽時間截止結算與狀態重設
+        function endTypingMatch() {
+            clearInterval(matchTimer);
+            isMatchActive = false;
+            typingInput.disabled = true;
+
+            const finalWpm = wpmLabel.textContent;
+            const finalAccuracy = accuracyLabel.textContent;
+
+            alert(`⏰ 時間到！挑戰結束！\n你的最終速度為：${finalWpm} WPM\n整體精準度為：${finalAccuracy}\n做得太棒了！快去註冊 metadata 分享給學弟吧！`);
+
+            // 還原狀態控制鈕
+            ctrlBtn.disabled = false;
+            ctrlBtn.innerHTML = `<i class="fa-solid fa-rotate-right"></i> 再次挑戰`;
+        }
+    </script>
+</body>
+</html>
