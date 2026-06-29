@@ -278,11 +278,10 @@
             word-break: break-word;
         }
 
-        /* 字元基本定位，確保動畫流暢 */
+        /* 字元靜態定位，取消預設重繪過渡 */
         .text-preview-box span {
             display: inline-block;
             position: relative;
-            transition: color 0.15s ease;
         }
 
         /* 當前輸入游標呼吸線條 */
@@ -297,27 +296,30 @@
             to { border-bottom-color: transparent; }
         }
 
-        /* 打對字：向上微幅彈跳微動效 */
         .char-correct {
             color: var(--success-color);
-            animation: popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        @keyframes popIn {
-            0% { transform: translateY(0); scale: 1; }
-            50% { transform: translateY(-4px); scale: 1.05; }
-            100% { transform: translateY(0); scale: 1; }
+        /* 核心修復：高質感單字元非結構性微動效 */
+        .char-pop {
+            animation: singlePop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
 
-        /* 打錯字：短促左右震動搖擺動效 */
+        @keyframes singlePop {
+            0% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-5px) scale(1.1); }
+            100% { transform: translateY(0) scale(1); }
+        }
+
+        /* 打錯字：僅限被打錯的該單個字元水平搖晃震動 */
         .char-incorrect {
             color: var(--error-color);
             background-color: rgba(231, 76, 60, 0.1);
             border-radius: 4px;
-            animation: shake 0.2s ease-in-out;
+            animation: singleShake 0.2s ease-in-out;
         }
 
-        @keyframes shake {
+        @keyframes singleShake {
             0%, 100% { transform: translateX(0); }
             25% { transform: translateX(-3px); }
             75% { transform: translateX(3px); }
@@ -473,9 +475,10 @@
         let timeLeft = 60; 
         let isMatchActive = false; 
 
-        // 核心計數修正：引入歷史大池計數器，換關卡時將舊字數疊加進去
+        // 引入大池累加計數器
         let totalCorrectChars = 0; 
         let totalTypedChars = 0; 
+        let lastInputLength = 0; // 用於追蹤前一次輸入長度，精準捕捉最新敲擊的單字元
 
         // 綁定 DOM 元素
         const textPreview = document.getElementById("textPreview");
@@ -530,6 +533,7 @@
             const pool = currentLanguage === 'zh' ? questionPoolZh : questionPoolEn;
             const randomIndex = Math.floor(Math.random() * pool.length);
             targetText = pool[randomIndex].toLowerCase();
+            lastInputLength = 0; // 重置當前句子的輸入長度追蹤
             renderPreviewText("");
         }
 
@@ -558,11 +562,11 @@
         function startTypingMatch() {
             if (isMatchActive) return;
 
-            // 各項統計狀態完全歸零
             isMatchActive = true;
             timeLeft = 60;
             totalCorrectChars = 0;
             totalTypedChars = 0;
+            lastInputLength = 0;
             
             speedLabel.textContent = "0";
             accuracyLabel.textContent = "100%";
@@ -583,7 +587,6 @@
                 timeLeft--;
                 timerLabel.textContent = timeLeft;
 
-                // 倒數低於或等於 10 秒時觸發警示動畫效果
                 if (timeLeft <= 10) {
                     timerCard.classList.add("time-warning");
                 }
@@ -594,34 +597,50 @@
             }, 1000);
         }
 
-        // 即時進度分析與速率累加核心
+        // 即時進度分析與精確局部動畫控制
         function checkTypingProgress() {
             if (!isMatchActive) return;
 
-            // 強制轉小寫以符合不鎖定大小寫要求
             let userInput = typingInput.value.toLowerCase();
             typingInput.value = userInput;
 
-            let currentCorrectCount = 0;
-
+            // 先行完整重繪字元狀態節點
             renderPreviewText(userInput);
 
-            // 計算目前正在打的這個句子的正確字數
+            // 核心變更：精確捕捉本次輸入事件中「最新敲下的一顆字元」對應的 span 節點
+            if (userInput.length > lastInputLength) {
+                const targetIndex = userInput.length - 1;
+                // 確認這顆字元是不是打對了
+                if (userInput[targetIndex] === targetText[targetIndex]) {
+                    const spans = textPreview.querySelectorAll("span");
+                    if (spans[targetIndex]) {
+                        // 僅為打對的該單一字元加上局部跳動動畫
+                        spans[targetIndex].classList.add("char-pop");
+                        // 動畫播完後移除，維持 DOM 乾淨度以便下次敲擊觸發
+                        spans[targetIndex].addEventListener("animationend", () => {
+                            spans[targetIndex].classList.remove("char-pop");
+                        }, { once: true });
+                    }
+                }
+            }
+            // 更新長度追蹤
+            lastInputLength = userInput.length;
+
+            // 計算目前句子的正確字數
+            let currentCorrectCount = 0;
             for (let i = 0; i < userInput.length; i++) {
                 if (userInput[i] === targetText[i]) {
                     currentCorrectCount++;
                 }
             }
 
-            // 數據累加公式：將已過關卡鎖定的舊總數，加上當前句子的即時數值
+            // 連續大池累加計算
             let cumulativeCorrect = totalCorrectChars + currentCorrectCount;
             let cumulativeTyped = totalTypedChars + userInput.length;
 
-            // 防止極限狀況下除以零
             let timeElapsed = (60 - timeLeft) / 60; 
             if (timeElapsed <= 0) timeElapsed = 1 / 60; 
 
-            // 計算當前數據流速度
             let currentSpeed = 0;
             if (currentLanguage === 'zh') {
                 currentSpeed = Math.round(cumulativeCorrect / timeElapsed);
@@ -630,13 +649,12 @@
             }
             speedLabel.textContent = currentSpeed;
 
-            // 計算當前累加精準度
             if (cumulativeTyped > 0) {
                 const currentAccuracy = Math.round((cumulativeCorrect / cumulativeTyped) * 100);
                 accuracyLabel.textContent = currentAccuracy + "%";
             }
 
-            // 當此句被完全輸入無誤，將此句長度鎖入累加器大池，並清空輸入框切換下一題
+            // 完全敲對則封存此關長度至大池，無縫刷新下一題
             if (userInput === targetText) {
                 totalCorrectChars += targetText.length;
                 totalTypedChars += targetText.length;
@@ -645,7 +663,7 @@
             }
         }
 
-        // 結束比賽並結算
+        // 結束與結算
         function endTypingMatch() {
             clearInterval(matchTimer);
             isMatchActive = false;
