@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <title>極速打字比賽 - Life Tools 精緻工具箱</title>
-    <meta name="description" content="測試你的一分鐘中文字打字速度 (WPM)！內建 60 秒限時倒數、即時精準度與錯字分析，完全本地端運行。">
+    <meta name="description" content="測試你的一分鐘中英文打字速度 (WPM)！內建雙語切換、60 秒限時倒數、即時精準度與錯字分析，完全本地端運行。">
     <meta name="author" content="Royal Devotee (NeuralNexusLab X 0xseanlee)">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -138,7 +138,34 @@
             color: var(--primary-color);
         }
 
-        /* 儀表板與狀態數據區 */
+        /* 語系切換按鈕區 */
+        .lang-switch-wrapper {
+            display: inline-flex;
+            background-color: var(--primary-light);
+            padding: 6px;
+            border-radius: 30px;
+            margin-bottom: 25px;
+        }
+
+        .lang-btn {
+            background: none;
+            border: none;
+            padding: 8px 24px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: all var(--transition-speed) ease;
+        }
+
+        .lang-btn.active {
+            background-color: var(--primary-color);
+            color: var(--white);
+            box-shadow: 0 4px 10px rgba(255, 140, 0, 0.2);
+        }
+
+        /* 數據狀態儀表板 */
         .dashboard-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -174,13 +201,15 @@
             border: 2px solid var(--primary-light);
             border-radius: 16px;
             padding: 25px;
+            font-family: 'JetBrains Mono', monospace;
             font-size: 22px;
             line-height: 1.8;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
             text-align: left;
             margin-bottom: 25px;
             min-height: 120px;
             user-select: none;
+            word-break: break-word;
         }
 
         /* 字元狀態渲染 */
@@ -271,6 +300,11 @@
         <div class="tool-container">
             <h1 class="tool-title"><i class="fa-solid fa-keyboard"></i> 60秒極速打字比賽</h1>
             
+            <div class="lang-switch-wrapper">
+                <button id="langZhBtn" class="lang-btn active" onclick="switchLanguage('zh')">中文挑戰</button>
+                <button id="langEnBtn" class="lang-btn" onclick="switchLanguage('en')">English Test</button>
+            </div>
+
             <div class="dashboard-grid">
                 <div class="stat-card">
                     <div class="stat-val" id="timerLabel">60</div>
@@ -278,7 +312,7 @@
                 </div>
                 <div class="stat-card">
                     <div class="stat-val" id="wpmLabel">0</div>
-                    <div class="stat-lbl">目前速度 (WPM)</div>
+                    <div class="stat-lbl" id="wpmUnitLabel">目前速度 (WPM)</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-val" id="accuracyLabel">100%</div>
@@ -302,15 +336,23 @@
     </footer>
 
     <script>
-        // 精選多元趣味中文字型題庫
-        const questionPool = [
+        // 中文經典題庫
+        const questionPoolZh = [
             "如果你想走得快，一個人走；如果你想走得遠，一群人走。",
             "寫程式就像在黑夜裡摸索一條路，雖然常常碰壁，但找到出口時的快樂是無可比擬的。",
             "生命的意義不在於你拿到一副好牌，而在於你如何把手上的爛牌打得精彩萬分。",
-            "失敗並不可怕，可怕的是你因為害怕失敗，而失去了再次站起來嘗試的勇氣。",
-            "昨天的歷史已經過去，明天的未來尚未可知，只有今天才是當下最珍貴的禮物。"
+            "失敗並不可怕，可怕的是你因為害怕失敗，而失去了再次站起來嘗試的勇氣。"
         ];
 
+        // 英文經典語錄題庫
+        const questionPoolEn = [
+            "The only way to do great work is to love what you do.",
+            "Success is not final, failure is not fatal: it is the courage to continue that counts.",
+            "Believe you can and you are halfway there.",
+            "Strive not to be a success, but rather to be of value."
+        ];
+
+        let currentLanguage = 'zh'; // 目前選定的挑戰語言 (zh / en)
         let targetText = ""; // 本次挑戰的字串目標
         let matchTimer = null; // 計時器排程變數
         let timeLeft = 60; // 挑戰剩餘秒數
@@ -324,42 +366,55 @@
         const ctrlBtn = document.getElementById("ctrlBtn");
 
         document.addEventListener("DOMContentLoaded", () => {
-            // 初始化準備：隨機抽一題展示
+            // 初始化選題
             prepareNextQuestion();
-            
-            // 監聽鍵盤輸入事件進行即時核對
+            // 監聽鍵盤輸入事件
             typingInput.addEventListener("input", checkTypingProgress);
         });
 
-        // 隨機抽選新題目並重繪前端字元節點
+        // 切換語系邏輯
+        function switchLanguage(lang) {
+            if (isMatchActive) return; // 競賽中禁止切換
+            
+            currentLanguage = lang;
+            document.getElementById('langZhBtn').classList.toggle('active', lang === 'zh');
+            document.getElementById('langEnBtn').classList.toggle('active', lang === 'en');
+            
+            prepareNextQuestion();
+        }
+
+        // 依語系抽選題目
         function prepareNextQuestion() {
-            const randomIndex = Math.floor(Math.random() * questionPool.length);
-            targetText = questionPool[randomIndex];
+            const pool = currentLanguage === 'zh' ? questionPoolZh : questionPoolEn;
+            const randomIndex = Math.floor(Math.random() * pool.length);
+            targetText = pool[randomIndex];
             renderPreviewText("");
         }
 
-        // 以 span 節點陣列渲染字元防護效果
+        // 渲染字元對比色塊
         function renderPreviewText(currentInput) {
             let renderedHtml = "";
             for (let i = 0; i < targetText.length; i++) {
                 let charClass = "";
                 if (i < currentInput.length) {
-                    // 已輸入部分的對錯判定
                     charClass = currentInput[i] === targetText[i] ? "char-correct" : "char-incorrect";
                 } else if (i === currentInput.length && isMatchActive) {
-                    // 目前游標聚焦處
                     charClass = "char-current";
                 }
-                renderedHtml += `<span class="${charClass}">${targetText[i]}</span>`;
+                // 將空白字元視覺化處理，避免畫面排版塌陷
+                if (targetText[i] === " ") {
+                    renderedHtml += `<span class="${charClass}">&nbsp;</span>`;
+                } else {
+                    renderedHtml += `<span class="${charClass}">${targetText[i]}</span>`;
+                }
             }
             textPreview.innerHTML = renderedHtml;
         }
 
-        // 開始打字挑戰主要調度控制
+        // 開始打字挑戰調度器
         function startTypingMatch() {
             if (isMatchActive) return;
 
-            // 初始化各項控制數據
             isMatchActive = true;
             timeLeft = 60;
             wpmLabel.textContent = "0";
@@ -368,14 +423,12 @@
             typingInput.disabled = false;
             typingInput.focus();
 
-            // 更新控制鈕外觀
             ctrlBtn.disabled = true;
             ctrlBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 挑戰火熱進行中`;
 
             prepareNextQuestion();
-            renderPreviewText("");
 
-            // 開啟秒級倒數回圈
+            // 開啟秒級計時器
             matchTimer = setInterval(() => {
                 timeLeft--;
                 timerLabel.textContent = timeLeft;
@@ -386,44 +439,41 @@
             }, 1000);
         }
 
-        // 輸入內容比對與數據模型分析
+        // 輸入內容即時分析
         function checkTypingProgress() {
             if (!isMatchActive) return;
 
             const userInput = typingInput.value;
             let correctChars = 0;
 
-            // 同步渲染色塊
             renderPreviewText(userInput);
 
-            // 計算正確輸入的總字數
             for (let i = 0; i < userInput.length; i++) {
                 if (userInput[i] === targetText[i]) {
                     correctChars++;
                 }
             }
 
-            // 標準 WPM 演算法公式：(總正確輸入字元 / 5) / 已消耗時間
+            // WPM 公式：(正確輸入字元 / 5) / 已消耗時間
             const timeElapsed = (60 - timeLeft) / 60; 
             if (timeElapsed > 0 && userInput.length > 0) {
                 const currentWpm = Math.round((correctChars / 5) / timeElapsed);
                 wpmLabel.textContent = currentWpm;
             }
 
-            // 計算即時正確率
             if (userInput.length > 0) {
                 const currentAccuracy = Math.round((correctChars / userInput.length) * 100);
                 accuracyLabel.textContent = currentAccuracy + "%";
             }
 
-            // 防禦性判定：全對且提早結束時，自動切換下一題
+            // 完成該題自動切換下一題
             if (userInput === targetText) {
                 typingInput.value = "";
                 prepareNextQuestion();
             }
         }
 
-        // 比賽時間截止結算與狀態重設
+        // 限時截止結算
         function endTypingMatch() {
             clearInterval(matchTimer);
             isMatchActive = false;
@@ -432,9 +482,8 @@
             const finalWpm = wpmLabel.textContent;
             const finalAccuracy = accuracyLabel.textContent;
 
-            alert(`⏰ 時間到！挑戰結束！\n你的最終速度為：${finalWpm} WPM\n整體精準度為：${finalAccuracy}\n做得太棒了！快去註冊 metadata 分享給學弟吧！`);
+            alert(`⏰ 時間到！挑戰結束！\n你的最終速度為：${finalWpm} WPM\n整體精準度為：${finalAccuracy}\n中英文英打切換完成！快去更新你的 config 設定吧！`);
 
-            // 還原狀態控制鈕
             ctrlBtn.disabled = false;
             ctrlBtn.innerHTML = `<i class="fa-solid fa-rotate-right"></i> 再次挑戰`;
         }
