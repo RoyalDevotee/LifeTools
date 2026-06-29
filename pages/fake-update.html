@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>模擬系統更新畫面 - Life Tools 精緻工具箱</title>
+    <meta name="description" content="高擬真雙系統（macOS / Windows 11）升級更新摸魚畫面。支援原生全螢幕沉浸模式與隱藏游標，提供打工人短暫的心靈休憩空間。">
+    <meta name="author" content="NeuralNexusLab">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Segoe+UI:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="/scripts/init.js"></script>
+
+    <style>
+        /* 全域基本樣式 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+
+        :root {
+            --primary-color: #FF8C00;
+            --primary-hover: #E07B00;
+            --primary-light: #FFF5EC;
+            --text-dark: #2C3E50;
+            --text-muted: #7F8C8D;
+            --bg-light: #FDFBF7;
+            --bg-card-section: #F5EFEB;
+            --white: #FFFFFF;
+            --transition-speed: 0.3s;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 頂部導覽列 */
+        .navbar {
+            background-color: var(--white);
+            border-bottom: 2px solid var(--primary-light);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .nav-logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform var(--transition-speed) ease;
+        }
+
+        .nav-logo:hover {
+            transform: scale(1.03);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            color: var(--text-dark);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 16px;
+            transition: color var(--transition-speed) ease;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color);
+        }
+
+        /* 工具主內容區 */
+        .main-content {
+            flex-grow: 1;
+            padding: 40px 20px;
+            background-color: var(--bg-card-section);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tool-container {
+            background-color: var(--white);
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            max-width: 800px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 140, 0, 0.1);
+        }
+
+        .tool-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .tool-desc {
+            text-align: center;
+            color: var(--text-muted);
+            margin-bottom: 30px;
+            font-size: 15px;
+        }
+
+        /* 模式選擇卡片 */
+        .system-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .system-card {
+            border: 2px solid #E2E8F0;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .system-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 140, 0, 0.08);
+        }
+
+        .system-card i {
+            font-size: 50px;
+            margin-bottom: 15px;
+            color: var(--text-dark);
+        }
+
+        .system-card.apple:hover i {
+            color: #000000;
+        }
+
+        .system-card.windows:hover i {
+            color: #0078D4;
+        }
+
+        .system-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        /* 全螢幕假更新舞台外殼 */
+        .fullscreen-stage {
+            display: none; /* 預設隱藏 */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 99999;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        /* 當處於全螢幕狀態時，強制隱藏滑鼠游標 */
+        .fullscreen-stage:fullscreen {
+            cursor: none;
+        }
+
+        /* --- macOS 模擬外觀樣式 --- */
+        .stage-apple {
+            background-color: #000000;
+            color: #FFFFFF;
+        }
+
+        .apple-logo {
+            font-size: 90px;
+            color: #FFFFFF;
+            margin-bottom: 80px;
+        }
+
+        .apple-progress-container {
+            width: 250px;
+            height: 5px;
+            background-color: #424242;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .apple-progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: #FFFFFF;
+        }
+
+        /* --- Windows 11 模擬外觀樣式 --- */
+        .stage-windows {
+            background-color: #004275; /* Windows 11 標準更新藍 */
+            color: #FFFFFF;
+            font-family: 'Segoe UI', sans-serif;
+            padding: 40px;
+            text-align: center;
+        }
+
+        /* Windows 11 線性與微點循環動效 */
+        .windows-spinner {
+            width: 60px;
+            height: 60px;
+            position: relative;
+            margin-bottom: 40px;
+            animation: winSpin 4s infinite linear;
+        }
+
+        .windows-spinner::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-top-color: #FFFFFF;
+            border-radius: 50%;
+            animation: winSpinInner 1.5s infinite cubic-bezier(0.6, 0, 0.4, 1);
+        }
+
+        @keyframes winSpin {
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes winSpinInner {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .windows-text-title {
+            font-size: 24px;
+            font-weight: 300;
+            margin-bottom: 15px;
+        }
+
+        .windows-text-sub {
+            font-size: 15px;
+            font-weight: 300;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* 頁尾 */
+        .footer {
+            background-color: var(--white);
+            padding: 30px 20px;
+            text-align: center;
+            border-top: 1px solid var(--primary-light);
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: auto;
+        }
+
+        /* RWD 響應式 */
+        @media (max-width: 600px) {
+            .navbar-container { flex-direction: column; align-items: stretch; }
+            .nav-right { flex-direction: column; align-items: stretch; gap: 12px; }
+            .system-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="nav-logo">
+                <i class="fa-solid fa-toolbox"></i> Life Tools
+            </a>
+            <div class="nav-right">
+                <a href="/pages/about.html" class="nav-link">關於我們</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="tool-container">
+            <h1 class="tool-title">模擬系統更新畫面 (摸魚神器)</h1>
+            <p class="tool-desc">選擇下方的作業系統，系統會自動進入全螢幕沉浸更新模式並隱藏游標。按下鍵盤「Esc」鍵即可隨時結束退出。</p>
+            
+            <div class="system-grid">
+                <div class="system-card apple" onclick="launchFakeUpdate('apple')">
+                    <i class="fa-brands fa-apple"></i>
+                    <div class="system-name">macOS 系統更新</div>
+                </div>
+
+                <div class="system-card windows" onclick="launchFakeUpdate('windows')">
+                    <i class="fa-brands fa-windows"></i>
+                    <div class="system-name">Windows 11 系統更新</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="stageApple" class="fullscreen-stage stage-apple">
+        <i class="fa-brands fa-apple apple-logo"></i>
+        <div class="apple-progress-container">
+            <div id="appleBar" class="apple-progress-bar"></div>
+        </div>
+    </div>
+
+    <div id="stageWindows" class="fullscreen-stage stage-windows">
+        <div class="windows-spinner"></div>
+        <div class="windows-text-title">正在進行更新 <span id="winPercent">0</span>%</div>
+        <div class="windows-text-sub">請保持電腦開啟。這可能需要一點時間。你的電腦可能會重新啟動數次。</div>
+    </div>
+
+    <footer class="footer">
+        &copy; NeuralNexusLab, all rights reserved.
+    </footer>
+
+    <script>
+        // 宣告全域狀態計數變數
+        let progressPercent = 0; 
+        let updateTimer = null; 
+        let activeStage = null; 
+
+        // 監聽全螢幕狀態改變事件，若使用者自己按 Esc 退出全螢幕，立刻關閉模擬畫面
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement) {
+                exitFakeUpdateStage();
+            }
+        });
+
+        // 啟動全螢幕假升級調度控制核心
+        function launchFakeUpdate(systemType) {
+            progressPercent = 0;
+            
+            // 抓取對應的假畫面 DOM 節點
+            if (systemType === 'apple') {
+                activeStage = document.getElementById('stageApple');
+                document.getElementById('appleBar').style.width = '0%';
+            } else {
+                activeStage = document.getElementById('stageWindows');
+                document.getElementById('winPercent').textContent = '0';
+            }
+
+            // 顯示舞台區塊並請求原生全螢幕
+            activeStage.style.display = 'flex';
+            if (activeStage.requestFullscreen) {
+                activeStage.requestFullscreen().catch(err => {
+                    // 若被瀏覽器安全策略阻擋則降級直接顯示
+                    console.log("全螢幕請求遭拒: " + err.message);
+                });
+            }
+
+            // 啟動進度條緩慢自然推移回圈
+            startProgressSimulation(systemType);
+        }
+
+        // 模擬進度條緩慢增加邏輯
+        function startProgressSimulation(systemType) {
+            if (updateTimer) clearInterval(updateTimer);
+
+            updateTimer = setInterval(() => {
+                // 隨機增加 0 到 2 之間的微幅進度，模擬真實更新的不確定慢速感
+                progressPercent += Math.random() * 1.2;
+
+                if (progressPercent >= 100) {
+                    progressPercent = 99; // 鎖定在 99% 萬年卡住，製造更新很久的合理假象
+                }
+
+                const currentVal = Math.floor(progressPercent);
+
+                // 更新對應系統的前端介面
+                if (systemType === 'apple') {
+                    document.getElementById('appleBar').style.width = currentVal + '%';
+                } else {
+                    document.getElementById('winPercent').textContent = currentVal;
+                }
+            }, 2500); // 每 2.5 秒微幅跳動一次
+        }
+
+        // 退出假更新並清理排程
+        function exitFakeUpdateStage() {
+            if (updateTimer) {
+                clearInterval(updateTimer);
+                updateTimer = null;
+            }
+            
+            // 隱藏所有舞台區塊
+            document.getElementById('stageApple').style.display = 'none';
+            document.getElementById('stageWindows').style.display = 'none';
+            activeStage = null;
+        }
+    </script>
+</body>
+</html>
