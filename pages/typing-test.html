@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <title>極速打字比賽 - Life Tools 精緻工具箱</title>
-    <meta name="description" content="測試你的一分鐘中英文打字速度 (WPM)！內建雙語切換、60 秒限時倒數、即時精準度與錯字分析，完全本地端運行。">
-    <meta name="author" content="Royal Devotee (NeuralNexusLab X 0xseanlee)">
+    <meta name="description" content="測試你的一分鐘中英文打字速度 (WPM/CPM)！內建雙語切換、60 秒限時倒數、即時精準度與錯字分析，完全本地端運行。">
+    <meta name="author" content="NeuralNexusLab">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -101,6 +101,55 @@
 
         .nav-link:hover {
             color: var(--primary-color);
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background-color: var(--primary-light);
+            border: 1.5px solid transparent;
+            border-radius: 30px;
+            padding: 4px 6px 4px 16px;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--primary-color);
+            background-color: var(--white);
+            box-shadow: 0 0 8px rgba(255, 140, 0, 0.15);
+        }
+
+        .search-input {
+            border: none;
+            background: transparent;
+            outline: none;
+            color: var(--text-dark);
+            font-size: 14px;
+            width: 160px;
+            transition: width var(--transition-speed) ease;
+        }
+
+        .search-input:focus {
+            width: 200px;
+        }
+
+        .search-btn {
+            background-color: var(--primary-color);
+            border: none;
+            color: var(--white);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color var(--transition-speed) ease, transform var(--transition-speed) ease;
+        }
+
+        .search-btn:hover {
+            background-color: var(--primary-hover);
+            transform: scale(1.05);
         }
 
         /* 工具主內容區 */
@@ -216,6 +265,12 @@
         .char-current {
             background-color: rgba(255, 140, 0, 0.2);
             border-bottom: 3px solid var(--primary-color);
+            animation: blinkCursor 0.8s infinite alternate;
+        }
+
+        @keyframes blinkCursor {
+            from { border-bottom-color: var(--primary-color); }
+            to { border-bottom-color: transparent; }
         }
 
         .char-correct {
@@ -266,9 +321,15 @@
             transition: all var(--transition-speed);
         }
 
-        .action-btn:hover {
+        .action-btn:hover:not(:disabled) {
             background-color: var(--primary-hover);
             transform: translateY(-2px);
+        }
+
+        .action-btn:disabled {
+            background-color: var(--text-muted);
+            cursor: not-allowed;
+            transform: none;
         }
 
         /* 頁尾 */
@@ -281,6 +342,14 @@
             color: var(--text-muted);
             margin-top: auto;
         }
+
+        /* RWD 響應式 */
+        @media (max-width: 768px) {
+            .navbar-container { flex-direction: column; align-items: stretch; }
+            .nav-right { flex-direction: column; align-items: stretch; gap: 12px; }
+            .search-box, .search-input, .search-input:focus { width: 100%; }
+            .dashboard-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
@@ -292,6 +361,12 @@
             </a>
             <div class="nav-right">
                 <a href="/pages/about.html" class="nav-link">關於我們</a>
+                <div class="search-box">
+                    <input type="text" id="navSearchInput" class="search-input" placeholder="搜尋工具...">
+                    <button id="navSearchBtn" class="search-btn">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </nav>
@@ -301,8 +376,8 @@
             <h1 class="tool-title"><i class="fa-solid fa-keyboard"></i> 60秒極速打字比賽</h1>
             
             <div class="lang-switch-wrapper">
-                <button id="langZhBtn" class="lang-btn active" onclick="switchLanguage('zh')">中文挑戰</button>
-                <button id="langEnBtn" class="lang-btn" onclick="switchLanguage('en')">English Test</button>
+                <button id="langZhBtn" class="lang-btn active" onclick="switchLanguage('zh')">中文挑戰 (CPM)</button>
+                <button id="langEnBtn" class="lang-btn" onclick="switchLanguage('en')">English Test (WPM)</button>
             </div>
 
             <div class="dashboard-grid">
@@ -311,8 +386,8 @@
                     <div class="stat-lbl">剩餘時間 (秒)</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-val" id="wpmLabel">0</div>
-                    <div class="stat-lbl" id="wpmUnitLabel">目前速度 (WPM)</div>
+                    <div class="stat-val" id="speedLabel">0</div>
+                    <div class="stat-lbl" id="speedUnitLabel">目前速度 (CPM)</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-val" id="accuracyLabel">100%</div>
@@ -323,7 +398,7 @@
             <div class="text-preview-box" id="textPreview">載入題庫中...</div>
 
             <div class="input-card">
-                <input type="text" id="typingInput" class="text-field" placeholder="點擊下方按鈕或直接在此輸入開始挑戰..." autocomplete="off" disabled>
+                <input type="text" id="typingInput" class="text-field" placeholder="點擊下方按鈕開始挑戰..." autocomplete="off" disabled>
                 <button class="action-btn" id="ctrlBtn" onclick="startTypingMatch()">
                     <i class="fa-solid fa-play"></i> 開始挑戰
                 </button>
@@ -332,11 +407,11 @@
     </main>
 
     <footer class="footer">
-        &copy; Royal Devotee (NeuralNexusLab X 0xseanlee), all rights reserved.
+        &copy; NeuralNexusLab, all rights reserved.
     </footer>
 
     <script>
-        // 中文經典題庫
+        // 定義中英文經典題庫
         const questionPoolZh = [
             "如果你想走得快，一個人走；如果你想走得遠，一群人走。",
             "寫程式就像在黑夜裡摸索一條路，雖然常常碰壁，但找到出口時的快樂是無可比擬的。",
@@ -344,7 +419,6 @@
             "失敗並不可怕，可怕的是你因為害怕失敗，而失去了再次站起來嘗試的勇氣。"
         ];
 
-        // 英文經典語錄題庫
         const questionPoolEn = [
             "The only way to do great work is to love what you do.",
             "Success is not final, failure is not fatal: it is the courage to continue that counts.",
@@ -352,38 +426,62 @@
             "Strive not to be a success, but rather to be of value."
         ];
 
-        let currentLanguage = 'zh'; // 目前選定的挑戰語言 (zh / en)
-        let targetText = ""; // 本次挑戰的字串目標
-        let matchTimer = null; // 計時器排程變數
-        let timeLeft = 60; // 挑戰剩餘秒數
-        let isMatchActive = false; // 是否正處於比賽中狀態
+        // 宣告全域狀態變數
+        let currentLanguage = 'zh'; 
+        let targetText = ""; 
+        let matchTimer = null; 
+        let timeLeft = 60; 
+        let isMatchActive = false; 
 
+        // 綁定 DOM 元素
         const textPreview = document.getElementById("textPreview");
         const typingInput = document.getElementById("typingInput");
         const timerLabel = document.getElementById("timerLabel");
-        const wpmLabel = document.getElementById("wpmLabel");
+        const speedLabel = document.getElementById("speedLabel");
+        const speedUnitLabel = document.getElementById("speedUnitLabel");
         const accuracyLabel = document.getElementById("accuracyLabel");
         const ctrlBtn = document.getElementById("ctrlBtn");
 
+        // 頁面載入後初始化
         document.addEventListener("DOMContentLoaded", () => {
-            // 初始化選題
+            initNavbarSearch();
             prepareNextQuestion();
-            // 監聽鍵盤輸入事件
             typingInput.addEventListener("input", checkTypingProgress);
         });
 
-        // 切換語系邏輯
+        // 導覽列搜尋初始化邏輯
+        function initNavbarSearch() {
+            const navInput = document.getElementById('navSearchInput');
+            const navBtn = document.getElementById('navSearchBtn');
+
+            const triggerSearch = () => {
+                const query = navInput.value.trim();
+                if (query) {
+                    window.location.href = `/pages/search.html?q=${encodeURIComponent(query)}`;
+                }
+            };
+
+            navBtn.addEventListener('click', triggerSearch);
+            navInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') triggerSearch();
+            });
+        }
+
+        // 語系切換與標籤更新邏輯
         function switchLanguage(lang) {
-            if (isMatchActive) return; // 競賽中禁止切換
+            if (isMatchActive) return; 
             
             currentLanguage = lang;
             document.getElementById('langZhBtn').classList.toggle('active', lang === 'zh');
             document.getElementById('langEnBtn').classList.toggle('active', lang === 'en');
             
+            // 自動切換中文 CPM 與英文 WPM 顯示標籤
+            speedUnitLabel.textContent = lang === 'zh' ? '目前速度 (CPM)' : '目前速度 (WPM)';
+            
             prepareNextQuestion();
         }
 
-        // 依語系抽選題目
+        // 依據目前語系隨機抽取題目
         function prepareNextQuestion() {
             const pool = currentLanguage === 'zh' ? questionPoolZh : questionPoolEn;
             const randomIndex = Math.floor(Math.random() * pool.length);
@@ -391,17 +489,19 @@
             renderPreviewText("");
         }
 
-        // 渲染字元對比色塊
+        // 渲染字元對比與游標色塊
         function renderPreviewText(currentInput) {
             let renderedHtml = "";
             for (let i = 0; i < targetText.length; i++) {
                 let charClass = "";
+                
                 if (i < currentInput.length) {
                     charClass = currentInput[i] === targetText[i] ? "char-correct" : "char-incorrect";
                 } else if (i === currentInput.length && isMatchActive) {
                     charClass = "char-current";
                 }
-                // 將空白字元視覺化處理，避免畫面排版塌陷
+
+                // 處理空白字元避免 HTML 塌陷
                 if (targetText[i] === " ") {
                     renderedHtml += `<span class="${charClass}">&nbsp;</span>`;
                 } else {
@@ -411,13 +511,13 @@
             textPreview.innerHTML = renderedHtml;
         }
 
-        // 開始打字挑戰調度器
+        // 啟動挑戰計時調度器
         function startTypingMatch() {
             if (isMatchActive) return;
 
             isMatchActive = true;
             timeLeft = 60;
-            wpmLabel.textContent = "0";
+            speedLabel.textContent = "0";
             accuracyLabel.textContent = "100%";
             typingInput.value = "";
             typingInput.disabled = false;
@@ -428,7 +528,7 @@
 
             prepareNextQuestion();
 
-            // 開啟秒級計時器
+            // 開啟倒數計時回圈
             matchTimer = setInterval(() => {
                 timeLeft--;
                 timerLabel.textContent = timeLeft;
@@ -439,7 +539,7 @@
             }, 1000);
         }
 
-        // 輸入內容即時分析
+        // 即時比對輸入內容與計算速度
         function checkTypingProgress() {
             if (!isMatchActive) return;
 
@@ -454,35 +554,47 @@
                 }
             }
 
-            // WPM 公式：(正確輸入字元 / 5) / 已消耗時間
-            const timeElapsed = (60 - timeLeft) / 60; 
-            if (timeElapsed > 0 && userInput.length > 0) {
-                const currentWpm = Math.round((correctChars / 5) / timeElapsed);
-                wpmLabel.textContent = currentWpm;
-            }
+            // 防呆：確保經過時間不為負數或零
+            let timeElapsed = (60 - timeLeft) / 60; 
+            if (timeElapsed <= 0) timeElapsed = 1 / 60; 
 
+            // 根據語系動態計算速度
+            let currentSpeed = 0;
+            if (currentLanguage === 'zh') {
+                // 中文計算 CPM (字/分鐘)
+                currentSpeed = Math.round(correctChars / timeElapsed);
+            } else {
+                // 英文計算標準 WPM (5字元為1詞/分鐘)
+                currentSpeed = Math.round((correctChars / 5) / timeElapsed);
+            }
+            
+            speedLabel.textContent = currentSpeed;
+
+            // 計算精準度
             if (userInput.length > 0) {
                 const currentAccuracy = Math.round((correctChars / userInput.length) * 100);
                 accuracyLabel.textContent = currentAccuracy + "%";
             }
 
-            // 完成該題自動切換下一題
+            // 全對時自動換下一題
             if (userInput === targetText) {
                 typingInput.value = "";
                 prepareNextQuestion();
             }
         }
 
-        // 限時截止結算
+        // 結束比賽並結算成績
         function endTypingMatch() {
             clearInterval(matchTimer);
             isMatchActive = false;
             typingInput.disabled = true;
 
-            const finalWpm = wpmLabel.textContent;
+            const finalSpeed = speedLabel.textContent;
             const finalAccuracy = accuracyLabel.textContent;
+            const unit = currentLanguage === 'zh' ? 'CPM' : 'WPM';
 
-            alert(`⏰ 時間到！挑戰結束！\n你的最終速度為：${finalWpm} WPM\n整體精準度為：${finalAccuracy});
+            // 修正了語法錯誤的反引號結尾
+            alert(`⏰ 時間到！挑戰結束！\n你的最終速度為：${finalSpeed} ${unit}\n整體精準度為：${finalAccuracy}`);
 
             ctrlBtn.disabled = false;
             ctrlBtn.innerHTML = `<i class="fa-solid fa-rotate-right"></i> 再次挑戰`;
