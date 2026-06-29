@@ -278,16 +278,16 @@
             word-break: break-word;
         }
 
-        /* 字元基本定位 */
+        /* 字元基本定位，確保動畫流暢 */
         .text-preview-box span {
             display: inline-block;
             position: relative;
             transition: color 0.15s ease;
         }
 
-        /* 當前輸入下游標呼吸燈 */
+        /* 當前輸入游標呼吸線條 */
         .char-current {
-            background-color: rgba(255, 140, 0, 0.2);
+            background-color: rgba(255, 140, 0, 0.15);
             border-bottom: 3px solid var(--primary-color);
             animation: blinkCursor 0.8s infinite alternate;
         }
@@ -297,22 +297,22 @@
             to { border-bottom-color: transparent; }
         }
 
-        /* 正確打字彈跳微動效 */
+        /* 打對字：向上微幅彈跳微動效 */
         .char-correct {
             color: var(--success-color);
-            animation: popIn 0.2s ease-out;
+            animation: popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         @keyframes popIn {
-            0% { transform: translateY(0); }
-            50% { transform: translateY(-4px); }
-            100% { transform: translateY(0); }
+            0% { transform: translateY(0); scale: 1; }
+            50% { transform: translateY(-4px); scale: 1.05; }
+            100% { transform: translateY(0); scale: 1; }
         }
 
-        /* 錯誤打字水平震動動效 */
+        /* 打錯字：短促左右震動搖擺動效 */
         .char-incorrect {
             color: var(--error-color);
-            background-color: rgba(231, 76, 60, 0.12);
+            background-color: rgba(231, 76, 60, 0.1);
             border-radius: 4px;
             animation: shake 0.2s ease-in-out;
         }
@@ -456,7 +456,7 @@
             "如果你想走得快，一個人走；如果你想走得遠，一群人走。",
             "寫程式就像在黑夜裡摸索一條路，雖然常常碰壁，但找到出口時的快樂是無可比擬的。",
             "生命的意義不在於你拿到一副好牌，而在於你如何把手上的爛牌打得精彩萬分。",
-            "失敗並不可可怕，可怕的是你因為害怕失敗，而失去了再次站起來嘗試的勇氣。"
+            "失敗並不可怕，可怕的是你因為害怕失敗，而失去了再次站起來嘗試的勇氣。"
         ];
 
         const questionPoolEn = [
@@ -473,7 +473,7 @@
         let timeLeft = 60; 
         let isMatchActive = false; 
 
-        // 核心邏輯修正：引入歷史累加計數器，防止換題重置 WPM
+        // 核心計數修正：引入歷史大池計數器，換關卡時將舊字數疊加進去
         let totalCorrectChars = 0; 
         let totalTypedChars = 0; 
 
@@ -554,11 +554,11 @@
             textPreview.innerHTML = renderedHtml;
         }
 
-        // 啟動比賽
+        // 啟動挑戰比賽
         function startTypingMatch() {
             if (isMatchActive) return;
 
-            // 狀態完全初始化
+            // 各項統計狀態完全歸零
             isMatchActive = true;
             timeLeft = 60;
             totalCorrectChars = 0;
@@ -578,12 +578,12 @@
 
             prepareNextQuestion();
 
-            // 計時回圈
+            // 計時核心回圈
             matchTimer = setInterval(() => {
                 timeLeft--;
                 timerLabel.textContent = timeLeft;
 
-                // 低於 10 秒觸發心跳警示動畫
+                // 倒數低於或等於 10 秒時觸發警示動畫效果
                 if (timeLeft <= 10) {
                     timerCard.classList.add("time-warning");
                 }
@@ -594,10 +594,11 @@
             }, 1000);
         }
 
-        // 即時進度分析核心
+        // 即時進度分析與速率累加核心
         function checkTypingProgress() {
             if (!isMatchActive) return;
 
+            // 強制轉小寫以符合不鎖定大小寫要求
             let userInput = typingInput.value.toLowerCase();
             typingInput.value = userInput;
 
@@ -605,21 +606,22 @@
 
             renderPreviewText(userInput);
 
-            // 計算目前句子的正確字數
+            // 計算目前正在打的這個句子的正確字數
             for (let i = 0; i < userInput.length; i++) {
                 if (userInput[i] === targetText[i]) {
                     currentCorrectCount++;
                 }
             }
 
-            // 核心修正：將「歷史關卡已累積的字數」加上「目前句子正確的字數」進行整體速率分析
+            // 數據累加公式：將已過關卡鎖定的舊總數，加上當前句子的即時數值
             let cumulativeCorrect = totalCorrectChars + currentCorrectCount;
             let cumulativeTyped = totalTypedChars + userInput.length;
 
+            // 防止極限狀況下除以零
             let timeElapsed = (60 - timeLeft) / 60; 
             if (timeElapsed <= 0) timeElapsed = 1 / 60; 
 
-            // 數據連續不中斷計算
+            // 計算當前數據流速度
             let currentSpeed = 0;
             if (currentLanguage === 'zh') {
                 currentSpeed = Math.round(cumulativeCorrect / timeElapsed);
@@ -628,13 +630,13 @@
             }
             speedLabel.textContent = currentSpeed;
 
-            // 精準度連續不中斷計算
+            // 計算當前累加精準度
             if (cumulativeTyped > 0) {
                 const currentAccuracy = Math.round((cumulativeCorrect / cumulativeTyped) * 100);
                 accuracyLabel.textContent = currentAccuracy + "%";
             }
 
-            // 當本題完全敲對，進行關卡無縫對接，將數值存入歷史累加器
+            // 當此句被完全輸入無誤，將此句長度鎖入累加器大池，並清空輸入框切換下一題
             if (userInput === targetText) {
                 totalCorrectChars += targetText.length;
                 totalTypedChars += targetText.length;
@@ -643,7 +645,7 @@
             }
         }
 
-        // 結算
+        // 結束比賽並結算
         function endTypingMatch() {
             clearInterval(matchTimer);
             isMatchActive = false;
