@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>線上時鐘 - Life Tools</title>
-    <!-- 引入 Google Fonts 與 Font Awesome 圖標庫 -->
+    <title>全球線上時鐘 - Life Tools</title>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="/scripts/init.js"></script>
@@ -159,31 +158,39 @@
             border-radius: 24px;
             padding: 40px;
             width: 100%;
-            max-width: 650px;
+            max-width: 700px;
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
             text-align: center;
             border: 1px solid rgba(255, 140, 0, 0.1);
             animation: fadeInUp 0.8s ease-out;
         }
 
-        /* 時區切換器 */
+        /* 時區切換器橫向滾動配置 */
         .timezone-switch-wrapper {
-            display: inline-flex;
+            display: flex;
             background-color: var(--primary-light);
             padding: 6px;
             border-radius: 30px;
             margin-bottom: 30px;
+            overflow-x: auto;
+            gap: 4px;
+            scrollbar-width: none; /* 隱藏 Firefox 滾動條 */
+        }
+
+        .timezone-switch-wrapper::-webkit-scrollbar {
+            display: none; /* 隱藏 Chrome 滾動條 */
         }
 
         .timezone-btn {
             background: none;
             border: none;
-            padding: 10px 24px;
+            padding: 10px 20px;
             border-radius: 20px;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 700;
             cursor: pointer;
             color: var(--text-muted);
+            white-space: nowrap;
             transition: all var(--transition-speed) ease;
         }
 
@@ -229,7 +236,7 @@
         .timezone-info {
             font-size: 15px;
             color: var(--text-muted);
-            margin-bottom: 25px;
+            margin-bottom: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -245,7 +252,7 @@
             font-weight: 700;
         }
 
-        /* 外圈點綴動畫線條 */
+        /* 連線心跳燈 */
         .pulse-light {
             width: 10px;
             height: 10px;
@@ -268,70 +275,33 @@
 
         /* 動畫定義 */
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         @keyframes pulseBeat {
-            0% {
-                transform: scale(0.9);
-                opacity: 0.6;
-            }
-            50% {
-                transform: scale(1.1);
-                opacity: 1;
-                box-shadow: 0 0 15px var(--primary-color);
-            }
-            100% {
-                transform: scale(0.9);
-                opacity: 0.6;
-            }
+            0% { transform: scale(0.9); opacity: 0.6; }
+            50% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 15px var(--primary-color); }
+            100% { transform: scale(0.9); opacity: 0.6; }
         }
 
         /* 響應式配置 */
         @media (max-width: 600px) {
-            .navbar-container {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .nav-right {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 12px;
-            }
-            .search-box {
-                width: 100%;
-            }
-            .search-input {
-                width: 100%;
-            }
-            .search-input:focus {
-                width: 100%;
-            }
-            .clock-container {
-                padding: 30px 15px;
-            }
-            .time-display {
-                font-size: 48px;
-            }
-            .time-sec {
-                font-size: 36px;
-            }
-            .date-display {
-                font-size: 16px;
-            }
+            .navbar-container { flex-direction: column; align-items: stretch; }
+            .nav-right { flex-direction: column; align-items: stretch; gap: 12px; }
+            .search-box { width: 100%; }
+            .search-input { width: 100%; }
+            .search-input:focus { width: 100%; }
+            .clock-container { padding: 30px 15px; }
+            .time-display { font-size: 44px; }
+            .time-sec { font-size: 32px; }
+            .date-display { font-size: 16px; }
+            .timezone-switch-wrapper { border-radius: 16px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- 頂部導覽列 -->
     <nav class="navbar">
         <div class="navbar-container">
             <a href="/" class="nav-logo">
@@ -349,27 +319,25 @@
         </div>
     </nav>
 
-    <!-- 網頁主要內容 -->
     <main class="main-content">
         <div class="clock-container">
             
-            <!-- 切換時區選單 -->
             <div class="timezone-switch-wrapper">
-                <button id="btnTaiwan" class="timezone-btn active" onclick="changeTimezone('Asia/Taipei', 'taiwan')">台灣時間 (GMT+8)</button>
-                <button id="btnUtc" class="timezone-btn" onclick="changeTimezone('UTC', 'utc')">國際標準時間 (UTC)</button>
+                <button id="btnTaipei" class="timezone-btn active" onclick="changeGlobalTimezone('Asia/Taipei', 'btnTaipei', '台北標準時間', 'GMT+8')">台北 (GMT+8)</button>
+                <button id="btnTokyo" class="timezone-btn" onclick="changeGlobalTimezone('Asia/Tokyo', 'btnTokyo', '東京東京時間', 'GMT+9')">東京 (GMT+9)</button>
+                <button id="btnLondon" class="timezone-btn" onclick="changeGlobalTimezone('Europe/London', 'btnLondon', '倫敦格林威治時間', 'GMT+1')">倫敦 (GMT+1)</button>
+                <button id="btnNewYork" class="timezone-btn" onclick="changeGlobalTimezone('America/New_York', 'btnNewYork', '紐約美東時間', 'GMT-4')">紐約 (GMT-4)</button>
+                <button id="btnLosAngeles" class="timezone-btn" onclick="changeGlobalTimezone('America/Los_Angeles', 'btnLosAngeles', '洛杉磯美西時間', 'GMT-7')">洛杉磯 (GMT-7)</button>
             </div>
 
-            <!-- 日期顯示 -->
             <div class="date-display" id="dateDisplay">
                 <i class="fa-regular fa-calendar-days"></i> 載入中...
             </div>
 
-            <!-- 數位時間主顯示區 -->
             <div>
                 <span class="time-display" id="timeDisplay">00:00<span class="time-sec" id="timeSecDisplay">.00</span></span>
             </div>
 
-            <!-- 精確時區徽章與連線心跳燈 -->
             <div class="timezone-info">
                 <div class="pulse-light"></div>
                 <span id="timezoneLabel">台北標準時間</span>
@@ -379,32 +347,28 @@
         </div>
     </main>
 
-    <!-- 頁尾 -->
     <footer class="footer">
         &copy; Royal Devotee (NeuralNexusLab X 0xseanlee), all rights reserved.
     </footer>
 
     <script>
-        // 設定全域變數，紀錄目前選定的時區、系統標識語系
+        // 初始化追蹤變數，儲存當前解析目標
         let targetTimezone = 'Asia/Taipei';
-        let currentLabel = '台北標準時間';
-        let currentBadgeText = 'GMT+8';
 
         document.addEventListener('DOMContentLoaded', () => {
-            // 初始化導覽列搜尋事件
+            // 初始化導覽列搜尋框
             initNavbarSearch();
-            // 立即執行第一次時間更新
+            // 執行初始化重繪
             updateClock();
-            // 設定每一秒鐘（或每毫秒，此處用 200 毫秒確保秒數更新不延遲）定時重新刷新
+            // 每 200 毫秒高頻刷精準秒數
             setInterval(updateClock, 200);
         });
 
-        // 導覽列搜尋框邏輯
+        // 導覽列搜尋邏輯控制
         function initNavbarSearch() {
             const navInput = document.getElementById('navSearchInput');
             const navBtn = document.getElementById('navSearchBtn');
 
-            // 搜尋跳轉函數
             const runSearch = () => {
                 const query = navInput.value.trim();
                 if (query) {
@@ -412,43 +376,28 @@
                 }
             };
 
-            // 按下按鈕時搜尋
             navBtn.addEventListener('click', runSearch);
-
-            // 按下 Enter 時搜尋
             navInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    runSearch();
-                }
+                if (e.key === 'Enter') runSearch();
             });
         }
 
-        // 修改與切換時區
-        function changeTimezone(timezone, type) {
+        // 智慧型全球時區核心切換控制器
+        function changeGlobalTimezone(timezone, buttonId, labelText, badgeText) {
             targetTimezone = timezone;
             
-            const btnTaiwan = document.getElementById('btnTaiwan');
-            const btnUtc = document.getElementById('btnUtc');
-            const labelEl = document.getElementById('timezoneLabel');
-            const badgeEl = document.getElementById('timezoneBadge');
+            // 抓取全體時區按鈕並移除 active 聚焦效果
+            const allButtons = document.querySelectorAll('.timezone-btn');
+            allButtons.forEach(btn => btn.classList.remove('active'));
 
-            // 更新按鈕聚焦狀態與對應文字
-            if (type === 'taiwan') {
-                btnTaiwan.classList.add('active');
-                btnUtc.classList.remove('active');
-                currentLabel = '台北標準時間';
-                currentBadgeText = 'GMT+8';
-            } else {
-                btnTaiwan.classList.remove('active');
-                btnUtc.classList.add('active');
-                currentLabel = '世界標準協調時間';
-                currentBadgeText = 'GMT+0';
-            }
+            // 為被點擊的目標按鈕加上 active 效果
+            document.getElementById(buttonId).classList.add('active');
 
-            labelEl.textContent = currentLabel;
-            badgeEl.textContent = currentBadgeText;
+            // 覆寫底部的資訊看板描述
+            document.getElementById('timezoneLabel').textContent = labelText;
+            document.getElementById('timezoneBadge').textContent = badgeText;
 
-            // 切換時區時立即重繪一次
+            // 瞬時驅動時間刷新，消除介面切換的白噪滯留
             updateClock();
         }
 
@@ -456,7 +405,7 @@
         function updateClock() {
             const now = new Date();
 
-            // 格式化日期資訊 (週幾與年月日)
+            // 依時區解析本地語系年月日及星期
             const dateOptions = {
                 timeZone: targetTimezone,
                 year: 'numeric',
@@ -467,7 +416,7 @@
             const formattedDate = new Intl.DateTimeFormat('zh-TW', dateOptions).format(now);
             document.getElementById('dateDisplay').innerHTML = `<i class="fa-regular fa-calendar-days"></i> ${formattedDate}`;
 
-            // 格式化時、分、秒
+            // 依時區精確拆解 24 小時制的時分秒元件
             const timeOptions = {
                 timeZone: targetTimezone,
                 hour: '2-digit',
@@ -481,14 +430,14 @@
             let minute = '00';
             let second = '00';
 
-            // 拆解格式化產生的時間元件
+            // 走查元件分配變數
             formattedTimeParts.forEach(part => {
                 if (part.type === 'hour') hour = part.value;
                 if (part.type === 'minute') minute = part.value;
                 if (part.type === 'second') second = part.value;
             });
 
-            // 渲染至畫面上，秒數採用亮橘色做出微對比
+            // 渲染至主顯示區
             document.getElementById('timeDisplay').innerHTML = `${hour}:${minute}<span class="time-sec" id="timeSecDisplay">:${second}</span>`;
         }
     </script>
