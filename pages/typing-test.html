@@ -228,6 +228,7 @@
             padding: 15px;
             border-radius: 16px;
             text-align: center;
+            transition: all 0.3s ease;
         }
 
         .stat-val {
@@ -242,6 +243,22 @@
             color: var(--text-muted);
             font-weight: 700;
             margin-top: 4px;
+        }
+
+        /* 倒數低於10秒時的心跳警告動效 */
+        .time-warning {
+            border-color: var(--error-color);
+            background-color: rgba(231, 76, 60, 0.05);
+            animation: pulseRed 1s infinite alternate;
+        }
+
+        .time-warning .stat-val {
+            color: var(--error-color);
+        }
+
+        @keyframes pulseRed {
+            from { transform: scale(1); }
+            to { transform: scale(1.03); box-shadow: 0 0 10px rgba(231, 76, 60, 0.2); }
         }
 
         /* 題目顯示字元區 */
@@ -261,7 +278,14 @@
             word-break: break-word;
         }
 
-        /* 字元狀態渲染 */
+        /* 字元基本定位 */
+        .text-preview-box span {
+            display: inline-block;
+            position: relative;
+            transition: color 0.15s ease;
+        }
+
+        /* 當前輸入下游標呼吸燈 */
         .char-current {
             background-color: rgba(255, 140, 0, 0.2);
             border-bottom: 3px solid var(--primary-color);
@@ -273,14 +297,30 @@
             to { border-bottom-color: transparent; }
         }
 
+        /* 正確打字彈跳微動效 */
         .char-correct {
             color: var(--success-color);
+            animation: popIn 0.2s ease-out;
         }
 
+        @keyframes popIn {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+            100% { transform: translateY(0); }
+        }
+
+        /* 錯誤打字水平震動動效 */
         .char-incorrect {
             color: var(--error-color);
             background-color: rgba(231, 76, 60, 0.12);
             border-radius: 4px;
+            animation: shake 0.2s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-3px); }
+            75% { transform: translateX(3px); }
         }
 
         /* 輸入區塊與按鈕 */
@@ -381,7 +421,7 @@
             </div>
 
             <div class="dashboard-grid">
-                <div class="stat-card">
+                <div class="stat-card" id="timerCard">
                     <div class="stat-val" id="timerLabel">60</div>
                     <div class="stat-lbl">剩餘時間 (秒)</div>
                 </div>
@@ -416,14 +456,14 @@
             "如果你想走得快，一個人走；如果你想走得遠，一群人走。",
             "寫程式就像在黑夜裡摸索一條路，雖然常常碰壁，但找到出口時的快樂是無可比擬的。",
             "生命的意義不在於你拿到一副好牌，而在於你如何把手上的爛牌打得精彩萬分。",
-            "失敗並不可怕，可怕的是你因為害怕失敗，而失去了再次站起來嘗試的勇氣。"
+            "失敗並不可可怕，可怕的是你因為害怕失敗，而失去了再次站起來嘗試的勇氣。"
         ];
 
         const questionPoolEn = [
-            "The only way to do great work is to love what you do.",
-            "Success is not final, failure is not fatal: it is the courage to continue that counts.",
-            "Believe you can and you are halfway there.",
-            "Strive not to be a success, but rather to be of value."
+            "the only way to do great work is to love what you do.",
+            "success is not final, failure is not fatal: it is the courage to continue that counts.",
+            "believe you can and you are halfway there.",
+            "strive not to be a success, but rather to be of value."
         ];
 
         // 宣告全域狀態變數
@@ -433,10 +473,15 @@
         let timeLeft = 60; 
         let isMatchActive = false; 
 
+        // 核心邏輯修正：引入歷史累加計數器，防止換題重置 WPM
+        let totalCorrectChars = 0; 
+        let totalTypedChars = 0; 
+
         // 綁定 DOM 元素
         const textPreview = document.getElementById("textPreview");
         const typingInput = document.getElementById("typingInput");
         const timerLabel = document.getElementById("timerLabel");
+        const timerCard = document.getElementById("timerCard");
         const speedLabel = document.getElementById("speedLabel");
         const speedUnitLabel = document.getElementById("speedUnitLabel");
         const accuracyLabel = document.getElementById("accuracyLabel");
@@ -449,7 +494,7 @@
             typingInput.addEventListener("input", checkTypingProgress);
         });
 
-        // 導覽列搜尋初始化邏輯
+        // 導覽列搜尋功能
         function initNavbarSearch() {
             const navInput = document.getElementById('navSearchInput');
             const navBtn = document.getElementById('navSearchBtn');
@@ -467,7 +512,7 @@
             });
         }
 
-        // 語系切換與標籤更新邏輯
+        // 語系切換
         function switchLanguage(lang) {
             if (isMatchActive) return; 
             
@@ -475,24 +520,20 @@
             document.getElementById('langZhBtn').classList.toggle('active', lang === 'zh');
             document.getElementById('langEnBtn').classList.toggle('active', lang === 'en');
             
-            // 自動切換中文 CPM 與英文 WPM 顯示標籤
             speedUnitLabel.textContent = lang === 'zh' ? '目前速度 (CPM)' : '目前速度 (WPM)';
             
             prepareNextQuestion();
         }
 
-        // 依據目前語系隨機抽取題目，並強制轉換為全小寫
+        // 隨機抽取題目並強制轉小寫
         function prepareNextQuestion() {
             const pool = currentLanguage === 'zh' ? questionPoolZh : questionPoolEn;
             const randomIndex = Math.floor(Math.random() * pool.length);
-            
-            // 核心變更：將抽出來的題目全面轉為小寫，忽略大小寫要求
             targetText = pool[randomIndex].toLowerCase();
-            
             renderPreviewText("");
         }
 
-        // 渲染字元對比與游標色塊
+        // 渲染字元區
         function renderPreviewText(currentInput) {
             let renderedHtml = "";
             for (let i = 0; i < targetText.length; i++) {
@@ -504,7 +545,6 @@
                     charClass = "char-current";
                 }
 
-                // 處理空白字元避免 HTML 塌陷
                 if (targetText[i] === " ") {
                     renderedHtml += `<span class="${charClass}">&nbsp;</span>`;
                 } else {
@@ -514,14 +554,21 @@
             textPreview.innerHTML = renderedHtml;
         }
 
-        // 啟動挑戰計時調度器
+        // 啟動比賽
         function startTypingMatch() {
             if (isMatchActive) return;
 
+            // 狀態完全初始化
             isMatchActive = true;
             timeLeft = 60;
+            totalCorrectChars = 0;
+            totalTypedChars = 0;
+            
             speedLabel.textContent = "0";
             accuracyLabel.textContent = "100%";
+            timerLabel.textContent = "60";
+            timerCard.classList.remove("time-warning");
+            
             typingInput.value = "";
             typingInput.disabled = false;
             typingInput.focus();
@@ -531,10 +578,15 @@
 
             prepareNextQuestion();
 
-            // 開啟倒數計時回圈
+            // 計時回圈
             matchTimer = setInterval(() => {
                 timeLeft--;
                 timerLabel.textContent = timeLeft;
+
+                // 低於 10 秒觸發心跳警示動畫
+                if (timeLeft <= 10) {
+                    timerCard.classList.add("time-warning");
+                }
 
                 if (timeLeft <= 0) {
                     endTypingMatch();
@@ -542,54 +594,56 @@
             }, 1000);
         }
 
-        // 即時比對輸入內容與計算速度
+        // 即時進度分析核心
         function checkTypingProgress() {
             if (!isMatchActive) return;
 
-            // 核心變更：將使用者的輸入強制轉為全小寫，達成完全不用管大小寫的效果
             let userInput = typingInput.value.toLowerCase();
             typingInput.value = userInput;
 
-            let correctChars = 0;
+            let currentCorrectCount = 0;
 
             renderPreviewText(userInput);
 
+            // 計算目前句子的正確字數
             for (let i = 0; i < userInput.length; i++) {
                 if (userInput[i] === targetText[i]) {
-                    correctChars++;
+                    currentCorrectCount++;
                 }
             }
 
-            // 防呆：確保經過時間不為負數或零
+            // 核心修正：將「歷史關卡已累積的字數」加上「目前句子正確的字數」進行整體速率分析
+            let cumulativeCorrect = totalCorrectChars + currentCorrectCount;
+            let cumulativeTyped = totalTypedChars + userInput.length;
+
             let timeElapsed = (60 - timeLeft) / 60; 
             if (timeElapsed <= 0) timeElapsed = 1 / 60; 
 
-            // 根據語系動態計算速度
+            // 數據連續不中斷計算
             let currentSpeed = 0;
             if (currentLanguage === 'zh') {
-                // 中文計算 CPM (字/分鐘)
-                currentSpeed = Math.round(correctChars / timeElapsed);
+                currentSpeed = Math.round(cumulativeCorrect / timeElapsed);
             } else {
-                // 英文計算標準 WPM (5字元為1詞/分鐘)
-                currentSpeed = Math.round((correctChars / 5) / timeElapsed);
+                currentSpeed = Math.round((cumulativeCorrect / 5) / timeElapsed);
             }
-            
             speedLabel.textContent = currentSpeed;
 
-            // 計算精準度
-            if (userInput.length > 0) {
-                const currentAccuracy = Math.round((correctChars / userInput.length) * 100);
+            // 精準度連續不中斷計算
+            if (cumulativeTyped > 0) {
+                const currentAccuracy = Math.round((cumulativeCorrect / cumulativeTyped) * 100);
                 accuracyLabel.textContent = currentAccuracy + "%";
             }
 
-            // 全對時自動換下一題
+            // 當本題完全敲對，進行關卡無縫對接，將數值存入歷史累加器
             if (userInput === targetText) {
+                totalCorrectChars += targetText.length;
+                totalTypedChars += targetText.length;
                 typingInput.value = "";
                 prepareNextQuestion();
             }
         }
 
-        // 結束比賽並結算成績
+        // 結算
         function endTypingMatch() {
             clearInterval(matchTimer);
             isMatchActive = false;
