@@ -23,5 +23,6 @@
   {"name": "萬用即時匯率換算器", "description": "支援全球主流貨幣的線上匯率試算與雙向換算工具。內建直覺的現代感外幣面板！", "path": "/pages/exchange-rate.html", "icon": "fa-solid fa-money-bill-transfer" },
   {"name": "萬用字數與行數統計器", "description": "即時統計總字數、不含空白字數、中英文字元、數字與段落行數。內建主流社群與簡訊字數限制進度條提示，完全本地端流暢分析。", "path": "/pages/text-counter.html", "icon": "fa-solid fa-file-lines" },
   {"name": "線上 HTTP 請求測試器", "description": "輕量免安裝的線上 API 請求測試工具。支援自訂方法、多組 Headers 與 Body 負載，並內建深色模式 JSON 美化解析與延遲偵測。", "path": "/pages/http-tester.html", "icon": "fa-solid fa-satellite-dish" },
-  {"name": "顏色代碼色彩選取器", "description": "專業的前端與設計師選色工具。支援 HEX, RGB, HSL 雙向即時轉換，內建多款流行漸層與質感調色盤，並提供一鍵複製色碼功能。", "path": "/pages/color-picker.html", "icon": "fa-solid fa-palette" }
+  {"name": "顏色代碼色彩選取器", "description": "專業的前端與設計師選色工具。支援 HEX, RGB, HSL 雙向即時轉換，內建多款流行漸層與質感調色盤，並提供一鍵複製色碼功能。", "path": "/pages/color-picker.html", "icon": "fa-solid fa-palette" },
+  {"name": "網頁儲存空間檢查器", "description": "即時分析當前瀏覽器的 localStorage、sessionStorage 配額消耗與剩餘磁碟容量上限，具備全方位的連線儲存管理與一鍵安全清理本地快取功能。", "path": "/pages/storage-checker.html", "icon": "fa-solid fa-database"}
 ]
