@@ -481,11 +481,14 @@
             prepareNextQuestion();
         }
 
-        // 依據目前語系隨機抽取題目
+        // 依據目前語系隨機抽取題目，並強制轉換為全小寫
         function prepareNextQuestion() {
             const pool = currentLanguage === 'zh' ? questionPoolZh : questionPoolEn;
             const randomIndex = Math.floor(Math.random() * pool.length);
-            targetText = pool[randomIndex];
+            
+            // 核心變更：將抽出來的題目全面轉為小寫，忽略大小寫要求
+            targetText = pool[randomIndex].toLowerCase();
+            
             renderPreviewText("");
         }
 
@@ -543,7 +546,10 @@
         function checkTypingProgress() {
             if (!isMatchActive) return;
 
-            const userInput = typingInput.value;
+            // 核心變更：將使用者的輸入強制轉為全小寫，達成完全不用管大小寫的效果
+            let userInput = typingInput.value.toLowerCase();
+            typingInput.value = userInput;
+
             let correctChars = 0;
 
             renderPreviewText(userInput);
@@ -593,7 +599,6 @@
             const finalAccuracy = accuracyLabel.textContent;
             const unit = currentLanguage === 'zh' ? 'CPM' : 'WPM';
 
-            // 修正了語法錯誤的反引號結尾
             alert(`⏰ 時間到！挑戰結束！\n你的最終速度為：${finalSpeed} ${unit}\n整體精準度為：${finalAccuracy}`);
 
             ctrlBtn.disabled = false;
